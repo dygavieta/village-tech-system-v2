@@ -7,7 +7,8 @@
       "Bash(pwsh:*)",
       "Bash(powershell.exe:*)",
       "Bash(git checkout:*)",
-      "Bash(export SPECIFY_FEATURE=\"001-residential-community-management\")"
+      "Bash(export SPECIFY_FEATURE=\"001-residential-community-management\")",
+      "Bash(npx create-next-app:*)"
     ],
     "deny": [],
     "ask": []

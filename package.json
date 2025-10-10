@@ -1,0 +1,45 @@
+{
+  "name": "village-tech-system-v2",
+  "version": "1.0.0",
+  "description": "Multi-tenant HOA management platform with Platform, Admin, Residence, and Sentinel applications",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:platform": "npm run dev --workspace=apps/platform",
+    "dev:admin": "npm run dev --workspace=apps/admin",
+    "build:platform": "npm run build --workspace=apps/platform",
+    "build:admin": "npm run build --workspace=apps/admin",
+    "test:platform": "npm run test --workspace=apps/platform",
+    "test:admin": "npm run test --workspace=apps/admin",
+    "lint": "npm run lint --workspaces --if-present",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:reset": "supabase db reset",
+    "supabase:migrate": "supabase db push",
+    "supabase:types": "supabase gen types typescript --local > packages/database-types/src/supabase.types.ts"
+  },
+  "keywords": [
+    "hoa",
+    "management",
+    "multi-tenant",
+    "supabase",
+    "nextjs",
+    "flutter"
+  ],
+  "author": "98Labs",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

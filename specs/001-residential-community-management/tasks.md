@@ -27,18 +27,18 @@ This is a multi-platform monorepo with:
 
 **Purpose**: Project initialization and monorepo structure
 
-- [ ] T001 [P] Create monorepo structure with apps/, packages/, supabase/, docs/, .github/ directories
-- [ ] T002 [P] Initialize root package.json with workspace configuration for npm workspaces
-- [ ] T003 [P] Configure ESLint + Prettier for web apps with shared config in root
-- [ ] T004 [P] Setup TypeScript configuration with path aliases for monorepo
-- [ ] T005 [P] Create Platform web app using `npx create-next-app@latest apps/platform --typescript --tailwind --app --use-npm`
-- [ ] T006 [P] Create Admin web app using `npx create-next-app@latest apps/admin --typescript --tailwind --app --use-npm`
-- [ ] T007 [P] Create Residence mobile app using `flutter create apps/residence --org com.villagetech --project-name residence`
-- [ ] T008 [P] Create Sentinel mobile app using `flutter create apps/sentinel --org com.villagetech --project-name sentinel`
-- [ ] T009 [P] Initialize Supabase project using `supabase init` in repository root
-- [ ] T010 [P] Setup GitHub Actions workflows in .github/workflows/ (platform-deploy.yml, admin-deploy.yml, residence-build.yml, sentinel-build.yml)
-- [ ] T011 [P] Create shared TypeScript types package in packages/database-types/ with package.json
-- [ ] T012 [P] Configure Dart analyzer and linting for Flutter apps (analysis_options.yaml in each mobile app)
+- [X] T001 [P] Create monorepo structure with apps/, packages/, supabase/, docs/, .github/ directories
+- [X] T002 [P] Initialize root package.json with workspace configuration for npm workspaces
+- [X] T003 [P] Configure ESLint + Prettier for web apps with shared config in root
+- [X] T004 [P] Setup TypeScript configuration with path aliases for monorepo
+- [X] T005 [P] Create Platform web app using `npx create-next-app@latest apps/platform --typescript --tailwind --app --use-npm`
+- [X] T006 [P] Create Admin web app using `npx create-next-app@latest apps/admin --typescript --tailwind --app --use-npm`
+- [X] T007 [P] Create Residence mobile app using `flutter create apps/residence --org com.villagetech --project-name residence`
+- [X] T008 [P] Create Sentinel mobile app using `flutter create apps/sentinel --org com.villagetech --project-name sentinel`
+- [X] T009 [P] Initialize Supabase project using `supabase init` in repository root
+- [X] T010 [P] Setup GitHub Actions workflows in .github/workflows/ (platform-deploy.yml, admin-deploy.yml, residence-build.yml, sentinel-build.yml)
+- [X] T011 [P] Create shared TypeScript types package in packages/database-types/ with package.json
+- [X] T012 [P] Configure Dart analyzer and linting for Flutter apps (analysis_options.yaml in each mobile app)
 
 ---
 
@@ -50,64 +50,64 @@ This is a multi-platform monorepo with:
 
 ### Database Foundation
 
-- [ ] T013 Create Supabase migration 00001_create_tenants.sql in supabase/migrations/ (tenants table with subdomain, name, legal_name, community_type, total_residences, branding config, subscription limits, status, timestamps)
-- [ ] T014 Create Supabase migration 00002_create_users_and_roles.sql in supabase/migrations/ (user_profiles table linked to auth.users with tenant_id, role, first_name, last_name, phone, department, permissions JSON, status, timestamps; enable RLS)
-- [ ] T015 Create Supabase migration 00003_create_properties.sql in supabase/migrations/ (properties table with tenant_id, address, hierarchy JSON for phase/block/street/lot, attributes JSON for size/bedrooms/parking, occupancy_status, timestamps; enable RLS)
-- [ ] T016 Create Supabase migration 00004_create_gates.sql in supabase/migrations/ (gates table with tenant_id, name, gate_type, operational_status, operating_hours JSON, gps_coordinates POINT, rfid_reader_serial, timestamps; enable RLS)
-- [ ] T017 Create Supabase migration 00005_create_rls_policies.sql in supabase/migrations/ (RLS policies for tenants, user_profiles, properties, gates using auth.jwt() ->> 'tenant_id' for tenant isolation)
-- [ ] T018 Create database trigger function handle_new_user() in 00002_create_users_and_roles.sql to auto-create user_profiles record when auth.users row is inserted (extract tenant_id and role from raw_user_meta_data)
+- [X] T013 Create Supabase migration 00001_create_tenants.sql in supabase/migrations/ (tenants table with subdomain, name, legal_name, community_type, total_residences, branding config, subscription limits, status, timestamps)
+- [X] T014 Create Supabase migration 00002_create_users_and_roles.sql in supabase/migrations/ (user_profiles table linked to auth.users with tenant_id, role, first_name, last_name, phone, department, permissions JSON, status, timestamps; enable RLS)
+- [X] T015 Create Supabase migration 00003_create_properties.sql in supabase/migrations/ (properties table with tenant_id, address, hierarchy JSON for phase/block/street/lot, attributes JSON for size/bedrooms/parking, occupancy_status, timestamps; enable RLS)
+- [X] T016 Create Supabase migration 00004_create_gates.sql in supabase/migrations/ (gates table with tenant_id, name, gate_type, operational_status, operating_hours JSON, gps_coordinates POINT, rfid_reader_serial, timestamps; enable RLS)
+- [X] T017 Create Supabase migration 00005_create_rls_policies.sql in supabase/migrations/ (RLS policies for tenants, user_profiles, properties, gates using auth.jwt() ->> 'tenant_id' for tenant isolation)
+- [X] T018 Create database trigger function handle_new_user() in 00002_create_users_and_roles.sql to auto-create user_profiles record when auth.users row is inserted (extract tenant_id and role from raw_user_meta_data)
 
 ### Authentication & Session Management
 
-- [ ] T019 [P] Create Supabase client factory for Platform app in apps/platform/src/lib/supabase/client.ts (browser client with createBrowserClient)
-- [ ] T020 [P] Create Supabase server client for Platform app in apps/platform/src/lib/supabase/server.ts (server component support with cookies)
-- [ ] T021 [P] Create Supabase client factory for Admin app in apps/admin/src/lib/supabase/client.ts
-- [ ] T022 [P] Create Supabase server client for Admin app in apps/admin/src/lib/supabase/server.ts
-- [ ] T023 [P] Initialize Supabase client for Residence app in apps/residence/lib/core/supabase/supabase_client.dart using supabase_flutter package
-- [ ] T024 [P] Initialize Supabase client for Sentinel app in apps/sentinel/lib/core/supabase/supabase_client.dart using supabase_flutter package
-- [ ] T025 [P] Create authentication middleware for Platform app in apps/platform/src/middleware.ts (verify JWT, check superadmin role)
-- [ ] T026 [P] Create authentication middleware for Admin app in apps/admin/src/middleware.ts (verify JWT, check admin role, enforce tenant isolation)
+- [X] T019 [P] Create Supabase client factory for Platform app in apps/platform/src/lib/supabase/client.ts (browser client with createBrowserClient)
+- [X] T020 [P] Create Supabase server client for Platform app in apps/platform/src/lib/supabase/server.ts (server component support with cookies)
+- [X] T021 [P] Create Supabase client factory for Admin app in apps/admin/src/lib/supabase/client.ts
+- [X] T022 [P] Create Supabase server client for Admin app in apps/admin/src/lib/supabase/server.ts
+- [X] T023 [P] Initialize Supabase client for Residence app in apps/residence/lib/core/supabase/supabase_client.dart using supabase_flutter package
+- [X] T024 [P] Initialize Supabase client for Sentinel app in apps/sentinel/lib/core/supabase/supabase_client.dart using supabase_flutter package
+- [X] T025 [P] Create authentication middleware for Platform app in apps/platform/src/middleware.ts (verify JWT, check superadmin role)
+- [X] T026 [P] Create authentication middleware for Admin app in apps/admin/src/middleware.ts (verify JWT, check admin role, enforce tenant isolation)
 
 ### UI Framework Setup
 
-- [ ] T027 [P] Initialize Shadcn/ui for Platform app using `npx shadcn-ui@latest init` in apps/platform/ (configure components.json)
-- [ ] T028 [P] Install Shadcn/ui core components for Platform app: button, card, form, input, table, dialog, select, badge, toast
-- [ ] T029 [P] Initialize Shadcn/ui for Admin app using `npx shadcn-ui@latest init` in apps/admin/
-- [ ] T030 [P] Install Shadcn/ui core components for Admin app: button, card, form, input, table, dialog, select, badge, toast, calendar, dropdown-menu
-- [ ] T031 [P] Configure Material 3 theme for Residence app in apps/residence/lib/core/theme/app_theme.dart (light and dark themes with ColorScheme)
-- [ ] T032 [P] Configure Material 3 theme for Sentinel app in apps/sentinel/lib/core/theme/app_theme.dart (custom security-focused color scheme)
+- [X] T027 [P] Initialize Shadcn/ui for Platform app using `npx shadcn-ui@latest init` in apps/platform/ (configure components.json)
+- [X] T028 [P] Install Shadcn/ui core components for Platform app: button, card, form, input, table, dialog, select, badge, toast
+- [X] T029 [P] Initialize Shadcn/ui for Admin app using `npx shadcn-ui@latest init` in apps/admin/
+- [X] T030 [P] Install Shadcn/ui core components for Admin app: button, card, form, input, table, dialog, select, badge, toast, calendar, dropdown-menu
+- [X] T031 [P] Configure Material 3 theme for Residence app in apps/residence/lib/core/theme/app_theme.dart (light and dark themes with ColorScheme)
+- [X] T032 [P] Configure Material 3 theme for Sentinel app in apps/sentinel/lib/core/theme/app_theme.dart (custom security-focused color scheme)
 
 ### State Management & Routing
 
-- [ ] T033 [P] Install and configure TanStack Query for Platform app in apps/platform/src/lib/react-query/query-client.ts
-- [ ] T034 [P] Install and configure Zustand for session state in Platform app in apps/platform/src/lib/store/session-store.ts
-- [ ] T035 [P] Install and configure TanStack Query for Admin app in apps/admin/src/lib/react-query/query-client.ts
-- [ ] T036 [P] Install and configure Zustand for session state in Admin app in apps/admin/src/lib/store/session-store.ts
-- [ ] T037 [P] Setup go_router for Residence app in apps/residence/lib/core/routing/app_router.dart (define routes for auth, household, stickers, permits, guests, announcements)
-- [ ] T038 [P] Setup go_router for Sentinel app in apps/sentinel/lib/core/routing/app_router.dart (define routes for auth, gate_scanning, residents, guests, deliveries, permits, incidents)
-- [ ] T039 [P] Setup Riverpod providers for Residence app in apps/residence/lib/core/providers/providers.dart (Supabase client provider, auth state provider)
-- [ ] T040 [P] Setup Bloc architecture for Sentinel app in apps/sentinel/lib/core/bloc/ (create base BlocObserver for logging)
+- [X] T033 [P] Install and configure TanStack Query for Platform app in apps/platform/src/lib/react-query/query-client.ts
+- [X] T034 [P] Install and configure Zustand for session state in Platform app in apps/platform/src/lib/store/session-store.ts
+- [X] T035 [P] Install and configure TanStack Query for Admin app in apps/admin/src/lib/react-query/query-client.ts
+- [X] T036 [P] Install and configure Zustand for session state in Admin app in apps/admin/src/lib/store/session-store.ts
+- [X] T037 [P] Setup go_router for Residence app in apps/residence/lib/core/routing/app_router.dart (define routes for auth, household, stickers, permits, guests, announcements)
+- [X] T038 [P] Setup go_router for Sentinel app in apps/sentinel/lib/core/routing/app_router.dart (define routes for auth, gate_scanning, residents, guests, deliveries, permits, incidents)
+- [X] T039 [P] Setup Riverpod providers for Residence app in apps/residence/lib/core/providers/providers.dart (Supabase client provider, auth state provider)
+- [X] T040 [P] Setup Bloc architecture for Sentinel app in apps/sentinel/lib/core/bloc/ (create base BlocObserver for logging)
 
 ### Offline Support (Sentinel Only)
 
-- [ ] T041 Initialize Hive for Sentinel app in apps/sentinel/lib/core/offline/hive_config.dart (configure boxes for cached_stickers, gate_config)
-- [ ] T042 Create Drift database for Sentinel app in apps/sentinel/lib/core/offline/database.dart (define offline_entry_logs table with synced boolean)
-- [ ] T043 Create sync service for Sentinel app in apps/sentinel/lib/core/offline/sync_service.dart (batch sync offline logs via Edge Function when connectivity restored)
+- [X] T041 Initialize Hive for Sentinel app in apps/sentinel/lib/core/offline/hive_config.dart (configure boxes for cached_stickers, gate_config)
+- [X] T042 Create Drift database for Sentinel app in apps/sentinel/lib/core/offline/database.dart (define offline_entry_logs table with synced boolean)
+- [X] T043 Create sync service for Sentinel app in apps/sentinel/lib/core/offline/sync_service.dart (batch sync offline logs via Edge Function when connectivity restored)
 
 ### Type Generation & Validation
 
-- [ ] T044 [P] Generate TypeScript types from Supabase schema using `supabase gen types typescript` → packages/database-types/supabase.ts
-- [ ] T045 [P] Generate Dart types from Supabase schema (manual creation or use supabase_flutter type generator) → packages/database-types/lib/supabase_types.dart
-- [ ] T046 [P] Create Zod validation schemas for Platform app in apps/platform/src/lib/validation/schemas.ts (tenant creation, property import)
-- [ ] T047 [P] Create Zod validation schemas for Admin app in apps/admin/src/lib/validation/schemas.ts (household creation, sticker approval, permit approval)
+- [X] T044 [P] Generate TypeScript types from Supabase schema using `supabase gen types typescript` → packages/database-types/supabase.ts
+- [X] T045 [P] Generate Dart types from Supabase schema (manual creation or use supabase_flutter type generator) → packages/database-types/lib/supabase_types.dart
+- [X] T046 [P] Create Zod validation schemas for Platform app in apps/platform/src/lib/validation/schemas.ts (tenant creation, property import)
+- [X] T047 [P] Create Zod validation schemas for Admin app in apps/admin/src/lib/validation/schemas.ts (household creation, sticker approval, permit approval)
 
 ### Error Handling & Logging
 
-- [ ] T048 [P] Create error handling utilities for Platform app in apps/platform/src/lib/utils/errors.ts (standardized error messages, API error parser)
-- [ ] T049 [P] Create error handling utilities for Admin app in apps/admin/src/lib/utils/errors.ts
-- [ ] T050 [P] Create error handling utilities for Residence app in apps/residence/lib/core/utils/error_handler.dart
-- [ ] T051 [P] Create error handling utilities for Sentinel app in apps/sentinel/lib/core/utils/error_handler.dart
-- [ ] T052 [P] Setup logging for Edge Functions using Deno console standards in supabase/functions/_shared/logger.ts
+- [X] T048 [P] Create error handling utilities for Platform app in apps/platform/src/lib/utils/errors.ts (standardized error messages, API error parser)
+- [X] T049 [P] Create error handling utilities for Admin app in apps/admin/src/lib/utils/errors.ts
+- [X] T050 [P] Create error handling utilities for Residence app in apps/residence/lib/core/utils/error_handler.dart
+- [X] T051 [P] Create error handling utilities for Sentinel app in apps/sentinel/lib/core/utils/error_handler.dart
+- [X] T052 [P] Setup logging for Edge Functions using Deno console standards in supabase/functions/_shared/logger.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+build
+dist
+coverage
+.git
+.husky
+*.lock
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+.env*
+!.env.example
