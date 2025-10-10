@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//mnt/d/Ai/**)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(pwsh:*)",
+      "Bash(powershell.exe:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
