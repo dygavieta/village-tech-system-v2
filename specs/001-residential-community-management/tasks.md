@@ -127,17 +127,21 @@ This is a multi-platform monorepo with:
 
 ### Platform Web App for User Story 1
 
-- [ ] T056 [US1] Create tenant creation page in apps/platform/src/app/(dashboard)/tenants/create/page.tsx (multi-step wizard UI with Shadcn form components)
-- [ ] T057 [US1] Create tenant creation form component in apps/platform/src/components/tenants/TenantCreationForm.tsx (step 1: basic info with subdomain, name, community type, max residences)
-- [ ] T058 [US1] Create property import form component in apps/platform/src/components/tenants/PropertyImportForm.tsx (step 2: CSV upload, validation, preview, error display for bulk property import)
-- [ ] T059 [US1] Create gate configuration form component in apps/platform/src/components/tenants/GateConfigForm.tsx (step 3: add gates with name, type, operating hours, RFID reader serial)
-- [ ] T060 [US1] Create admin user setup form component in apps/platform/src/components/tenants/AdminUserForm.tsx (step 4: admin head email, name, phone, department)
-- [ ] T061 [US1] Create tenant creation action in apps/platform/src/lib/actions/create-tenant.ts (server action that calls Edge Function, handles errors, returns result)
-- [ ] T062 [US1] Create CSV parser utility for property import in apps/platform/src/lib/utils/csv-parser.ts (parse, validate, detect duplicates, format errors)
-- [ ] T063 [US1] Create tenant list page in apps/platform/src/app/(dashboard)/tenants/page.tsx (display all tenants with search, filter by status, pagination)
-- [ ] T064 [US1] Create tenant list component in apps/platform/src/components/tenants/TenantList.tsx (table with tenant name, subdomain, properties count, admin head, status, actions)
-- [ ] T065 [US1] Create tenant detail page in apps/platform/src/app/(dashboard)/tenants/[id]/page.tsx (view tenant info, properties, gates, admin users, subscription limits)
-- [ ] T066 [US1] Create branding configuration component in apps/platform/src/components/tenants/BrandingConfig.tsx (logo upload to Supabase Storage, color scheme picker)
+- [ ] T056 [US1] Create authentication flow for superadmin users in apps/platform/src/app/(auth)/login/page.tsx (email/password login with Supabase Auth, password reset, MFA support for superadmins)
+- [ ] T057 [US1] Create session hook for superadmin users in apps/platform/src/hooks/use-superadmin-session.ts (fetch user profile, verify superadmin role using TanStack Query)
+- [ ] T058 [US1] Create platform portal layout in apps/platform/src/app/layout.tsx (Shadcn layout with sidebar navigation for tenants, analytics, settings)
+- [ ] T059 [US1] Create platform dashboard page in apps/platform/src/app/(dashboard)/page.tsx (overview cards: total tenants, total residents, system health, revenue metrics)
+- [ ] T060 [US1] Create tenant creation page in apps/platform/src/app/(dashboard)/tenants/create/page.tsx (multi-step wizard UI with Shadcn form components)
+- [ ] T061 [US1] Create tenant creation form component in apps/platform/src/components/tenants/TenantCreationForm.tsx (step 1: basic info with subdomain, name, community type, max residences)
+- [ ] T062 [US1] Create property import form component in apps/platform/src/components/tenants/PropertyImportForm.tsx (step 2: CSV upload, validation, preview, error display for bulk property import)
+- [ ] T063 [US1] Create gate configuration form component in apps/platform/src/components/tenants/GateConfigForm.tsx (step 3: add gates with name, type, operating hours, RFID reader serial)
+- [ ] T064 [US1] Create admin user setup form component in apps/platform/src/components/tenants/AdminUserForm.tsx (step 4: admin head email, name, phone, department)
+- [ ] T065 [US1] Create tenant creation action in apps/platform/src/lib/actions/create-tenant.ts (server action that calls Edge Function, handles errors, returns result)
+- [ ] T066 [US1] Create CSV parser utility for property import in apps/platform/src/lib/utils/csv-parser.ts (parse, validate, detect duplicates, format errors)
+- [ ] T067 [US1] Create tenant list page in apps/platform/src/app/(dashboard)/tenants/page.tsx (display all tenants with search, filter by status, pagination)
+- [ ] T068 [US1] Create tenant list component in apps/platform/src/components/tenants/TenantList.tsx (table with tenant name, subdomain, properties count, admin head, status, actions)
+- [ ] T069 [US1] Create tenant detail page in apps/platform/src/app/(dashboard)/tenants/[id]/page.tsx (view tenant info, properties, gates, admin users, subscription limits)
+- [ ] T070 [US1] Create branding configuration component in apps/platform/src/components/tenants/BrandingConfig.tsx (logo upload to Supabase Storage, color scheme picker)
 
 ### Admin Web App Foundation for User Story 1
 
@@ -158,30 +162,30 @@ This is a multi-platform monorepo with:
 
 ### Backend for User Story 2
 
-- [ ] T071 Create Supabase migration 00006_create_households.sql in supabase/migrations/ (households table with tenant_id, property_id, household_head_id FK to user_profiles, move_in_date, ownership_type, sticker_allocation, status, timestamps; enable RLS)
-- [ ] T072 Create Supabase migration 00007_create_household_members.sql in supabase/migrations/ (household_members table with household_id, user_id FK, role, relationship, is_adult, timestamps; enable RLS)
-- [ ] T073 Create Supabase migration 00008_create_vehicle_stickers.sql in supabase/migrations/ (vehicle_stickers table with household_id, vehicle_plate, vehicle_make, vehicle_model, vehicle_color, sticker_type, rfid_serial UNIQUE, status, expiration_date, or_cr_document_url, timestamps; enable RLS)
-- [ ] T074 [P] [US2] Create Edge Function approve-sticker in supabase/functions/approve-sticker/index.ts (accepts sticker_id, admin_id, approval decision; updates status, sends notification to household; returns updated sticker)
-- [ ] T075 [P] [US2] Create household onboarding service in apps/admin/src/lib/services/household-service.ts (create household, assign to property, create household head user with credentials, send welcome email)
+- [ ] T075 Create Supabase migration 00006_create_households.sql in supabase/migrations/ (households table with tenant_id, property_id, household_head_id FK to user_profiles, move_in_date, ownership_type, sticker_allocation, status, timestamps; enable RLS)
+- [ ] T076 Create Supabase migration 00007_create_household_members.sql in supabase/migrations/ (household_members table with household_id, user_id FK, role, relationship, is_adult, timestamps; enable RLS)
+- [ ] T077 Create Supabase migration 00008_create_vehicle_stickers.sql in supabase/migrations/ (vehicle_stickers table with household_id, vehicle_plate, vehicle_make, vehicle_model, vehicle_color, sticker_type, rfid_serial UNIQUE, status, expiration_date, or_cr_document_url, timestamps; enable RLS)
+- [ ] T078 [P] [US2] Create Edge Function approve-sticker in supabase/functions/approve-sticker/index.ts (accepts sticker_id, admin_id, approval decision; updates status, sends notification to household; returns updated sticker)
+- [ ] T079 [P] [US2] Create household onboarding service in apps/admin/src/lib/services/household-service.ts (create household, assign to property, create household head user with credentials, send welcome email)
 
 ### Admin Web App for User Story 2
 
-- [ ] T076 [US2] Create households list page in apps/admin/src/app/(dashboard)/households/page.tsx (table with all households, search by address/name, filter by status, pagination)
-- [ ] T077 [US2] Create household creation page in apps/admin/src/app/(dashboard)/households/create/page.tsx (form to select property, enter household head info, set ownership type, sticker allocation)
-- [ ] T078 [US2] Create household creation form component in apps/admin/src/components/households/HouseholdForm.tsx (property selector, household head fields, ownership type dropdown, sticker allocation input)
-- [ ] T079 [US2] Create household bulk import page in apps/admin/src/app/(dashboard)/households/import/page.tsx (CSV upload, preview, validation, batch processing with progress tracking)
-- [ ] T080 [US2] Create household detail page in apps/admin/src/app/(dashboard)/households/[id]/page.tsx (view household info, members, stickers, permits, guests, fees)
-- [ ] T081 [US2] Create vehicle sticker approvals page in apps/admin/src/app/(dashboard)/approvals/stickers/page.tsx (list pending sticker requests with household info, vehicle details, documents)
-- [ ] T082 [US2] Create sticker approval component in apps/admin/src/components/approvals/StickerApprovalCard.tsx (display request details, document preview, approve/reject actions)
-- [ ] T083 [US2] Create sticker list for household in apps/admin/src/components/households/HouseholdStickerList.tsx (table showing all stickers for a household with status, RFID serial, expiration)
-- [ ] T084 [US2] Create action to approve/reject sticker in apps/admin/src/lib/actions/approve-sticker.ts (call Edge Function, handle response, invalidate queries)
+- [ ] T080 [US2] Create households list page in apps/admin/src/app/(dashboard)/households/page.tsx (table with all households, search by address/name, filter by status, pagination)
+- [ ] T081 [US2] Create household creation page in apps/admin/src/app/(dashboard)/households/create/page.tsx (form to select property, enter household head info, set ownership type, sticker allocation)
+- [ ] T082 [US2] Create household creation form component in apps/admin/src/components/households/HouseholdForm.tsx (property selector, household head fields, ownership type dropdown, sticker allocation input)
+- [ ] T083 [US2] Create household bulk import page in apps/admin/src/app/(dashboard)/households/import/page.tsx (CSV upload, preview, validation, batch processing with progress tracking)
+- [ ] T084 [US2] Create household detail page in apps/admin/src/app/(dashboard)/households/[id]/page.tsx (view household info, members, stickers, permits, guests, fees)
+- [ ] T085 [US2] Create vehicle sticker approvals page in apps/admin/src/app/(dashboard)/approvals/stickers/page.tsx (list pending sticker requests with household info, vehicle details, documents)
+- [ ] T086 [US2] Create sticker approval component in apps/admin/src/components/approvals/StickerApprovalCard.tsx (display request details, document preview, approve/reject actions)
+- [ ] T087 [US2] Create sticker list for household in apps/admin/src/components/households/HouseholdStickerList.tsx (table showing all stickers for a household with status, RFID serial, expiration)
+- [ ] T088 [US2] Create action to approve/reject sticker in apps/admin/src/lib/actions/approve-sticker.ts (call Edge Function, handle response, invalidate queries)
 
 ### Residence Mobile App Foundation for User Story 2
 
-- [ ] T085 [US2] Create authentication flow for Residence app in apps/residence/lib/features/auth/screens/login_screen.dart (email/password login, magic link support, password reset)
-- [ ] T086 [US2] Create auth provider for Residence app in apps/residence/lib/features/auth/providers/auth_provider.dart (Riverpod provider for Supabase Auth state, user profile)
-- [ ] T087 [US2] Create main app layout for Residence app in apps/residence/lib/features/home/screens/home_screen.dart (bottom navigation: household, stickers, permits, guests, announcements)
-- [ ] T088 [US2] Create household profile screen in apps/residence/lib/features/household/screens/household_profile_screen.dart (display household info, property address, members, contact)
+- [ ] T089 [US2] Create authentication flow for Residence app in apps/residence/lib/features/auth/screens/login_screen.dart (email/password login, magic link support, password reset)
+- [ ] T090 [US2] Create auth provider for Residence app in apps/residence/lib/features/auth/providers/auth_provider.dart (Riverpod provider for Supabase Auth state, user profile)
+- [ ] T091 [US2] Create main app layout for Residence app in apps/residence/lib/features/home/screens/home_screen.dart (bottom navigation: household, stickers, permits, guests, announcements)
+- [ ] T092 [US2] Create household profile screen in apps/residence/lib/features/household/screens/household_profile_screen.dart (display household info, property address, members, contact)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - admin can create households and manage stickers
 
@@ -195,32 +199,32 @@ This is a multi-platform monorepo with:
 
 ### Backend for User Story 3
 
-- [ ] T089 Create Supabase migration 00009_create_beneficial_users.sql in supabase/migrations/ (beneficial_users table with household_id, name, role, government_id_url, vehicle_plate, status, timestamps; enable RLS)
-- [ ] T090 Create Supabase migration 00010_create_guests.sql in supabase/migrations/ (guests table with household_id, guest_name, phone_number, vehicle_plate, visit_type, visit_date, expected_arrival_time, status, approved_by_household BOOLEAN, timestamps; enable RLS)
-- [ ] T091 Create Supabase migration 00011_create_construction_permits.sql in supabase/migrations/ (construction_permits table with household_id, project_type, description, start_date, duration_days, contractor_name, contractor_license_url, num_workers, worker_list JSON, road_fee_amount, payment_status, permit_status, approved_by_admin_id FK, timestamps; enable RLS)
-- [ ] T092 [P] [US3] Create Edge Function approve-permit in supabase/functions/approve-permit/index.ts (accepts permit_id, admin_id, road_fee_amount; updates status, generates invoice, sends notification; returns updated permit)
+- [ ] T093 Create Supabase migration 00009_create_beneficial_users.sql in supabase/migrations/ (beneficial_users table with household_id, name, role, government_id_url, vehicle_plate, status, timestamps; enable RLS)
+- [ ] T094 Create Supabase migration 00010_create_guests.sql in supabase/migrations/ (guests table with household_id, guest_name, phone_number, vehicle_plate, visit_type, visit_date, expected_arrival_time, status, approved_by_household BOOLEAN, timestamps; enable RLS)
+- [ ] T095 Create Supabase migration 00011_create_construction_permits.sql in supabase/migrations/ (construction_permits table with household_id, project_type, description, start_date, duration_days, contractor_name, contractor_license_url, num_workers, worker_list JSON, road_fee_amount, payment_status, permit_status, approved_by_admin_id FK, timestamps; enable RLS)
+- [ ] T096 [P] [US3] Create Edge Function approve-permit in supabase/functions/approve-permit/index.ts (accepts permit_id, admin_id, road_fee_amount; updates status, generates invoice, sends notification; returns updated permit)
 
 ### Residence Mobile App for User Story 3
 
-- [ ] T093 [US3] Create household members list screen in apps/residence/lib/features/household/screens/members_screen.dart (display all members with roles, add member button, invite adult members)
-- [ ] T094 [US3] Create add member form screen in apps/residence/lib/features/household/screens/add_member_screen.dart (form for name, role, relationship, is_adult, contact info)
-- [ ] T095 [US3] Create member provider for Residence app in apps/residence/lib/features/household/providers/member_provider.dart (Riverpod FutureProvider to fetch members, AsyncNotifier to add/update members)
-- [ ] T096 [US3] Create vehicle stickers screen in apps/residence/lib/features/stickers/screens/stickers_screen.dart (list all household stickers with status, request new sticker button)
-- [ ] T097 [US3] Create sticker request form screen in apps/residence/lib/features/stickers/screens/request_sticker_screen.dart (form for vehicle plate, make, model, color, sticker type, document upload to Supabase Storage)
-- [ ] T098 [US3] Create sticker provider for Residence app in apps/residence/lib/features/stickers/providers/sticker_provider.dart (FutureProvider to fetch stickers, AsyncNotifier to request sticker)
-- [ ] T099 [US3] Create guests list screen in apps/residence/lib/features/guests/screens/guests_screen.dart (list pre-registered guests, filter by upcoming/past, add guest button)
-- [ ] T100 [US3] Create guest registration form screen in apps/residence/lib/features/guests/screens/register_guest_screen.dart (form for guest name, phone, vehicle plate, visit type, visit date, arrival time)
-- [ ] T101 [US3] Create guest provider for Residence app in apps/residence/lib/features/guests/providers/guest_provider.dart (FutureProvider to fetch guests, AsyncNotifier to register/update guest)
-- [ ] T102 [US3] Create construction permits screen in apps/residence/lib/features/permits/screens/permits_screen.dart (list all permits with status, request new permit button)
-- [ ] T103 [US3] Create permit request form screen in apps/residence/lib/features/permits/screens/request_permit_screen.dart (multi-step form: project details, contractor info, worker list, document uploads)
-- [ ] T104 [US3] Create permit provider for Residence app in apps/residence/lib/features/permits/providers/permit_provider.dart (FutureProvider to fetch permits, AsyncNotifier to request permit)
-- [ ] T105 [US3] Create Stripe payment screen for permits in apps/residence/lib/features/permits/screens/permit_payment_screen.dart (display invoice, integrate flutter_stripe for payment, confirm payment)
+- [ ] T097 [US3] Create household members list screen in apps/residence/lib/features/household/screens/members_screen.dart (display all members with roles, add member button, invite adult members)
+- [ ] T098 [US3] Create add member form screen in apps/residence/lib/features/household/screens/add_member_screen.dart (form for name, role, relationship, is_adult, contact info)
+- [ ] T099 [US3] Create member provider for Residence app in apps/residence/lib/features/household/providers/member_provider.dart (Riverpod FutureProvider to fetch members, AsyncNotifier to add/update members)
+- [ ] T100 [US3] Create vehicle stickers screen in apps/residence/lib/features/stickers/screens/stickers_screen.dart (list all household stickers with status, request new sticker button)
+- [ ] T101 [US3] Create sticker request form screen in apps/residence/lib/features/stickers/screens/request_sticker_screen.dart (form for vehicle plate, make, model, color, sticker type, document upload to Supabase Storage)
+- [ ] T102 [US3] Create sticker provider for Residence app in apps/residence/lib/features/stickers/providers/sticker_provider.dart (FutureProvider to fetch stickers, AsyncNotifier to request sticker)
+- [ ] T103 [US3] Create guests list screen in apps/residence/lib/features/guests/screens/guests_screen.dart (list pre-registered guests, filter by upcoming/past, add guest button)
+- [ ] T104 [US3] Create guest registration form screen in apps/residence/lib/features/guests/screens/register_guest_screen.dart (form for guest name, phone, vehicle plate, visit type, visit date, arrival time)
+- [ ] T105 [US3] Create guest provider for Residence app in apps/residence/lib/features/guests/providers/guest_provider.dart (FutureProvider to fetch guests, AsyncNotifier to register/update guest)
+- [ ] T106 [US3] Create construction permits screen in apps/residence/lib/features/permits/screens/permits_screen.dart (list all permits with status, request new permit button)
+- [ ] T107 [US3] Create permit request form screen in apps/residence/lib/features/permits/screens/request_permit_screen.dart (multi-step form: project details, contractor info, worker list, document uploads)
+- [ ] T108 [US3] Create permit provider for Residence app in apps/residence/lib/features/permits/providers/permit_provider.dart (FutureProvider to fetch permits, AsyncNotifier to request permit)
+- [ ] T109 [US3] Create Stripe payment screen for permits in apps/residence/lib/features/permits/screens/permit_payment_screen.dart (display invoice, integrate flutter_stripe for payment, confirm payment)
 
 ### Admin Web App for User Story 3
 
-- [ ] T106 [US3] Create construction permit approvals page in apps/admin/src/app/(dashboard)/approvals/permits/page.tsx (list pending permit requests with household, project details, contractor info, documents)
-- [ ] T107 [US3] Create permit approval component in apps/admin/src/components/approvals/PermitApprovalCard.tsx (display request details, calculate road fee, approve/reject actions)
-- [ ] T108 [US3] Create action to approve/reject permit in apps/admin/src/lib/actions/approve-permit.ts (call Edge Function, handle payment processing, invalidate queries)
+- [ ] T110 [US3] Create construction permit approvals page in apps/admin/src/app/(dashboard)/approvals/permits/page.tsx (list pending permit requests with household, project details, contractor info, documents)
+- [ ] T111 [US3] Create permit approval component in apps/admin/src/components/approvals/PermitApprovalCard.tsx (display request details, calculate road fee, approve/reject actions)
+- [ ] T112 [US3] Create action to approve/reject permit in apps/admin/src/lib/actions/approve-permit.ts (call Edge Function, handle payment processing, invalidate queries)
 
 **Checkpoint**: All basic household services should now be independently functional - households can self-manage and request services
 
@@ -234,37 +238,37 @@ This is a multi-platform monorepo with:
 
 ### Backend for User Story 4
 
-- [ ] T109 Create Supabase migration 00012_create_entry_exit_logs.sql in supabase/migrations/ (entry_exit_logs table with gate_id, tenant_id, entry_type, sticker_id FK, guest_id FK, permit_id FK, direction, timestamp, guard_on_duty_id FK, vehicle_plate, purpose, notes; enable RLS; add indexes on gate_id, timestamp)
-- [ ] T110 Create Supabase migration 00013_create_deliveries.sql in supabase/migrations/ (deliveries table with household_id, guest_id FK, delivery_company, driver_name, vehicle_plate, package_description, household_response, entry_log_id FK, exit_log_id FK, hold_location, status, timestamps; enable RLS)
-- [ ] T111 Create Supabase migration 00014_create_guest_approval_requests.sql in supabase/migrations/ (guest_approval_requests table with household_id, guest_name, vehicle_plate, gate_id, requested_by_guard_id FK, status, response, timeout_at TIMESTAMP, responded_at, timestamps; enable RLS for realtime subscriptions)
-- [ ] T112 [P] [US4] Create Edge Function request-guest-approval in supabase/functions/request-guest-approval/index.ts (accepts household_id, guest_name, vehicle_plate, gate_id; creates approval request, sends push notification to household; returns request_id and timeout)
-- [ ] T113 [P] [US4] Create Edge Function sync-offline-logs in supabase/functions/sync-offline-logs/index.ts (accepts batch of entry_exit_logs from Sentinel app; validates, deduplicates, inserts logs; returns sync status)
+- [ ] T113 Create Supabase migration 00012_create_entry_exit_logs.sql in supabase/migrations/ (entry_exit_logs table with gate_id, tenant_id, entry_type, sticker_id FK, guest_id FK, permit_id FK, direction, timestamp, guard_on_duty_id FK, vehicle_plate, purpose, notes; enable RLS; add indexes on gate_id, timestamp)
+- [ ] T114 Create Supabase migration 00013_create_deliveries.sql in supabase/migrations/ (deliveries table with household_id, guest_id FK, delivery_company, driver_name, vehicle_plate, package_description, household_response, entry_log_id FK, exit_log_id FK, hold_location, status, timestamps; enable RLS)
+- [ ] T115 Create Supabase migration 00014_create_guest_approval_requests.sql in supabase/migrations/ (guest_approval_requests table with household_id, guest_name, vehicle_plate, gate_id, requested_by_guard_id FK, status, response, timeout_at TIMESTAMP, responded_at, timestamps; enable RLS for realtime subscriptions)
+- [ ] T116 [P] [US4] Create Edge Function request-guest-approval in supabase/functions/request-guest-approval/index.ts (accepts household_id, guest_name, vehicle_plate, gate_id; creates approval request, sends push notification to household; returns request_id and timeout)
+- [ ] T117 [P] [US4] Create Edge Function sync-offline-logs in supabase/functions/sync-offline-logs/index.ts (accepts batch of entry_exit_logs from Sentinel app; validates, deduplicates, inserts logs; returns sync status)
 
 ### Sentinel Mobile App for User Story 4
 
-- [ ] T114 [US4] Create authentication flow for Sentinel app in apps/sentinel/lib/features/auth/screens/login_screen.dart (email/password login for security officers with role validation)
-- [ ] T115 [US4] Create auth bloc for Sentinel app in apps/sentinel/lib/features/auth/blocs/auth_bloc.dart (manage auth state, user profile, gate assignment using Bloc pattern)
-- [ ] T116 [US4] Create main app layout for Sentinel app in apps/sentinel/lib/features/home/screens/home_screen.dart (bottom navigation: gate scanning, residents, guests, deliveries, permits, incidents)
-- [ ] T117 [US4] Create gate selection screen in apps/sentinel/lib/features/gate_scanning/screens/gate_selection_screen.dart (select active gate for shift, display gate info, operating hours)
-- [ ] T118 [US4] Create RFID scanning screen in apps/sentinel/lib/features/gate_scanning/screens/rfid_scan_screen.dart (scan RFID sticker, display resident info, auto-log entry, manual barrier control)
-- [ ] T119 [US4] Create gate scan bloc for Sentinel app in apps/sentinel/lib/features/gate_scanning/blocs/gate_scan_bloc.dart (handle RFID scan events, validate sticker, check offline cache, log entry, emit success/error states)
-- [ ] T120 [US4] Create offline cache service for Sentinel in apps/sentinel/lib/core/offline/cache_service.dart (cache valid stickers in Hive, sync hourly, provide offline lookup)
-- [ ] T121 [US4] Create entry log repository for Sentinel in apps/sentinel/lib/features/gate_scanning/repositories/entry_log_repository.dart (insert log to Drift if offline, sync to Supabase when online)
-- [ ] T122 [US4] Create resident verification screen in apps/sentinel/lib/features/residents/screens/resident_search_screen.dart (search residents by name/address/plate, display household info, vehicle stickers)
-- [ ] T123 [US4] Create pre-registered guests screen in apps/sentinel/lib/features/guests/screens/guests_screen.dart (list today's expected guests, search by name/plate, check-in action)
-- [ ] T124 [US4] Create guest check-in screen in apps/sentinel/lib/features/guests/screens/guest_checkin_screen.dart (verify guest ID, take photo, log entry, send arrival notification to household)
-- [ ] T125 [US4] Create walk-in visitor approval screen in apps/sentinel/lib/features/guests/screens/visitor_approval_screen.dart (enter visitor details, request household approval, display realtime response with 2-minute timeout)
-- [ ] T126 [US4] Create guest approval bloc for Sentinel in apps/sentinel/lib/features/guests/blocs/guest_approval_bloc.dart (call Edge Function, subscribe to approval_requests realtime channel, handle approve/reject/timeout events)
-- [ ] T127 [US4] Create delivery management screen in apps/sentinel/lib/features/deliveries/screens/deliveries_screen.dart (log delivery arrival, notify household, track duration, alert on overstay > 30 min)
-- [ ] T128 [US4] Create delivery check-in form screen in apps/sentinel/lib/features/deliveries/screens/delivery_checkin_screen.dart (delivery company, driver name, vehicle plate, package description, household notification)
-- [ ] T129 [US4] Create construction worker verification screen in apps/sentinel/lib/features/permits/screens/worker_verification_screen.dart (search active permits by address, verify worker IDs against registered list, log entry with photo)
-- [ ] T130 [US4] Create permit verification bloc for Sentinel in apps/sentinel/lib/features/permits/blocs/permit_verification_bloc.dart (fetch active permits, validate worker IDs, check permit expiration, log worker entry)
+- [ ] T118 [US4] Create authentication flow for Sentinel app in apps/sentinel/lib/features/auth/screens/login_screen.dart (email/password login for security officers with role validation)
+- [ ] T119 [US4] Create auth bloc for Sentinel app in apps/sentinel/lib/features/auth/blocs/auth_bloc.dart (manage auth state, user profile, gate assignment using Bloc pattern)
+- [ ] T120 [US4] Create main app layout for Sentinel app in apps/sentinel/lib/features/home/screens/home_screen.dart (bottom navigation: gate scanning, residents, guests, deliveries, permits, incidents)
+- [ ] T121 [US4] Create gate selection screen in apps/sentinel/lib/features/gate_scanning/screens/gate_selection_screen.dart (select active gate for shift, display gate info, operating hours)
+- [ ] T122 [US4] Create RFID scanning screen in apps/sentinel/lib/features/gate_scanning/screens/rfid_scan_screen.dart (scan RFID sticker, display resident info, auto-log entry, manual barrier control)
+- [ ] T123 [US4] Create gate scan bloc for Sentinel app in apps/sentinel/lib/features/gate_scanning/blocs/gate_scan_bloc.dart (handle RFID scan events, validate sticker, check offline cache, log entry, emit success/error states)
+- [ ] T124 [US4] Create offline cache service for Sentinel in apps/sentinel/lib/core/offline/cache_service.dart (cache valid stickers in Hive, sync hourly, provide offline lookup)
+- [ ] T125 [US4] Create entry log repository for Sentinel in apps/sentinel/lib/features/gate_scanning/repositories/entry_log_repository.dart (insert log to Drift if offline, sync to Supabase when online)
+- [ ] T126 [US4] Create resident verification screen in apps/sentinel/lib/features/residents/screens/resident_search_screen.dart (search residents by name/address/plate, display household info, vehicle stickers)
+- [ ] T127 [US4] Create pre-registered guests screen in apps/sentinel/lib/features/guests/screens/guests_screen.dart (list today's expected guests, search by name/plate, check-in action)
+- [ ] T128 [US4] Create guest check-in screen in apps/sentinel/lib/features/guests/screens/guest_checkin_screen.dart (verify guest ID, take photo, log entry, send arrival notification to household)
+- [ ] T129 [US4] Create walk-in visitor approval screen in apps/sentinel/lib/features/guests/screens/visitor_approval_screen.dart (enter visitor details, request household approval, display realtime response with 2-minute timeout)
+- [ ] T130 [US4] Create guest approval bloc for Sentinel in apps/sentinel/lib/features/guests/blocs/guest_approval_bloc.dart (call Edge Function, subscribe to approval_requests realtime channel, handle approve/reject/timeout events)
+- [ ] T131 [US4] Create delivery management screen in apps/sentinel/lib/features/deliveries/screens/deliveries_screen.dart (log delivery arrival, notify household, track duration, alert on overstay > 30 min)
+- [ ] T132 [US4] Create delivery check-in form screen in apps/sentinel/lib/features/deliveries/screens/delivery_checkin_screen.dart (delivery company, driver name, vehicle plate, package description, household notification)
+- [ ] T133 [US4] Create construction worker verification screen in apps/sentinel/lib/features/permits/screens/worker_verification_screen.dart (search active permits by address, verify worker IDs against registered list, log entry with photo)
+- [ ] T134 [US4] Create permit verification bloc for Sentinel in apps/sentinel/lib/features/permits/blocs/permit_verification_bloc.dart (fetch active permits, validate worker IDs, check permit expiration, log worker entry)
 
 ### Residence Mobile App for User Story 4 (Realtime Approvals)
 
-- [ ] T131 [US4] Create guest approval notification handler in apps/residence/lib/features/guests/providers/approval_provider.dart (subscribe to guest_approval_requests realtime channel, show push notification)
-- [ ] T132 [US4] Create guest approval dialog in apps/residence/lib/features/guests/widgets/guest_approval_dialog.dart (display visitor info, approve/reject buttons, timeout countdown)
-- [ ] T133 [US4] Setup push notifications for Residence app in apps/residence/lib/core/notifications/notification_service.dart (configure flutter_local_notifications, handle foreground/background notifications)
+- [ ] T135 [US4] Create guest approval notification handler in apps/residence/lib/features/guests/providers/approval_provider.dart (subscribe to guest_approval_requests realtime channel, show push notification)
+- [ ] T136 [US4] Create guest approval dialog in apps/residence/lib/features/guests/widgets/guest_approval_dialog.dart (display visitor info, approve/reject buttons, timeout countdown)
+- [ ] T137 [US4] Setup push notifications for Residence app in apps/residence/lib/core/notifications/notification_service.dart (configure flutter_local_notifications, handle foreground/background notifications)
 
 **Checkpoint**: All gate operations should now be fully functional with offline support - security can manage all entry types
 
@@ -278,47 +282,47 @@ This is a multi-platform monorepo with:
 
 ### Backend for User Story 5
 
-- [ ] T134 Create Supabase migration 00015_create_announcements.sql in supabase/migrations/ (announcements table with tenant_id, created_by_admin_id FK, title, content TEXT, urgency, category, target_audience, effective_start, effective_end, requires_acknowledgment BOOLEAN, attachment_urls JSON, timestamps; enable RLS)
-- [ ] T135 Create Supabase migration 00016_create_announcement_reads.sql in supabase/migrations/ (announcement_reads table with announcement_id FK, user_id FK, read_at, acknowledged_at; enable RLS; unique constraint on announcement_id + user_id)
-- [ ] T136 Create Supabase migration 00017_create_village_rules.sql in supabase/migrations/ (village_rules table with tenant_id, category, title, description TEXT, version, effective_date, created_by_admin_id FK, published_at, timestamps; enable RLS)
-- [ ] T137 Create Supabase migration 00018_create_association_fees.sql in supabase/migrations/ (association_fees table with tenant_id, household_id FK, fee_structure, amount, due_date, payment_status, paid_at, payment_reference, invoice_url, receipt_url, late_fee_amount, timestamps; enable RLS)
-- [ ] T138 Create Supabase migration 00019_create_incidents.sql in supabase/migrations/ (incidents table with tenant_id, gate_id FK, reported_by_guard_id FK, incident_type, location, severity, description TEXT, photo_urls JSON, video_urls JSON, involved_parties JSON, resolution_status, resolved_by_admin_id FK, resolved_at, timestamps; enable RLS)
-- [ ] T139 [P] [US5] Create Edge Function send-announcement in supabase/functions/send-announcement/index.ts (accepts announcement data; creates announcement record, filters recipients by target_audience, sends push notifications, emails, SMS for critical; returns announcement_id and recipients_count)
-- [ ] T140 [P] [US5] Create Edge Function stripe-webhook in supabase/functions/stripe-webhook/index.ts (handle Stripe payment_intent.succeeded event; update association_fees payment_status, generate receipt, send confirmation email)
+- [ ] T138 Create Supabase migration 00015_create_announcements.sql in supabase/migrations/ (announcements table with tenant_id, created_by_admin_id FK, title, content TEXT, urgency, category, target_audience, effective_start, effective_end, requires_acknowledgment BOOLEAN, attachment_urls JSON, timestamps; enable RLS)
+- [ ] T139 Create Supabase migration 00016_create_announcement_reads.sql in supabase/migrations/ (announcement_reads table with announcement_id FK, user_id FK, read_at, acknowledged_at; enable RLS; unique constraint on announcement_id + user_id)
+- [ ] T140 Create Supabase migration 00017_create_village_rules.sql in supabase/migrations/ (village_rules table with tenant_id, category, title, description TEXT, version, effective_date, created_by_admin_id FK, published_at, timestamps; enable RLS)
+- [ ] T141 Create Supabase migration 00018_create_association_fees.sql in supabase/migrations/ (association_fees table with tenant_id, household_id FK, fee_structure, amount, due_date, payment_status, paid_at, payment_reference, invoice_url, receipt_url, late_fee_amount, timestamps; enable RLS)
+- [ ] T142 Create Supabase migration 00019_create_incidents.sql in supabase/migrations/ (incidents table with tenant_id, gate_id FK, reported_by_guard_id FK, incident_type, location, severity, description TEXT, photo_urls JSON, video_urls JSON, involved_parties JSON, resolution_status, resolved_by_admin_id FK, resolved_at, timestamps; enable RLS)
+- [ ] T143 [P] [US5] Create Edge Function send-announcement in supabase/functions/send-announcement/index.ts (accepts announcement data; creates announcement record, filters recipients by target_audience, sends push notifications, emails, SMS for critical; returns announcement_id and recipients_count)
+- [ ] T144 [P] [US5] Create Edge Function stripe-webhook in supabase/functions/stripe-webhook/index.ts (handle Stripe payment_intent.succeeded event; update association_fees payment_status, generate receipt, send confirmation email)
 
 ### Admin Web App for User Story 5
 
-- [ ] T141 [US5] Create announcements list page in apps/admin/src/app/(dashboard)/announcements/page.tsx (list all announcements, filter by urgency/category, create new announcement button)
-- [ ] T142 [US5] Create announcement creation page in apps/admin/src/app/(dashboard)/announcements/create/page.tsx (form for title, rich text content, urgency, category, target audience selection, effective dates, attachments upload)
-- [ ] T143 [US5] Create announcement form component in apps/admin/src/components/announcements/AnnouncementForm.tsx (rich text editor with @tiptap/react, audience selector with checkboxes, date pickers)
-- [ ] T144 [US5] Create announcement detail page in apps/admin/src/app/(dashboard)/announcements/[id]/page.tsx (view announcement, read/acknowledgment tracking, recipients list)
-- [ ] T145 [US5] Create action to send announcement in apps/admin/src/lib/actions/send-announcement.ts (call Edge Function, handle file uploads to Supabase Storage, invalidate queries)
-- [ ] T146 [US5] Create village rules page in apps/admin/src/app/(dashboard)/settings/rules/page.tsx (list all rules by category, create/edit/publish rules, version history)
-- [ ] T147 [US5] Create rule editor component in apps/admin/src/components/settings/RuleEditor.tsx (category selector, title, rich text description, effective date, publish button)
-- [ ] T148 [US5] Create association fees page in apps/admin/src/app/(dashboard)/fees/page.tsx (fee structure configuration, generate invoices for all households, payment tracking table)
-- [ ] T149 [US5] Create fee invoice generation component in apps/admin/src/components/fees/InvoiceGenerator.tsx (select billing period, calculate amounts, preview invoices, batch generate with Stripe)
-- [ ] T150 [US5] Create fee payment tracking component in apps/admin/src/components/fees/PaymentTracker.tsx (table showing all fees, filter by payment_status, send reminders, apply late fees)
-- [ ] T151 [US5] Create gate activity dashboard in apps/admin/src/app/(dashboard)/monitoring/gates/page.tsx (realtime entry/exit logs, charts by hour/day, filter by gate/entry_type)
-- [ ] T152 [US5] Create incident reports page in apps/admin/src/app/(dashboard)/monitoring/incidents/page.tsx (list all incidents, filter by severity/status, view details, resolve incidents)
-- [ ] T153 [US5] Create incident detail page in apps/admin/src/app/(dashboard)/monitoring/incidents/[id]/page.tsx (view incident details, photos/videos, involved parties, resolution form)
-- [ ] T154 [US5] Create action to resolve incident in apps/admin/src/lib/actions/resolve-incident.ts (update incident status, add resolution notes, send notifications)
+- [ ] T145 [US5] Create announcements list page in apps/admin/src/app/(dashboard)/announcements/page.tsx (list all announcements, filter by urgency/category, create new announcement button)
+- [ ] T146 [US5] Create announcement creation page in apps/admin/src/app/(dashboard)/announcements/create/page.tsx (form for title, rich text content, urgency, category, target audience selection, effective dates, attachments upload)
+- [ ] T147 [US5] Create announcement form component in apps/admin/src/components/announcements/AnnouncementForm.tsx (rich text editor with @tiptap/react, audience selector with checkboxes, date pickers)
+- [ ] T148 [US5] Create announcement detail page in apps/admin/src/app/(dashboard)/announcements/[id]/page.tsx (view announcement, read/acknowledgment tracking, recipients list)
+- [ ] T149 [US5] Create action to send announcement in apps/admin/src/lib/actions/send-announcement.ts (call Edge Function, handle file uploads to Supabase Storage, invalidate queries)
+- [ ] T150 [US5] Create village rules page in apps/admin/src/app/(dashboard)/settings/rules/page.tsx (list all rules by category, create/edit/publish rules, version history)
+- [ ] T151 [US5] Create rule editor component in apps/admin/src/components/settings/RuleEditor.tsx (category selector, title, rich text description, effective date, publish button)
+- [ ] T152 [US5] Create association fees page in apps/admin/src/app/(dashboard)/fees/page.tsx (fee structure configuration, generate invoices for all households, payment tracking table)
+- [ ] T153 [US5] Create fee invoice generation component in apps/admin/src/components/fees/InvoiceGenerator.tsx (select billing period, calculate amounts, preview invoices, batch generate with Stripe)
+- [ ] T154 [US5] Create fee payment tracking component in apps/admin/src/components/fees/PaymentTracker.tsx (table showing all fees, filter by payment_status, send reminders, apply late fees)
+- [ ] T155 [US5] Create gate activity dashboard in apps/admin/src/app/(dashboard)/monitoring/gates/page.tsx (realtime entry/exit logs, charts by hour/day, filter by gate/entry_type)
+- [ ] T156 [US5] Create incident reports page in apps/admin/src/app/(dashboard)/monitoring/incidents/page.tsx (list all incidents, filter by severity/status, view details, resolve incidents)
+- [ ] T157 [US5] Create incident detail page in apps/admin/src/app/(dashboard)/monitoring/incidents/[id]/page.tsx (view incident details, photos/videos, involved parties, resolution form)
+- [ ] T158 [US5] Create action to resolve incident in apps/admin/src/lib/actions/resolve-incident.ts (update incident status, add resolution notes, send notifications)
 
 ### Residence Mobile App for User Story 5
 
-- [ ] T155 [US5] Create announcements screen in apps/residence/lib/features/announcements/screens/announcements_screen.dart (list all announcements for household, filter by category/urgency, mark as read)
-- [ ] T156 [US5] Create announcement detail screen in apps/residence/lib/features/announcements/screens/announcement_detail_screen.dart (view full content, attachments, acknowledge if required)
-- [ ] T157 [US5] Create announcement provider for Residence app in apps/residence/lib/features/announcements/providers/announcement_provider.dart (FutureProvider to fetch announcements, subscribe to realtime announcements channel, update read status)
-- [ ] T158 [US5] Create village rules screen in apps/residence/lib/features/announcements/screens/village_rules_screen.dart (list all published rules by category, view rule details)
-- [ ] T159 [US5] Create association fees screen in apps/residence/lib/features/fees/screens/fees_screen.dart (list all fees with payment_status, view invoices, pay online button)
-- [ ] T160 [US5] Create fee payment screen in apps/residence/lib/features/fees/screens/fee_payment_screen.dart (display invoice details, integrate flutter_stripe for payment, confirm payment)
-- [ ] T161 [US5] Create fee provider for Residence app in apps/residence/lib/features/fees/providers/fee_provider.dart (FutureProvider to fetch fees, handle Stripe payment confirmation)
+- [ ] T159 [US5] Create announcements screen in apps/residence/lib/features/announcements/screens/announcements_screen.dart (list all announcements for household, filter by category/urgency, mark as read)
+- [ ] T160 [US5] Create announcement detail screen in apps/residence/lib/features/announcements/screens/announcement_detail_screen.dart (view full content, attachments, acknowledge if required)
+- [ ] T161 [US5] Create announcement provider for Residence app in apps/residence/lib/features/announcements/providers/announcement_provider.dart (FutureProvider to fetch announcements, subscribe to realtime announcements channel, update read status)
+- [ ] T162 [US5] Create village rules screen in apps/residence/lib/features/announcements/screens/village_rules_screen.dart (list all published rules by category, view rule details)
+- [ ] T163 [US5] Create association fees screen in apps/residence/lib/features/fees/screens/fees_screen.dart (list all fees with payment_status, view invoices, pay online button)
+- [ ] T164 [US5] Create fee payment screen in apps/residence/lib/features/fees/screens/fee_payment_screen.dart (display invoice details, integrate flutter_stripe for payment, confirm payment)
+- [ ] T165 [US5] Create fee provider for Residence app in apps/residence/lib/features/fees/providers/fee_provider.dart (FutureProvider to fetch fees, handle Stripe payment confirmation)
 
 ### Sentinel Mobile App for User Story 5
 
-- [ ] T162 [US5] Create incident reporting screen in apps/sentinel/lib/features/incidents/screens/create_incident_screen.dart (form for incident_type, location, severity, description, photo/video capture, involved parties)
-- [ ] T163 [US5] Create incident list screen in apps/sentinel/lib/features/incidents/screens/incidents_screen.dart (list incidents reported by guard, view details, track resolution status)
-- [ ] T164 [US5] Create incident bloc for Sentinel in apps/sentinel/lib/features/incidents/blocs/incident_bloc.dart (create incident with media upload to Supabase Storage, emit real-time alert to admin)
-- [ ] T165 [US5] Create announcements for security screen in apps/sentinel/lib/features/announcements/screens/announcements_screen.dart (list announcements targeted to security personnel, mark as read)
+- [ ] T166 [US5] Create incident reporting screen in apps/sentinel/lib/features/incidents/screens/create_incident_screen.dart (form for incident_type, location, severity, description, photo/video capture, involved parties)
+- [ ] T167 [US5] Create incident list screen in apps/sentinel/lib/features/incidents/screens/incidents_screen.dart (list incidents reported by guard, view details, track resolution status)
+- [ ] T168 [US5] Create incident bloc for Sentinel in apps/sentinel/lib/features/incidents/blocs/incident_bloc.dart (create incident with media upload to Supabase Storage, emit real-time alert to admin)
+- [ ] T169 [US5] Create announcements for security screen in apps/sentinel/lib/features/announcements/screens/announcements_screen.dart (list announcements targeted to security personnel, mark as read)
 
 **Checkpoint**: All communication and monitoring features should now be fully functional across all apps
 
@@ -328,41 +332,41 @@ This is a multi-platform monorepo with:
 
 **Purpose**: Improvements that affect multiple user stories and final production readiness
 
-- [ ] T166 [P] Add comprehensive error boundaries to Platform app in apps/platform/src/app/error.tsx (global error page with retry, logging to Sentry)
-- [ ] T167 [P] Add comprehensive error boundaries to Admin app in apps/admin/src/app/error.tsx
-- [ ] T168 [P] Add loading states for all async operations in Platform app (Suspense boundaries, skeleton loaders)
-- [ ] T169 [P] Add loading states for all async operations in Admin app
-- [ ] T170 [P] Add loading states for all async operations in Residence app (CircularProgressIndicator, shimmer effects)
-- [ ] T171 [P] Add loading states for all async operations in Sentinel app
-- [ ] T172 [P] Implement optimistic updates for critical mutations in Admin app (sticker approval, permit approval using TanStack Query)
-- [ ] T173 [P] Implement optimistic updates for critical mutations in Residence app (guest approval, fee payment using Riverpod)
-- [ ] T174 [P] Add form validation feedback for all forms in Platform app (inline errors, field-level validation with Zod + React Hook Form)
-- [ ] T175 [P] Add form validation feedback for all forms in Admin app
-- [ ] T176 [P] Add form validation feedback for all forms in Residence app (Flutter form validators)
-- [ ] T177 [P] Add form validation feedback for all forms in Sentinel app
-- [ ] T178 [P] Implement accessibility features for Platform app (ARIA labels, keyboard navigation, focus management, WCAG 2.1 AA compliance)
-- [ ] T179 [P] Implement accessibility features for Admin app
-- [ ] T180 [P] Implement accessibility features for Residence app (Semantics widgets, screen reader support)
-- [ ] T181 [P] Implement accessibility features for Sentinel app
-- [ ] T182 [P] Add search and filtering utilities across all list views in Admin app (debounced search, multi-select filters)
-- [ ] T183 [P] Add pagination for all large tables in Platform app (server-side pagination with Supabase)
-- [ ] T184 [P] Add pagination for all large tables in Admin app
-- [ ] T185 [P] Setup analytics tracking in Platform app using Vercel Analytics (page views, tenant creation events)
-- [ ] T186 [P] Setup analytics tracking in Admin app (dashboard visits, approval actions)
-- [ ] T187 [P] Setup analytics tracking in Residence app using Firebase Analytics (feature usage, service requests)
-- [ ] T188 [P] Setup analytics tracking in Sentinel app (gate scans, entry types)
-- [ ] T189 [P] Implement email service integration using SendGrid/Resend in Edge Functions (welcome emails, invoices, notifications)
-- [ ] T190 [P] Implement SMS service integration using Twilio in Edge Functions (critical alerts, 2FA)
-- [ ] T191 [P] Create comprehensive README.md in repository root (architecture overview, setup instructions, deployment guides)
-- [ ] T192 [P] Create API documentation for Edge Functions in docs/api-reference.md (endpoint specs, request/response examples)
-- [ ] T193 [P] Create deployment guide in docs/deployment.md (Vercel setup, Supabase production config, Flutter app store submission)
-- [ ] T194 [P] Setup monitoring and alerting using Supabase Insights + Sentry (error tracking, performance monitoring, uptime alerts)
-- [ ] T195 [P] Perform security audit of RLS policies in all Supabase migrations (test tenant isolation, permission boundaries)
-- [ ] T196 [P] Add rate limiting to critical Edge Functions (create-tenant, sync-offline-logs using Supabase rate limiter)
-- [ ] T197 [P] Optimize database queries with indexes in supabase/migrations/00020_add_indexes.sql (add indexes on frequently queried columns: tenant_id, status, timestamps)
-- [ ] T198 [P] Add database query performance monitoring using Supabase query insights (identify slow queries, optimize)
-- [ ] T199 [P] Create backup and disaster recovery procedures in docs/backup-recovery.md (Supabase automated backups, restoration process)
-- [ ] T200 Run quickstart.md validation (verify all setup steps work on fresh environment, test code examples)
+- [ ] T170 [P] Add comprehensive error boundaries to Platform app in apps/platform/src/app/error.tsx (global error page with retry, logging to Sentry)
+- [ ] T171 [P] Add comprehensive error boundaries to Admin app in apps/admin/src/app/error.tsx
+- [ ] T172 [P] Add loading states for all async operations in Platform app (Suspense boundaries, skeleton loaders)
+- [ ] T173 [P] Add loading states for all async operations in Admin app
+- [ ] T174 [P] Add loading states for all async operations in Residence app (CircularProgressIndicator, shimmer effects)
+- [ ] T175 [P] Add loading states for all async operations in Sentinel app
+- [ ] T176 [P] Implement optimistic updates for critical mutations in Admin app (sticker approval, permit approval using TanStack Query)
+- [ ] T177 [P] Implement optimistic updates for critical mutations in Residence app (guest approval, fee payment using Riverpod)
+- [ ] T178 [P] Add form validation feedback for all forms in Platform app (inline errors, field-level validation with Zod + React Hook Form)
+- [ ] T179 [P] Add form validation feedback for all forms in Admin app
+- [ ] T180 [P] Add form validation feedback for all forms in Residence app (Flutter form validators)
+- [ ] T181 [P] Add form validation feedback for all forms in Sentinel app
+- [ ] T182 [P] Implement accessibility features for Platform app (ARIA labels, keyboard navigation, focus management, WCAG 2.1 AA compliance)
+- [ ] T183 [P] Implement accessibility features for Admin app
+- [ ] T184 [P] Implement accessibility features for Residence app (Semantics widgets, screen reader support)
+- [ ] T185 [P] Implement accessibility features for Sentinel app
+- [ ] T186 [P] Add search and filtering utilities across all list views in Admin app (debounced search, multi-select filters)
+- [ ] T187 [P] Add pagination for all large tables in Platform app (server-side pagination with Supabase)
+- [ ] T188 [P] Add pagination for all large tables in Admin app
+- [ ] T189 [P] Setup analytics tracking in Platform app using Vercel Analytics (page views, tenant creation events)
+- [ ] T190 [P] Setup analytics tracking in Admin app (dashboard visits, approval actions)
+- [ ] T191 [P] Setup analytics tracking in Residence app using Firebase Analytics (feature usage, service requests)
+- [ ] T192 [P] Setup analytics tracking in Sentinel app (gate scans, entry types)
+- [ ] T193 [P] Implement email service integration using SendGrid/Resend in Edge Functions (welcome emails, invoices, notifications)
+- [ ] T194 [P] Implement SMS service integration using Twilio in Edge Functions (critical alerts, 2FA)
+- [ ] T195 [P] Create comprehensive README.md in repository root (architecture overview, setup instructions, deployment guides)
+- [ ] T196 [P] Create API documentation for Edge Functions in docs/api-reference.md (endpoint specs, request/response examples)
+- [ ] T197 [P] Create deployment guide in docs/deployment.md (Vercel setup, Supabase production config, Flutter app store submission)
+- [ ] T198 [P] Setup monitoring and alerting using Supabase Insights + Sentry (error tracking, performance monitoring, uptime alerts)
+- [ ] T199 [P] Perform security audit of RLS policies in all Supabase migrations (test tenant isolation, permission boundaries)
+- [ ] T200 [P] Add rate limiting to critical Edge Functions (create-tenant, sync-offline-logs using Supabase rate limiter)
+- [ ] T201 [P] Optimize database queries with indexes in supabase/migrations/00020_add_indexes.sql (add indexes on frequently queried columns: tenant_id, status, timestamps)
+- [ ] T202 [P] Add database query performance monitoring using Supabase query insights (identify slow queries, optimize)
+- [ ] T203 [P] Create backup and disaster recovery procedures in docs/backup-recovery.md (Supabase automated backups, restoration process)
+- [ ] T204 Run quickstart.md validation (verify all setup steps work on fresh environment, test code examples)
 
 ---
 
