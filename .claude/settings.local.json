@@ -12,7 +12,9 @@
       "Bash(test:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(timeout 300 npx shadcn@latest add card --yes)",
-      "Bash(timeout 300 npx shadcn@latest add tabs --yes)"
+      "Bash(timeout 300 npx shadcn@latest add tabs --yes)",
+      "Bash(git rev-parse:*)",
+      "Bash(timeout 300 npx shadcn@latest add table dialog select dropdown-menu calendar form --yes)"
     ],
     "deny": [],
     "ask": []

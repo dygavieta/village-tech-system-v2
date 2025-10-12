@@ -145,10 +145,10 @@ This is a multi-platform monorepo with:
 
 ### Admin Web App Foundation for User Story 1
 
-- [ ] T071 [US1] Create admin portal layout in apps/admin/src/app/layout.tsx (Shadcn layout with sidebar navigation for households, approvals, announcements, fees, settings)
-- [ ] T072 [US1] Create admin dashboard page in apps/admin/src/app/(dashboard)/page.tsx (overview cards: total households, pending approvals, active permits, announcements, gate activity)
-- [ ] T073 [US1] Create authentication flow for admin users in apps/admin/src/app/(auth)/login/page.tsx (email/password login with Supabase Auth, password reset, MFA support)
-- [ ] T074 [US1] Create session hook for admin users in apps/admin/src/hooks/use-admin-session.ts (fetch user profile, role, permissions, tenant config using TanStack Query)
+- [X] T071 [US1] Create admin portal layout in apps/admin/src/app/layout.tsx (Shadcn layout with sidebar navigation for households, approvals, announcements, fees, settings)
+- [X] T072 [US1] Create admin dashboard page in apps/admin/src/app/(dashboard)/page.tsx (overview cards: total households, pending approvals, active permits, announcements, gate activity)
+- [X] T073 [US1] Create authentication flow for admin users in apps/admin/src/app/(auth)/login/page.tsx (email/password login with Supabase Auth, password reset, MFA support)
+- [X] T074 [US1] Create session hook for admin users in apps/admin/src/hooks/use-admin-session.ts (fetch user profile, role, permissions, tenant config using TanStack Query)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - superadmin can create tenants and admin heads can access their portals
 
