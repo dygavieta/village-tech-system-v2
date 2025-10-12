@@ -8,7 +8,11 @@
       "Bash(powershell.exe:*)",
       "Bash(git checkout:*)",
       "Bash(export SPECIFY_FEATURE=\"001-residential-community-management\")",
-      "Bash(npx create-next-app:*)"
+      "Bash(npx create-next-app:*)",
+      "Bash(test:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(timeout 300 npx shadcn@latest add card --yes)",
+      "Bash(timeout 300 npx shadcn@latest add tabs --yes)"
     ],
     "deny": [],
     "ask": []

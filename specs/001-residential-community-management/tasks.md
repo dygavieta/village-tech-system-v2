@@ -121,34 +121,34 @@ This is a multi-platform monorepo with:
 
 ### Backend for User Story 1
 
-- [ ] T053 [P] [US1] Create Edge Function create-tenant in supabase/functions/create-tenant/index.ts (accepts tenant data, properties, gates, admin user; provisions tenant, inserts records, sends activation email; returns tenant_id and status)
-- [ ] T054 [P] [US1] Create utility function for subdomain validation in supabase/functions/_shared/subdomain-validator.ts (check uniqueness, format, reserved words)
-- [ ] T055 [P] [US1] Create email template service in supabase/functions/_shared/email-templates.ts (admin activation email with credentials and portal link)
+- [X] T053 [P] [US1] Create Edge Function create-tenant in supabase/functions/create-tenant/index.ts (accepts tenant data, properties, gates, admin user; provisions tenant, inserts records, sends activation email; returns tenant_id and status)
+- [X] T054 [P] [US1] Create utility function for subdomain validation in supabase/functions/_shared/subdomain-validator.ts (check uniqueness, format, reserved words)
+- [X] T055 [P] [US1] Create email template service in supabase/functions/_shared/email-templates.ts (admin activation email with credentials and portal link)
 
 ### Platform Web App for User Story 1
 
-- [ ] T056 [US1] Create authentication flow for superadmin users in apps/platform/src/app/(auth)/login/page.tsx (email/password login with Supabase Auth, password reset, MFA support for superadmins)
-- [ ] T057 [US1] Create session hook for superadmin users in apps/platform/src/hooks/use-superadmin-session.ts (fetch user profile, verify superadmin role using TanStack Query)
-- [ ] T058 [US1] Create platform portal layout in apps/platform/src/app/layout.tsx (Shadcn layout with sidebar navigation for tenants, analytics, settings)
-- [ ] T059 [US1] Create platform dashboard page in apps/platform/src/app/(dashboard)/page.tsx (overview cards: total tenants, total residents, system health, revenue metrics)
-- [ ] T060 [US1] Create tenant creation page in apps/platform/src/app/(dashboard)/tenants/create/page.tsx (multi-step wizard UI with Shadcn form components)
-- [ ] T061 [US1] Create tenant creation form component in apps/platform/src/components/tenants/TenantCreationForm.tsx (step 1: basic info with subdomain, name, community type, max residences)
-- [ ] T062 [US1] Create property import form component in apps/platform/src/components/tenants/PropertyImportForm.tsx (step 2: CSV upload, validation, preview, error display for bulk property import)
-- [ ] T063 [US1] Create gate configuration form component in apps/platform/src/components/tenants/GateConfigForm.tsx (step 3: add gates with name, type, operating hours, RFID reader serial)
-- [ ] T064 [US1] Create admin user setup form component in apps/platform/src/components/tenants/AdminUserForm.tsx (step 4: admin head email, name, phone, department)
-- [ ] T065 [US1] Create tenant creation action in apps/platform/src/lib/actions/create-tenant.ts (server action that calls Edge Function, handles errors, returns result)
-- [ ] T066 [US1] Create CSV parser utility for property import in apps/platform/src/lib/utils/csv-parser.ts (parse, validate, detect duplicates, format errors)
-- [ ] T067 [US1] Create tenant list page in apps/platform/src/app/(dashboard)/tenants/page.tsx (display all tenants with search, filter by status, pagination)
-- [ ] T068 [US1] Create tenant list component in apps/platform/src/components/tenants/TenantList.tsx (table with tenant name, subdomain, properties count, admin head, status, actions)
-- [ ] T069 [US1] Create tenant detail page in apps/platform/src/app/(dashboard)/tenants/[id]/page.tsx (view tenant info, properties, gates, admin users, subscription limits)
-- [ ] T070 [US1] Create branding configuration component in apps/platform/src/components/tenants/BrandingConfig.tsx (logo upload to Supabase Storage, color scheme picker)
+- [X] T056 [US1] Create authentication flow for superadmin users in apps/platform/src/app/(auth)/login/page.tsx (email/password login with Supabase Auth, password reset, MFA support for superadmins)
+- [X] T057 [US1] Create session hook for superadmin users in apps/platform/src/hooks/use-superadmin-session.ts (fetch user profile, verify superadmin role using TanStack Query)
+- [X] T058 [US1] Create platform portal layout in apps/platform/src/app/layout.tsx (Shadcn layout with sidebar navigation for tenants, analytics, settings)
+- [X] T059 [US1] Create platform dashboard page in apps/platform/src/app/(dashboard)/page.tsx (overview cards: total tenants, total residents, system health, revenue metrics)
+- [X] T060 [US1] Create tenant creation page in apps/platform/src/app/(dashboard)/tenants/create/page.tsx (multi-step wizard UI with Shadcn form components)
+- [X] T061 [US1] Create tenant creation form component in apps/platform/src/components/tenants/TenantCreationForm.tsx (step 1: basic info with subdomain, name, community type, max residences)
+- [X] T062 [US1] Create property import form component in apps/platform/src/components/tenants/PropertyImportForm.tsx (step 2: CSV upload, validation, preview, error display for bulk property import)
+- [X] T063 [US1] Create gate configuration form component in apps/platform/src/components/tenants/GateConfigForm.tsx (step 3: add gates with name, type, operating hours, RFID reader serial)
+- [X] T064 [US1] Create admin user setup form component in apps/platform/src/components/tenants/AdminUserForm.tsx (step 4: admin head email, name, phone, department)
+- [X] T065 [US1] Create tenant creation action in apps/platform/src/lib/actions/create-tenant.ts (server action that calls Edge Function, handles errors, returns result)
+- [X] T066 [US1] Create CSV parser utility for property import in apps/platform/src/lib/utils/csv-parser.ts (parse, validate, detect duplicates, format errors)
+- [X] T067 [US1] Create tenant list page in apps/platform/src/app/(dashboard)/tenants/page.tsx (display all tenants with search, filter by status, pagination)
+- [X] T068 [US1] Create tenant list component in apps/platform/src/components/tenants/TenantList.tsx (table with tenant name, subdomain, properties count, admin head, status, actions)
+- [X] T069 [US1] Create tenant detail page in apps/platform/src/app/(dashboard)/tenants/[id]/page.tsx (view tenant info, properties, gates, admin users, subscription limits)
+- [X] T070 [US1] Create branding configuration component in apps/platform/src/components/tenants/BrandingConfig.tsx (logo upload to Supabase Storage, color scheme picker)
 
 ### Admin Web App Foundation for User Story 1
 
-- [ ] T067 [US1] Create admin portal layout in apps/admin/src/app/layout.tsx (Shadcn layout with sidebar navigation for households, approvals, announcements, fees, settings)
-- [ ] T068 [US1] Create admin dashboard page in apps/admin/src/app/(dashboard)/page.tsx (overview cards: total households, pending approvals, active permits, announcements, gate activity)
-- [ ] T069 [US1] Create authentication flow for admin users in apps/admin/src/app/(auth)/login/page.tsx (email/password login with Supabase Auth, password reset, MFA support)
-- [ ] T070 [US1] Create session hook for admin users in apps/admin/src/hooks/use-admin-session.ts (fetch user profile, role, permissions, tenant config using TanStack Query)
+- [ ] T071 [US1] Create admin portal layout in apps/admin/src/app/layout.tsx (Shadcn layout with sidebar navigation for households, approvals, announcements, fees, settings)
+- [ ] T072 [US1] Create admin dashboard page in apps/admin/src/app/(dashboard)/page.tsx (overview cards: total households, pending approvals, active permits, announcements, gate activity)
+- [ ] T073 [US1] Create authentication flow for admin users in apps/admin/src/app/(auth)/login/page.tsx (email/password login with Supabase Auth, password reset, MFA support)
+- [ ] T074 [US1] Create session hook for admin users in apps/admin/src/hooks/use-admin-session.ts (fetch user profile, role, permissions, tenant config using TanStack Query)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - superadmin can create tenants and admin heads can access their portals
 
