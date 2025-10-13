@@ -7,6 +7,8 @@
 
 **Tests**: No explicit test requirements found in specification. Test tasks are NOT included. Add tests if/when requested.
 
+**Recent Update (2025-10-13)**: Added tasks T089a-T089e to address missing page.tsx files in Admin app directories (announcements/, approvals/, fees/, monitoring/, settings/). These empty directories cause 404 errors in Next.js App Router. The new tasks create index pages that serve as entry points or overviews for each feature section.
+
 ## Format: `[ID] [P?] [Story] Description`
 - **[P]**: Can run in parallel (different files, no dependencies)
 - **[Story]**: Which user story this task belongs to (US1, US2, US3, US4, US5)
@@ -180,6 +182,11 @@ This is a multi-platform monorepo with:
 - [X] T087 [US2] Create sticker approval component in apps/admin/src/components/approvals/StickerApprovalCard.tsx (display request details, document preview, approve/reject actions)
 - [X] T088 [US2] Create sticker list for household in apps/admin/src/components/households/HouseholdStickerList.tsx (table showing all stickers for a household with status, RFID serial, expiration)
 - [X] T089 [US2] Create action to approve/reject sticker in apps/admin/src/lib/actions/approve-sticker.ts (call Edge Function, handle response, invalidate queries)
+- [ ] T089a [US2] Create announcements directory index page in apps/admin/src/app/(dashboard)/announcements/page.tsx (placeholder or redirect to list page)
+- [ ] T089b [US2] Create approvals directory index page in apps/admin/src/app/(dashboard)/approvals/page.tsx (overview of all pending approvals with links to stickers/permits)
+- [ ] T089c [US2] Create fees directory index page in apps/admin/src/app/(dashboard)/fees/page.tsx (placeholder or redirect to main fees management page)
+- [ ] T089d [US2] Create monitoring directory index page in apps/admin/src/app/(dashboard)/monitoring/page.tsx (overview dashboard with links to gates/incidents)
+- [ ] T089e [US2] Create settings directory index page in apps/admin/src/app/(dashboard)/settings/page.tsx (overview with links to rules/gates/preferences)
 
 ### Residence Mobile App Foundation for User Story 2
 
@@ -187,6 +194,8 @@ This is a multi-platform monorepo with:
 - [ ] T091 [US2] Create auth provider for Residence app in apps/residence/lib/features/auth/providers/auth_provider.dart (Riverpod provider for Supabase Auth state, user profile)
 - [ ] T092 [US2] Create main app layout for Residence app in apps/residence/lib/features/home/screens/home_screen.dart (bottom navigation: household, stickers, permits, guests, announcements)
 - [ ] T093 [US2] Create household profile screen in apps/residence/lib/features/household/screens/household_profile_screen.dart (display household info, property address, members, contact)
+
+**Note on Directory Index Pages (T089a-T089e)**: These tasks create placeholder index pages for directories that currently exist but lack page.tsx files, which causes 404 errors in Next.js App Router. These pages can be simple overviews or redirects to the main feature pages within each directory. They are not critical for functionality but fix navigation and routing issues.
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - admin can create households and manage stickers
 
