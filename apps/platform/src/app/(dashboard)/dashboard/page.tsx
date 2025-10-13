@@ -13,46 +13,128 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, Users, Activity, DollarSign, Plus, TrendingUp, AlertCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { createClient } from '@/lib/supabase/server';
 
-// These would normally fetch from Supabase
 async function getDashboardStats() {
-  // TODO: Replace with actual Supabase query
-  // For now, return mock data
+  const supabase = await createClient();
+
+  // Get total tenants
+  const { count: totalTenants } = await supabase
+    .from('tenants')
+    .select('*', { count: 'exact', head: true });
+
+  // Get total residents (households)
+  const { count: totalResidents } = await supabase
+    .from('households')
+    .select('*', { count: 'exact', head: true });
+
+  // Get tenants created in last 30 days for growth calculation
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const { count: recentTenants } = await supabase
+    .from('tenants')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', thirtyDaysAgo.toISOString());
+
+  // Get households created in last 30 days
+  const { count: recentResidents } = await supabase
+    .from('households')
+    .select('*', { count: 'exact', head: true })
+    .gte('created_at', thirtyDaysAgo.toISOString());
+
+  // Calculate growth percentages
+  const tenantGrowth = totalTenants && recentTenants
+    ? `+${Math.round((recentTenants / totalTenants) * 100)}%`
+    : '+0%';
+
+  const residentGrowth = totalResidents && recentResidents
+    ? `+${Math.round((recentResidents / totalResidents) * 100)}%`
+    : '+0%';
+
   return {
-    totalTenants: 12,
-    totalResidents: 3450,
-    systemHealth: 99.8,
-    monthlyRevenue: 45230,
-    tenantGrowth: '+15%',
-    residentGrowth: '+8%',
+    totalTenants: totalTenants || 0,
+    totalResidents: totalResidents || 0,
+    systemHealth: 99.8, // This could be calculated based on system metrics
+    monthlyRevenue: 0, // TODO: Calculate from association_fees table when implemented
+    tenantGrowth,
+    residentGrowth,
   };
 }
 
 async function getRecentActivity() {
-  // TODO: Replace with actual Supabase query
-  return [
-    {
-      id: '1',
+  const supabase = await createClient();
+
+  // Get recently created tenants
+  const { data: recentTenants } = await supabase
+    .from('tenants')
+    .select('id, name, created_at')
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  // Get recently created admin users
+  const { data: recentAdmins } = await supabase
+    .from('user_profiles')
+    .select('id, first_name, last_name, created_at, tenant_id, tenants(name)')
+    .in('role', ['admin_head', 'admin_officer'])
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  // Combine and format activities
+  const activities: Array<{
+    id: string;
+    action: string;
+    tenant: string;
+    time: string;
+    type: 'tenant' | 'user' | 'property';
+    timestamp: Date;
+  }> = [];
+
+  // Add tenant activities
+  recentTenants?.forEach((tenant) => {
+    activities.push({
+      id: `tenant-${tenant.id}`,
       action: 'New tenant created',
-      tenant: 'Greenfield Village',
-      time: '2 hours ago',
+      tenant: tenant.name,
+      time: formatTimeAgo(new Date(tenant.created_at)),
       type: 'tenant',
-    },
-    {
-      id: '2',
-      action: 'Admin user activated',
-      tenant: 'Sunset Heights',
-      time: '5 hours ago',
+      timestamp: new Date(tenant.created_at),
+    });
+  });
+
+  // Add admin user activities
+  recentAdmins?.forEach((admin) => {
+    const tenantName = (admin.tenants as any)?.name || 'Unknown Tenant';
+    activities.push({
+      id: `user-${admin.id}`,
+      action: 'Admin user created',
+      tenant: tenantName,
+      time: formatTimeAgo(new Date(admin.created_at)),
       type: 'user',
-    },
-    {
-      id: '3',
-      action: 'Property import completed',
-      tenant: 'Riverside Commons',
-      time: '1 day ago',
-      type: 'property',
-    },
-  ];
+      timestamp: new Date(admin.created_at),
+    });
+  });
+
+  // Sort by timestamp and take top 5
+  return activities
+    .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    .slice(0, 5);
+}
+
+function formatTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffInMs = now.getTime() - date.getTime();
+  const diffInMins = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInMins < 60) {
+    return `${diffInMins} ${diffInMins === 1 ? 'minute' : 'minutes'} ago`;
+  } else if (diffInHours < 24) {
+    return `${diffInHours} ${diffInHours === 1 ? 'hour' : 'hours'} ago`;
+  } else {
+    return `${diffInDays} ${diffInDays === 1 ? 'day' : 'days'} ago`;
+  }
 }
 
 function DashboardStats({ stats }: { stats: Awaited<ReturnType<typeof getDashboardStats>> }) {
