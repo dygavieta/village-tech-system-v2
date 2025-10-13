@@ -28,7 +28,9 @@
       "Bash(ls -la \"(dashboard)/\")",
       "Bash(tree:*)",
       "WebFetch(domain:www.smashingmagazine.com)",
-      "Bash(timeout 300 npx shadcn@latest add dialog --yes)"
+      "Bash(timeout 300 npx shadcn@latest add dialog --yes)",
+      "Bash(mkdir:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

@@ -163,23 +163,23 @@ This is a multi-platform monorepo with:
 
 ### Backend for User Story 2
 
-- [ ] T076 Create Supabase migration 00006_create_households.sql in supabase/migrations/ (households table with tenant_id, property_id, household_head_id FK to user_profiles, move_in_date, ownership_type, sticker_allocation, status, timestamps; enable RLS)
-- [ ] T077 Create Supabase migration 00007_create_household_members.sql in supabase/migrations/ (household_members table with household_id, user_id FK, role, relationship, is_adult, timestamps; enable RLS)
-- [ ] T078 Create Supabase migration 00008_create_vehicle_stickers.sql in supabase/migrations/ (vehicle_stickers table with household_id, vehicle_plate, vehicle_make, vehicle_model, vehicle_color, sticker_type, rfid_serial UNIQUE, status, expiration_date, or_cr_document_url, timestamps; enable RLS)
-- [ ] T079 [P] [US2] Create Edge Function approve-sticker in supabase/functions/approve-sticker/index.ts (accepts sticker_id, admin_id, approval decision; updates status, sends notification to household; returns updated sticker)
-- [ ] T080 [P] [US2] Create household onboarding service in apps/admin/src/lib/services/household-service.ts (create household, assign to property, create household head user with credentials, send welcome email)
+- [X] T076 Create Supabase migration 00006_create_households.sql in supabase/migrations/ (households table with tenant_id, property_id, household_head_id FK to user_profiles, move_in_date, ownership_type, sticker_allocation, status, timestamps; enable RLS)
+- [X] T077 Create Supabase migration 00007_create_household_members.sql in supabase/migrations/ (household_members table with household_id, user_id FK, role, relationship, is_adult, timestamps; enable RLS)
+- [X] T078 Create Supabase migration 00008_create_vehicle_stickers.sql in supabase/migrations/ (vehicle_stickers table with household_id, vehicle_plate, vehicle_make, vehicle_model, vehicle_color, sticker_type, rfid_serial UNIQUE, status, expiration_date, or_cr_document_url, timestamps; enable RLS)
+- [X] T079 [P] [US2] Create Edge Function approve-sticker in supabase/functions/approve-sticker/index.ts (accepts sticker_id, admin_id, approval decision; updates status, sends notification to household; returns updated sticker)
+- [X] T080 [P] [US2] Create household onboarding service in apps/admin/src/lib/services/household-service.ts (create household, assign to property, create household head user with credentials, send welcome email)
 
 ### Admin Web App for User Story 2
 
-- [ ] T081 [US2] Create households list page in apps/admin/src/app/(dashboard)/households/page.tsx (table with all households, search by address/name, filter by status, pagination)
-- [ ] T082 [US2] Create household creation page in apps/admin/src/app/(dashboard)/households/create/page.tsx (form to select property, enter household head info, set ownership type, sticker allocation)
-- [ ] T083 [US2] Create household creation form component in apps/admin/src/components/households/HouseholdForm.tsx (property selector, household head fields, ownership type dropdown, sticker allocation input)
+- [X] T081 [US2] Create households list page in apps/admin/src/app/(dashboard)/households/page.tsx (table with all households, search by address/name, filter by status, pagination)
+- [X] T082 [US2] Create household creation page in apps/admin/src/app/(dashboard)/households/create/page.tsx (form to select property, enter household head info, set ownership type, sticker allocation)
+- [X] T083 [US2] Create household creation form component in apps/admin/src/components/households/HouseholdForm.tsx (property selector, household head fields, ownership type dropdown, sticker allocation input)
 - [ ] T084 [US2] Create household bulk import page in apps/admin/src/app/(dashboard)/households/import/page.tsx (CSV upload, preview, validation, batch processing with progress tracking)
-- [ ] T085 [US2] Create household detail page in apps/admin/src/app/(dashboard)/households/[id]/page.tsx (view household info, members, stickers, permits, guests, fees)
-- [ ] T086 [US2] Create vehicle sticker approvals page in apps/admin/src/app/(dashboard)/approvals/stickers/page.tsx (list pending sticker requests with household info, vehicle details, documents)
-- [ ] T087 [US2] Create sticker approval component in apps/admin/src/components/approvals/StickerApprovalCard.tsx (display request details, document preview, approve/reject actions)
-- [ ] T088 [US2] Create sticker list for household in apps/admin/src/components/households/HouseholdStickerList.tsx (table showing all stickers for a household with status, RFID serial, expiration)
-- [ ] T089 [US2] Create action to approve/reject sticker in apps/admin/src/lib/actions/approve-sticker.ts (call Edge Function, handle response, invalidate queries)
+- [X] T085 [US2] Create household detail page in apps/admin/src/app/(dashboard)/households/[id]/page.tsx (view household info, members, stickers, permits, guests, fees)
+- [X] T086 [US2] Create vehicle sticker approvals page in apps/admin/src/app/(dashboard)/approvals/stickers/page.tsx (list pending sticker requests with household info, vehicle details, documents)
+- [X] T087 [US2] Create sticker approval component in apps/admin/src/components/approvals/StickerApprovalCard.tsx (display request details, document preview, approve/reject actions)
+- [X] T088 [US2] Create sticker list for household in apps/admin/src/components/households/HouseholdStickerList.tsx (table showing all stickers for a household with status, RFID serial, expiration)
+- [X] T089 [US2] Create action to approve/reject sticker in apps/admin/src/lib/actions/approve-sticker.ts (call Edge Function, handle response, invalidate queries)
 
 ### Residence Mobile App Foundation for User Story 2
 
