@@ -52,7 +52,7 @@ export default async function TenantsPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="/dashboard/tenants/create">
+          <Link href="/tenants/create">
             <Plus className="mr-2 h-4 w-4" />
             Create Tenant
           </Link>

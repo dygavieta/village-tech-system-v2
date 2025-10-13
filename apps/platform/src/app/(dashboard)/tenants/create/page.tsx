@@ -19,7 +19,11 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CheckCircle2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { createTenant, type CreateTenantInput, type Property, type Gate } from '@/lib/actions/create-tenant';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { TenantCreationForm } from '@/components/tenants/TenantCreationForm';
+import { PropertyImportForm } from '@/components/tenants/PropertyImportForm';
+import { GateConfigForm } from '@/components/tenants/GateConfigForm';
+import { AdminUserForm } from '@/components/tenants/AdminUserForm';
 
 interface WizardStep {
   id: number;
@@ -62,6 +66,7 @@ export default function CreateTenantPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isStepValid, setIsStepValid] = useState(false);
 
   // Form data state
   const [tenantData, setTenantData] = useState<Partial<CreateTenantInput>>({
@@ -82,12 +87,36 @@ export default function CreateTenantPage() {
   const handleNext = () => {
     if (currentStep < steps.length) {
       setCurrentStep(currentStep + 1);
+      setIsStepValid(false);
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleValidationChange = (isValid: boolean) => {
+    setIsStepValid(isValid);
+  };
+
+  const handleStepSubmit = () => {
+    if (currentStep === 1) {
+      // Trigger form submission for step 1
+      const form = document.querySelector('form') as HTMLFormElement;
+      if (form) {
+        form.requestSubmit();
+      }
+    } else if (currentStep === 4) {
+      // Trigger form submission for step 4
+      const form = document.querySelector('form') as HTMLFormElement;
+      if (form) {
+        form.requestSubmit();
+      }
+    } else {
+      // For steps 2 and 3, just move to next step
+      handleNext();
     }
   };
 
@@ -98,17 +127,25 @@ export default function CreateTenantPage() {
 
   const handlePropertiesSubmit = (importedProperties: Property[]) => {
     setProperties(importedProperties);
-    handleNext();
   };
 
   const handleGatesSubmit = (configuredGates: Gate[]) => {
     setGates(configuredGates);
-    handleNext();
   };
 
   const handleAdminUserSubmit = (adminData: Partial<CreateTenantInput>) => {
     setTenantData({ ...tenantData, ...adminData });
     handleNext();
+  };
+
+  const handleSkip = () => {
+    if (currentStep === 2) {
+      setProperties([]);
+      handleNext();
+    } else if (currentStep === 3) {
+      setGates([]);
+      handleNext();
+    }
   };
 
   const handleFinalSubmit = async () => {
@@ -150,7 +187,7 @@ export default function CreateTenantPage() {
       });
 
       // Redirect to tenant detail page
-      router.push(`/dashboard/tenants/${result.tenant_id}`);
+      router.push(`/tenants/${result.tenant_id}`);
     } catch (error) {
       console.error('Tenant creation error:', error);
       setSubmitError(error instanceof Error ? error.message : 'An unexpected error occurred');
@@ -214,55 +251,41 @@ export default function CreateTenantPage() {
             </Alert>
           )}
 
-          {/* Placeholder for step content - will be replaced with actual form components */}
+          {/* Step 1: Basic Information */}
           {currentStep === 1 && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Basic tenant information form will be rendered here (T061)
-              </p>
-              <Button onClick={() => handleBasicInfoSubmit({ name: 'Test Tenant', subdomain: 'test' })}>
-                Continue to Properties
-              </Button>
-            </div>
+            <TenantCreationForm
+              initialData={tenantData}
+              onSubmit={handleBasicInfoSubmit}
+              onValidationChange={handleValidationChange}
+            />
           )}
 
+          {/* Step 2: Properties */}
           {currentStep === 2 && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Property import form will be rendered here (T062)
-              </p>
-              <Button onClick={() => handlePropertiesSubmit([])}>Continue to Gates</Button>
-            </div>
+            <PropertyImportForm
+              onSubmit={handlePropertiesSubmit}
+              onValidationChange={handleValidationChange}
+            />
           )}
 
+          {/* Step 3: Gates */}
           {currentStep === 3 && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Gate configuration form will be rendered here (T063)
-              </p>
-              <Button onClick={() => handleGatesSubmit([])}>Continue to Admin User</Button>
-            </div>
+            <GateConfigForm
+              onSubmit={handleGatesSubmit}
+              onValidationChange={handleValidationChange}
+            />
           )}
 
+          {/* Step 4: Admin User */}
           {currentStep === 4 && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Admin user setup form will be rendered here (T064)
-              </p>
-              <Button
-                onClick={() =>
-                  handleAdminUserSubmit({
-                    admin_email: 'admin@test.com',
-                    admin_first_name: 'Test',
-                    admin_last_name: 'Admin',
-                  })
-                }
-              >
-                Continue to Review
-              </Button>
-            </div>
+            <AdminUserForm
+              initialData={tenantData}
+              onSubmit={handleAdminUserSubmit}
+              onValidationChange={handleValidationChange}
+            />
           )}
 
+          {/* Step 5: Review & Submit */}
           {currentStep === 5 && (
             <div className="space-y-6">
               <div className="rounded-lg border p-6 space-y-4">
@@ -303,42 +326,92 @@ export default function CreateTenantPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          )}
+        </CardContent>
 
-              <Button onClick={handleFinalSubmit} disabled={isSubmitting} size="lg" className="w-full">
+        {/* Universal Navigation Footer */}
+        <div className="flex items-center justify-between px-6 py-4 border-t">
+          {/* Left side - Back button */}
+          <div className="flex items-center gap-2">
+            {currentStep > 1 && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={isSubmitting}
+              >
+                <ChevronLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+            )}
+          </div>
+
+          {/* Right side - Primary action buttons */}
+          <div className="flex items-center gap-2 ml-auto">
+            {/* Cancel button - always visible */}
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => router.push('/tenants')}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+
+            {/* Skip button for optional steps 2 and 3 */}
+            {(currentStep === 2 || currentStep === 3) && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSkip}
+                disabled={isSubmitting}
+              >
+                Skip
+              </Button>
+            )}
+
+            {/* Next button for steps 1-4 */}
+            {currentStep < 5 && (
+              <Button
+                type="button"
+                onClick={handleStepSubmit}
+                disabled={!isStepValid || isSubmitting}
+              >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating tenant...
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ChevronRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            )}
+
+            {/* Create Tenant button for step 5 */}
+            {currentStep === 5 && (
+              <Button
+                type="button"
+                onClick={handleFinalSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating Tenant...
                   </>
                 ) : (
                   'Create Tenant'
                 )}
               </Button>
-            </div>
-          )}
-        </CardContent>
+            )}
+          </div>
+        </div>
       </Card>
-
-      {/* Navigation Buttons */}
-      <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={handlePrevious} disabled={currentStep === 1 || isSubmitting}>
-          <ChevronLeft className="mr-2 h-4 w-4" />
-          Previous
-        </Button>
-
-        {currentStep < steps.length && (
-          <Button variant="outline" onClick={handleNext} disabled={isSubmitting}>
-            Next
-            <ChevronRight className="ml-2 h-4 w-4" />
-          </Button>
-        )}
-
-        {currentStep > 1 && (
-          <Button variant="ghost" onClick={() => router.push('/dashboard/tenants')} disabled={isSubmitting}>
-            Cancel
-          </Button>
-        )}
-      </div>
     </div>
   );
 }

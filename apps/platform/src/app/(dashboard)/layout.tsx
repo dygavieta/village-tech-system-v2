@@ -52,22 +52,22 @@ const navigation: NavItem[] = [
   },
   {
     title: 'Tenants',
-    href: '/dashboard/tenants',
+    href: '/tenants',
     icon: Building2,
   },
   {
     title: 'Analytics',
-    href: '/dashboard/analytics',
+    href: '/analytics',
     icon: BarChart3,
   },
   {
     title: 'Superadmins',
-    href: '/dashboard/superadmins',
+    href: '/superadmins',
     icon: Users,
   },
   {
     title: 'Settings',
-    href: '/dashboard/settings',
+    href: '/settings',
     icon: Settings,
   },
 ];
@@ -211,13 +211,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/profile">
+                  <Link href="/profile">
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings">
+                  <Link href="/settings">
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </Link>

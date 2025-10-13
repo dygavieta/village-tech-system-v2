@@ -141,14 +141,15 @@ This is a multi-platform monorepo with:
 - [X] T067 [US1] Create tenant list page in apps/platform/src/app/(dashboard)/tenants/page.tsx (display all tenants with search, filter by status, pagination)
 - [X] T068 [US1] Create tenant list component in apps/platform/src/components/tenants/TenantList.tsx (table with tenant name, subdomain, properties count, admin head, status, actions)
 - [X] T069 [US1] Create tenant detail page in apps/platform/src/app/(dashboard)/tenants/[id]/page.tsx (view tenant info, properties, gates, admin users, subscription limits)
-- [X] T070 [US1] Create branding configuration component in apps/platform/src/components/tenants/BrandingConfig.tsx (logo upload to Supabase Storage, color scheme picker)
+- [X] T070 [US1] Create tenant edit page in apps/platform/src/app/(dashboard)/tenants/[id]/edit/page.tsx (form to update tenant basic info, subscription limits, settings)
+- [X] T071 [US1] Create tenant branding page in apps/platform/src/app/(dashboard)/tenants/[id]/branding/page.tsx (logo upload to Supabase Storage, color scheme picker, theme customization)
 
 ### Admin Web App Foundation for User Story 1
 
-- [X] T071 [US1] Create admin portal layout in apps/admin/src/app/layout.tsx (Shadcn layout with sidebar navigation for households, approvals, announcements, fees, settings)
-- [X] T072 [US1] Create admin dashboard page in apps/admin/src/app/(dashboard)/page.tsx (overview cards: total households, pending approvals, active permits, announcements, gate activity)
-- [X] T073 [US1] Create authentication flow for admin users in apps/admin/src/app/(auth)/login/page.tsx (email/password login with Supabase Auth, password reset, MFA support)
-- [X] T074 [US1] Create session hook for admin users in apps/admin/src/hooks/use-admin-session.ts (fetch user profile, role, permissions, tenant config using TanStack Query)
+- [X] T072 [US1] Create admin portal layout in apps/admin/src/app/layout.tsx (Shadcn layout with sidebar navigation for households, approvals, announcements, fees, settings)
+- [X] T073 [US1] Create admin dashboard page in apps/admin/src/app/(dashboard)/page.tsx (overview cards: total households, pending approvals, active permits, announcements, gate activity)
+- [X] T074 [US1] Create authentication flow for admin users in apps/admin/src/app/(auth)/login/page.tsx (email/password login with Supabase Auth, password reset, MFA support)
+- [X] T075 [US1] Create session hook for admin users in apps/admin/src/hooks/use-admin-session.ts (fetch user profile, role, permissions, tenant config using TanStack Query)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - superadmin can create tenants and admin heads can access their portals
 
@@ -162,30 +163,30 @@ This is a multi-platform monorepo with:
 
 ### Backend for User Story 2
 
-- [ ] T075 Create Supabase migration 00006_create_households.sql in supabase/migrations/ (households table with tenant_id, property_id, household_head_id FK to user_profiles, move_in_date, ownership_type, sticker_allocation, status, timestamps; enable RLS)
-- [ ] T076 Create Supabase migration 00007_create_household_members.sql in supabase/migrations/ (household_members table with household_id, user_id FK, role, relationship, is_adult, timestamps; enable RLS)
-- [ ] T077 Create Supabase migration 00008_create_vehicle_stickers.sql in supabase/migrations/ (vehicle_stickers table with household_id, vehicle_plate, vehicle_make, vehicle_model, vehicle_color, sticker_type, rfid_serial UNIQUE, status, expiration_date, or_cr_document_url, timestamps; enable RLS)
-- [ ] T078 [P] [US2] Create Edge Function approve-sticker in supabase/functions/approve-sticker/index.ts (accepts sticker_id, admin_id, approval decision; updates status, sends notification to household; returns updated sticker)
-- [ ] T079 [P] [US2] Create household onboarding service in apps/admin/src/lib/services/household-service.ts (create household, assign to property, create household head user with credentials, send welcome email)
+- [ ] T076 Create Supabase migration 00006_create_households.sql in supabase/migrations/ (households table with tenant_id, property_id, household_head_id FK to user_profiles, move_in_date, ownership_type, sticker_allocation, status, timestamps; enable RLS)
+- [ ] T077 Create Supabase migration 00007_create_household_members.sql in supabase/migrations/ (household_members table with household_id, user_id FK, role, relationship, is_adult, timestamps; enable RLS)
+- [ ] T078 Create Supabase migration 00008_create_vehicle_stickers.sql in supabase/migrations/ (vehicle_stickers table with household_id, vehicle_plate, vehicle_make, vehicle_model, vehicle_color, sticker_type, rfid_serial UNIQUE, status, expiration_date, or_cr_document_url, timestamps; enable RLS)
+- [ ] T079 [P] [US2] Create Edge Function approve-sticker in supabase/functions/approve-sticker/index.ts (accepts sticker_id, admin_id, approval decision; updates status, sends notification to household; returns updated sticker)
+- [ ] T080 [P] [US2] Create household onboarding service in apps/admin/src/lib/services/household-service.ts (create household, assign to property, create household head user with credentials, send welcome email)
 
 ### Admin Web App for User Story 2
 
-- [ ] T080 [US2] Create households list page in apps/admin/src/app/(dashboard)/households/page.tsx (table with all households, search by address/name, filter by status, pagination)
-- [ ] T081 [US2] Create household creation page in apps/admin/src/app/(dashboard)/households/create/page.tsx (form to select property, enter household head info, set ownership type, sticker allocation)
-- [ ] T082 [US2] Create household creation form component in apps/admin/src/components/households/HouseholdForm.tsx (property selector, household head fields, ownership type dropdown, sticker allocation input)
-- [ ] T083 [US2] Create household bulk import page in apps/admin/src/app/(dashboard)/households/import/page.tsx (CSV upload, preview, validation, batch processing with progress tracking)
-- [ ] T084 [US2] Create household detail page in apps/admin/src/app/(dashboard)/households/[id]/page.tsx (view household info, members, stickers, permits, guests, fees)
-- [ ] T085 [US2] Create vehicle sticker approvals page in apps/admin/src/app/(dashboard)/approvals/stickers/page.tsx (list pending sticker requests with household info, vehicle details, documents)
-- [ ] T086 [US2] Create sticker approval component in apps/admin/src/components/approvals/StickerApprovalCard.tsx (display request details, document preview, approve/reject actions)
-- [ ] T087 [US2] Create sticker list for household in apps/admin/src/components/households/HouseholdStickerList.tsx (table showing all stickers for a household with status, RFID serial, expiration)
-- [ ] T088 [US2] Create action to approve/reject sticker in apps/admin/src/lib/actions/approve-sticker.ts (call Edge Function, handle response, invalidate queries)
+- [ ] T081 [US2] Create households list page in apps/admin/src/app/(dashboard)/households/page.tsx (table with all households, search by address/name, filter by status, pagination)
+- [ ] T082 [US2] Create household creation page in apps/admin/src/app/(dashboard)/households/create/page.tsx (form to select property, enter household head info, set ownership type, sticker allocation)
+- [ ] T083 [US2] Create household creation form component in apps/admin/src/components/households/HouseholdForm.tsx (property selector, household head fields, ownership type dropdown, sticker allocation input)
+- [ ] T084 [US2] Create household bulk import page in apps/admin/src/app/(dashboard)/households/import/page.tsx (CSV upload, preview, validation, batch processing with progress tracking)
+- [ ] T085 [US2] Create household detail page in apps/admin/src/app/(dashboard)/households/[id]/page.tsx (view household info, members, stickers, permits, guests, fees)
+- [ ] T086 [US2] Create vehicle sticker approvals page in apps/admin/src/app/(dashboard)/approvals/stickers/page.tsx (list pending sticker requests with household info, vehicle details, documents)
+- [ ] T087 [US2] Create sticker approval component in apps/admin/src/components/approvals/StickerApprovalCard.tsx (display request details, document preview, approve/reject actions)
+- [ ] T088 [US2] Create sticker list for household in apps/admin/src/components/households/HouseholdStickerList.tsx (table showing all stickers for a household with status, RFID serial, expiration)
+- [ ] T089 [US2] Create action to approve/reject sticker in apps/admin/src/lib/actions/approve-sticker.ts (call Edge Function, handle response, invalidate queries)
 
 ### Residence Mobile App Foundation for User Story 2
 
-- [ ] T089 [US2] Create authentication flow for Residence app in apps/residence/lib/features/auth/screens/login_screen.dart (email/password login, magic link support, password reset)
-- [ ] T090 [US2] Create auth provider for Residence app in apps/residence/lib/features/auth/providers/auth_provider.dart (Riverpod provider for Supabase Auth state, user profile)
-- [ ] T091 [US2] Create main app layout for Residence app in apps/residence/lib/features/home/screens/home_screen.dart (bottom navigation: household, stickers, permits, guests, announcements)
-- [ ] T092 [US2] Create household profile screen in apps/residence/lib/features/household/screens/household_profile_screen.dart (display household info, property address, members, contact)
+- [ ] T090 [US2] Create authentication flow for Residence app in apps/residence/lib/features/auth/screens/login_screen.dart (email/password login, magic link support, password reset)
+- [ ] T091 [US2] Create auth provider for Residence app in apps/residence/lib/features/auth/providers/auth_provider.dart (Riverpod provider for Supabase Auth state, user profile)
+- [ ] T092 [US2] Create main app layout for Residence app in apps/residence/lib/features/home/screens/home_screen.dart (bottom navigation: household, stickers, permits, guests, announcements)
+- [ ] T093 [US2] Create household profile screen in apps/residence/lib/features/household/screens/household_profile_screen.dart (display household info, property address, members, contact)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - admin can create households and manage stickers
 
@@ -453,9 +454,9 @@ Task T066: "Create branding configuration component"
 ### Incremental Delivery
 
 1. Complete Setup + Foundational → Foundation ready (T001-T052)
-2. Add User Story 1 → Deploy/Demo MVP (T053-T070)
-3. Add User Story 2 → Household management live (T071-T088)
-4. Add User Story 3 → Resident self-service live (T089-T108)
+2. Add User Story 1 → Deploy/Demo MVP (T053-T075)
+3. Add User Story 2 → Household management live (T076-T093)
+4. Add User Story 3 → Resident self-service live (T094-T113)
 5. Add User Story 4 → Gate operations live with offline support (T109-T133)
 6. Add User Story 5 → Full communication and monitoring (T134-T165)
 7. Add Polish → Production ready (T166-T200)
@@ -468,11 +469,11 @@ With 3 developers:
 
 1. **All team members**: Complete Setup + Foundational together (T001-T052)
 2. Once Foundational is done:
-   - **Developer A**: User Story 1 Platform app (T053-T066)
-   - **Developer B**: User Story 1 Admin app foundation (T067-T070)
-   - **Developer C**: User Story 5 backend migrations (T134-T140) - can work in parallel
-3. **Developer A**: User Story 2 Admin app (T076-T084)
-4. **Developer B**: User Story 2 Residence app foundation (T085-T088)
+   - **Developer A**: User Story 1 Platform app (T053-T071)
+   - **Developer B**: User Story 1 Admin app foundation (T072-T075)
+   - **Developer C**: User Story 5 backend migrations (T139-T147) - can work in parallel
+3. **Developer A**: User Story 2 Admin app (T081-T089)
+4. **Developer B**: User Story 2 Residence app foundation (T090-T093)
 5. **Developer A**: User Story 3 Residence app (T093-T105)
 6. **Developer B**: User Story 3 Admin app (T106-T108)
 7. **Developer C**: User Story 4 Sentinel app (T114-T130)

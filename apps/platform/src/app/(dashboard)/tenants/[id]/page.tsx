@@ -107,7 +107,7 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard/tenants">
+          <Link href="/tenants">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
@@ -116,7 +116,7 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
           <p className="text-muted-foreground">Community tenant details and configuration</p>
         </div>
         <Button variant="outline" asChild>
-          <Link href={`/dashboard/tenants/${tenant.id}/edit`}>
+          <Link href={`/tenants/${tenant.id}/edit`}>
             <Settings className="mr-2 h-4 w-4" />
             Edit Settings
           </Link>
@@ -427,7 +427,7 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
                 )}
 
                 <Button variant="outline" asChild>
-                  <Link href={`/dashboard/tenants/${tenant.id}/branding`}>
+                  <Link href={`/tenants/${tenant.id}/branding`}>
                     <Palette className="mr-2 h-4 w-4" />
                     Configure Branding
                   </Link>

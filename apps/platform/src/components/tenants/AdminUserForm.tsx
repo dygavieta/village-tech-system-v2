@@ -6,6 +6,7 @@
  * Step 4: Admin head email, name, phone, position
  */
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -29,16 +30,17 @@ type AdminUserFormData = z.infer<typeof adminUserSchema>;
 interface AdminUserFormProps {
   initialData?: Partial<CreateTenantInput>;
   onSubmit: (data: Partial<CreateTenantInput>) => void;
-  onBack?: () => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
-export function AdminUserForm({ initialData, onSubmit, onBack }: AdminUserFormProps) {
+export function AdminUserForm({ initialData, onSubmit, onValidationChange }: AdminUserFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isValid },
   } = useForm<AdminUserFormData>({
     resolver: zodResolver(adminUserSchema),
+    mode: 'onChange',
     defaultValues: {
       admin_email: initialData?.admin_email || '',
       admin_first_name: initialData?.admin_first_name || '',
@@ -47,6 +49,11 @@ export function AdminUserForm({ initialData, onSubmit, onBack }: AdminUserFormPr
       admin_position: initialData?.admin_position || 'Admin Head',
     },
   });
+
+  // Notify parent about validation state changes
+  useEffect(() => {
+    onValidationChange?.(isValid);
+  }, [isValid, onValidationChange]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -125,18 +132,6 @@ export function AdminUserForm({ initialData, onSubmit, onBack }: AdminUserFormPr
         </div>
       </div>
 
-      {/* Form Actions */}
-      <div className="flex items-center justify-between pt-6 border-t">
-        {onBack && (
-          <Button type="button" variant="outline" onClick={onBack}>
-            Back
-          </Button>
-        )}
-        <div className="flex-1" />
-        <Button type="submit" disabled={isSubmitting}>
-          Continue to Review
-        </Button>
-      </div>
     </form>
   );
 }

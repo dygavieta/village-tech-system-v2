@@ -46,10 +46,10 @@ type TenantInfoFormData = z.infer<typeof tenantInfoSchema>;
 interface TenantCreationFormProps {
   initialData?: Partial<CreateTenantInput>;
   onSubmit: (data: Partial<CreateTenantInput>) => void;
-  onCancel?: () => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
-export function TenantCreationForm({ initialData, onSubmit, onCancel }: TenantCreationFormProps) {
+export function TenantCreationForm({ initialData, onSubmit, onValidationChange }: TenantCreationFormProps) {
   const [isValidatingSubdomain, setIsValidatingSubdomain] = useState(false);
   const [subdomainStatus, setSubdomainStatus] = useState<'idle' | 'available' | 'taken'>('idle');
   const [subdomainError, setSubdomainError] = useState<string | null>(null);
@@ -59,9 +59,10 @@ export function TenantCreationForm({ initialData, onSubmit, onCancel }: TenantCr
     handleSubmit,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting, isValid },
   } = useForm<TenantInfoFormData>({
     resolver: zodResolver(tenantInfoSchema),
+    mode: 'onChange',
     defaultValues: {
       name: initialData?.name || '',
       legal_name: initialData?.legal_name || '',
@@ -79,6 +80,12 @@ export function TenantCreationForm({ initialData, onSubmit, onCancel }: TenantCr
 
   const subdomain = watch('subdomain');
   const name = watch('name');
+
+  // Notify parent about validation state changes
+  useEffect(() => {
+    const isFormValid = isValid && subdomainStatus === 'available' && !isValidatingSubdomain;
+    onValidationChange?.(isFormValid);
+  }, [isValid, subdomainStatus, isValidatingSubdomain, onValidationChange]);
 
   // Auto-generate subdomain from name
   useEffect(() => {
@@ -280,28 +287,6 @@ export function TenantCreationForm({ initialData, onSubmit, onCancel }: TenantCr
         </div>
       </div>
 
-      {/* Form Actions */}
-      <div className="flex items-center justify-between pt-6 border-t">
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
-          </Button>
-        )}
-        <div className="flex-1" />
-        <Button
-          type="submit"
-          disabled={isSubmitting || subdomainStatus === 'taken' || isValidatingSubdomain}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Validating...
-            </>
-          ) : (
-            'Continue to Properties'
-          )}
-        </Button>
-      </div>
     </form>
   );
 }

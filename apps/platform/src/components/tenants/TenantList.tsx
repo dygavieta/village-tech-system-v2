@@ -167,7 +167,7 @@ export function TenantList({ tenants }: TenantListProps) {
                   </TableCell>
                   <TableCell>
                     <Button variant="ghost" size="sm" asChild>
-                      <Link href={`/dashboard/tenants/${tenant.id}`}>
+                      <Link href={`/tenants/${tenant.id}`}>
                         <ExternalLink className="h-4 w-4" />
                         <span className="sr-only">View {tenant.name}</span>
                       </Link>
@@ -189,7 +189,7 @@ export function TenantList({ tenants }: TenantListProps) {
           </p>
           {!searchQuery && statusFilter === 'all' && (
             <Button asChild>
-              <Link href="/dashboard/tenants/create">Create Tenant</Link>
+              <Link href="/tenants/create">Create Tenant</Link>
             </Button>
           )}
         </div>

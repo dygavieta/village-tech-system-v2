@@ -11,7 +11,7 @@
  * - Manual property entry as alternative
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -22,16 +22,22 @@ import { parsePropertyCSV, downloadPropertyTemplate, type Property } from '@/lib
 
 interface PropertyImportFormProps {
   onSubmit: (properties: Property[]) => void;
-  onBack?: () => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
-export function PropertyImportForm({ onSubmit, onBack }: PropertyImportFormProps) {
+export function PropertyImportForm({ onSubmit, onValidationChange }: PropertyImportFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
   const [errors, setErrors] = useState<Array<{ row: number; field?: string; message: string }>>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+
+  // Notify parent about validation state (always valid for this optional step)
+  useEffect(() => {
+    const isValid = errors.length === 0;
+    onValidationChange?.(isValid);
+  }, [errors, onValidationChange]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = e.target.files?.[0];
@@ -247,27 +253,6 @@ export function PropertyImportForm({ onSubmit, onBack }: PropertyImportFormProps
         </div>
       )}
 
-      {/* Form Actions */}
-      <div className="flex items-center justify-between pt-6 border-t">
-        {onBack && (
-          <Button type="button" variant="outline" onClick={onBack}>
-            Back
-          </Button>
-        )}
-        <div className="flex-1" />
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="ghost" onClick={handleSkip}>
-            Skip for now
-          </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={errors.length > 0 || (showPreview && properties.length === 0)}
-          >
-            Continue to Gates
-            {properties.length > 0 && ` (${properties.length} properties)`}
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }

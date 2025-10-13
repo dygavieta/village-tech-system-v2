@@ -6,7 +6,7 @@
  * Step 3: Add gates with name, type, operating hours, RFID reader serial
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,11 +18,16 @@ import { Gate } from '@/lib/actions/create-tenant';
 
 interface GateConfigFormProps {
   onSubmit: (gates: Gate[]) => void;
-  onBack?: () => void;
+  onValidationChange?: (isValid: boolean) => void;
 }
 
-export function GateConfigForm({ onSubmit, onBack }: GateConfigFormProps) {
+export function GateConfigForm({ onSubmit, onValidationChange }: GateConfigFormProps) {
   const [gates, setGates] = useState<Gate[]>([]);
+
+  // This step is always valid (gates are optional)
+  useEffect(() => {
+    onValidationChange?.(true);
+  }, [onValidationChange]);
   const { register, handleSubmit, reset, setValue, watch } = useForm<Gate>({
     defaultValues: {
       name: '',
@@ -134,23 +139,6 @@ export function GateConfigForm({ onSubmit, onBack }: GateConfigFormProps) {
         </div>
       )}
 
-      {/* Form Actions */}
-      <div className="flex items-center justify-between pt-6 border-t">
-        {onBack && (
-          <Button type="button" variant="outline" onClick={onBack}>
-            Back
-          </Button>
-        )}
-        <div className="flex-1" />
-        <div className="flex items-center gap-2">
-          <Button type="button" variant="ghost" onClick={() => onSubmit([])}>
-            Skip for now
-          </Button>
-          <Button onClick={handleContinue}>
-            Continue to Admin User {gates.length > 0 && `(${gates.length} gates)`}
-          </Button>
-        </div>
-      </div>
     </div>
   );
 }

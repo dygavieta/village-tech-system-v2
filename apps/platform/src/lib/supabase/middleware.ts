@@ -67,7 +67,12 @@ export async function updateSession(request: NextRequest) {
 
   const isAuthPage = request.nextUrl.pathname.startsWith('/login') ||
                      request.nextUrl.pathname.startsWith('/auth');
-  const isDashboardPage = request.nextUrl.pathname.startsWith('/dashboard');
+
+  // Protected routes - all dashboard pages (using route groups)
+  const protectedRoutes = ['/dashboard', '/tenants', '/analytics', '/superadmins', '/settings', '/profile'];
+  const isDashboardPage = protectedRoutes.some(route =>
+    request.nextUrl.pathname.startsWith(route)
+  );
 
   // Redirect authenticated users away from login pages
   if (user && isAuthPage) {

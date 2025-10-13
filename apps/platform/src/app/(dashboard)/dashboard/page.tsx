@@ -149,25 +149,25 @@ function QuickActions() {
       </CardHeader>
       <CardContent className="grid gap-2">
         <Button asChild className="w-full justify-start" variant="outline">
-          <Link href="/dashboard/tenants/create">
+          <Link href="/tenants/create">
             <Plus className="mr-2 h-4 w-4" />
             Create New Tenant
           </Link>
         </Button>
         <Button asChild className="w-full justify-start" variant="outline">
-          <Link href="/dashboard/tenants">
+          <Link href="/tenants">
             <Building2 className="mr-2 h-4 w-4" />
             View All Tenants
           </Link>
         </Button>
         <Button asChild className="w-full justify-start" variant="outline">
-          <Link href="/dashboard/analytics">
+          <Link href="/analytics">
             <TrendingUp className="mr-2 h-4 w-4" />
             View Analytics
           </Link>
         </Button>
         <Button asChild className="w-full justify-start" variant="outline">
-          <Link href="/dashboard/settings">
+          <Link href="/settings">
             <Activity className="mr-2 h-4 w-4" />
             System Settings
           </Link>
@@ -207,7 +207,7 @@ export default async function DashboardPage() {
           <p className="text-muted-foreground">Welcome back to the VillageTech Platform</p>
         </div>
         <Button asChild>
-          <Link href="/dashboard/tenants/create">
+          <Link href="/tenants/create">
             <Plus className="mr-2 h-4 w-4" />
             Create Tenant
           </Link>
