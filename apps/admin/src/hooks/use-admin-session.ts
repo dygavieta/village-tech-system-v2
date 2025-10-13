@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 export interface AdminProfile {
   id: string;
@@ -34,7 +34,7 @@ export interface AdminSession {
 
 export function useAdminSession() {
   const router = useRouter();
-  const supabase = createBrowserClient();
+  const supabase = createClient();
 
   return useQuery({
     queryKey: ['admin-session'],

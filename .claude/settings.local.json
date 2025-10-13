@@ -30,7 +30,8 @@
       "WebFetch(domain:www.smashingmagazine.com)",
       "Bash(timeout 300 npx shadcn@latest add dialog --yes)",
       "Bash(mkdir:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(timeout 300 npx shadcn@latest add alert tabs progress --yes)"
     ],
     "deny": [],
     "ask": []

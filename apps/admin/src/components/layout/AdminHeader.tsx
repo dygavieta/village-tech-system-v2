@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { useAdminSession } from '@/hooks/use-admin-session';
-import { createBrowserClient } from '@/lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 interface AdminHeaderProps {
   onMenuClick?: () => void;
@@ -23,7 +23,7 @@ interface AdminHeaderProps {
 export function AdminHeader({ onMenuClick }: AdminHeaderProps) {
   const router = useRouter();
   const { data: session } = useAdminSession();
-  const supabase = createBrowserClient();
+  const supabase = createClient();
 
   const getInitials = (firstName?: string, lastName?: string) => {
     if (!firstName || !lastName) return 'A';

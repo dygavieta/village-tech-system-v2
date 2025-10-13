@@ -174,7 +174,7 @@ This is a multi-platform monorepo with:
 - [X] T081 [US2] Create households list page in apps/admin/src/app/(dashboard)/households/page.tsx (table with all households, search by address/name, filter by status, pagination)
 - [X] T082 [US2] Create household creation page in apps/admin/src/app/(dashboard)/households/create/page.tsx (form to select property, enter household head info, set ownership type, sticker allocation)
 - [X] T083 [US2] Create household creation form component in apps/admin/src/components/households/HouseholdForm.tsx (property selector, household head fields, ownership type dropdown, sticker allocation input)
-- [ ] T084 [US2] Create household bulk import page in apps/admin/src/app/(dashboard)/households/import/page.tsx (CSV upload, preview, validation, batch processing with progress tracking)
+- [X] T084 [US2] Create household bulk import page in apps/admin/src/app/(dashboard)/households/import/page.tsx (CSV upload, preview, validation, batch processing with progress tracking)
 - [X] T085 [US2] Create household detail page in apps/admin/src/app/(dashboard)/households/[id]/page.tsx (view household info, members, stickers, permits, guests, fees)
 - [X] T086 [US2] Create vehicle sticker approvals page in apps/admin/src/app/(dashboard)/approvals/stickers/page.tsx (list pending sticker requests with household info, vehicle details, documents)
 - [X] T087 [US2] Create sticker approval component in apps/admin/src/components/approvals/StickerApprovalCard.tsx (display request details, document preview, approve/reject actions)

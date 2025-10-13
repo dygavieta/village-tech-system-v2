@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search, Filter, MapPin, User, Home } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import {

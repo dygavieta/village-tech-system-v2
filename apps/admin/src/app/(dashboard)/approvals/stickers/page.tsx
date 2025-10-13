@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { CheckSquare, RefreshCw, Filter } from 'lucide-react';
-import { Button } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { StickerApprovalCard } from '@/components/approvals/StickerApprovalCard';
