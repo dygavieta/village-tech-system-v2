@@ -13,6 +13,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { createClient } from '@/lib/supabase/server';
+import { GatesTabContent } from '@/components/tenants/GatesTabContent';
+import { AdminsTabContent } from '@/components/tenants/AdminsTabContent';
 import {
   Building2,
   Globe,
@@ -20,8 +22,6 @@ import {
   DoorOpen,
   Settings,
   ArrowLeft,
-  Mail,
-  Phone,
   MapPin,
   Calendar,
   Shield,
@@ -29,9 +29,9 @@ import {
 } from 'lucide-react';
 
 interface TenantDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 async function getTenantDetails(tenantId: string) {
@@ -94,7 +94,8 @@ const statusColors = {
 };
 
 export default async function TenantDetailPage({ params }: TenantDetailPageProps) {
-  const tenantData = await getTenantDetails(params.id);
+  const { id } = await params;
+  const tenantData = await getTenantDetails(id);
 
   if (!tenantData) {
     notFound();
@@ -268,54 +269,9 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
           <Card>
             <CardHeader>
               <CardTitle>Gate Configuration</CardTitle>
-              <CardDescription>Entry points and access control</CardDescription>
             </CardHeader>
             <CardContent>
-              {gates.length > 0 ? (
-                <div className="space-y-4">
-                  {gates.map((gate) => (
-                    <div
-                      key={gate.id}
-                      className="flex items-start justify-between rounded-lg border p-4"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <DoorOpen className="h-4 w-4 text-muted-foreground" />
-                          <h4 className="font-semibold">{gate.name}</h4>
-                          <Badge variant="secondary" className="capitalize">
-                            {gate.gate_type}
-                          </Badge>
-                        </div>
-                        {gate.operating_hours && (
-                          <p className="text-sm text-muted-foreground">
-                            Operating Hours: {gate.operating_hours.start || '00:00'} - {gate.operating_hours.end || '23:59'}
-                          </p>
-                        )}
-                        {gate.rfid_reader_serial && (
-                          <p className="text-sm text-muted-foreground">
-                            RFID Reader: <code className="bg-muted px-1 rounded">{gate.rfid_reader_serial}</code>
-                          </p>
-                        )}
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className={
-                          gate.operational_status === 'active'
-                            ? 'bg-green-50 text-green-700 border-green-200'
-                            : 'bg-gray-50 text-gray-700 border-gray-200'
-                        }
-                      >
-                        {gate.operational_status || 'active'}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <DoorOpen className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No gates configured yet</p>
-                </div>
-              )}
+              <GatesTabContent tenantId={tenant.id} gates={gates} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -325,63 +281,9 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
           <Card>
             <CardHeader>
               <CardTitle>Administrative Users</CardTitle>
-              <CardDescription>Users with management access</CardDescription>
             </CardHeader>
             <CardContent>
-              {adminUsers.length > 0 ? (
-                <div className="space-y-4">
-                  {adminUsers.map((user) => (
-                    <div
-                      key={user.id}
-                      className="flex items-start justify-between rounded-lg border p-4"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-muted-foreground" />
-                          <h4 className="font-semibold">
-                            {user.first_name} {user.last_name}
-                          </h4>
-                          <Badge variant="secondary" className="capitalize">
-                            {user.role === 'admin_head' ? 'Admin Head' : 'Admin Officer'}
-                          </Badge>
-                        </div>
-                        {user.email && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Mail className="h-3 w-3" />
-                            {user.email}
-                          </div>
-                        )}
-                        {user.phone && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Phone className="h-3 w-3" />
-                            {user.phone}
-                          </div>
-                        )}
-                        {user.department && (
-                          <p className="text-sm text-muted-foreground">
-                            Department: {user.department}
-                          </p>
-                        )}
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className={
-                          user.status === 'active'
-                            ? 'bg-green-50 text-green-700 border-green-200'
-                            : 'bg-gray-50 text-gray-700 border-gray-200'
-                        }
-                      >
-                        {user.status || 'active'}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No admin users configured yet</p>
-                </div>
-              )}
+              <AdminsTabContent tenantId={tenant.id} adminUsers={adminUsers} />
             </CardContent>
           </Card>
         </TabsContent>

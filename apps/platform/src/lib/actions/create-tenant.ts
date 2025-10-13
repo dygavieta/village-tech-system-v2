@@ -121,13 +121,13 @@ export async function createTenant(input: CreateTenantInput): Promise<CreateTena
     // Create Supabase server client
     const supabase = await createClient();
 
-    // Get current session
+    // Get authenticated user (secure method)
     const {
-      data: { session },
-      error: sessionError,
-    } = await supabase.auth.getSession();
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
 
-    if (sessionError || !session) {
+    if (userError || !user) {
       return {
         success: false,
         error: 'Authentication required',
@@ -138,13 +138,25 @@ export async function createTenant(input: CreateTenantInput): Promise<CreateTena
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('role')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single();
 
     if (profile?.role !== 'superadmin') {
       return {
         success: false,
         error: 'Forbidden: Superadmin access required',
+      };
+    }
+
+    // Get session for access token (needed for Edge Function auth)
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      return {
+        success: false,
+        error: 'Session required',
       };
     }
 

@@ -27,7 +27,8 @@
       "Bash(pnpm add:*)",
       "Bash(ls -la \"(dashboard)/\")",
       "Bash(tree:*)",
-      "WebFetch(domain:www.smashingmagazine.com)"
+      "WebFetch(domain:www.smashingmagazine.com)",
+      "Bash(timeout 300 npx shadcn@latest add dialog --yes)"
     ],
     "deny": [],
     "ask": []

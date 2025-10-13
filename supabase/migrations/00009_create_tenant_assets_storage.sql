@@ -44,7 +44,3 @@ CREATE POLICY "Public can view tenant assets"
 ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'tenant-assets');
-
--- Comments
-COMMENT ON POLICY "Superadmins can upload tenant assets" ON storage.objects IS 'Allow superadmin users to upload tenant branding assets';
-COMMENT ON POLICY "Public can view tenant assets" ON storage.objects IS 'Allow public access to view tenant logos and branding';

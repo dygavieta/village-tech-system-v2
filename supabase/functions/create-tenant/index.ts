@@ -156,7 +156,8 @@ serve(async (req: Request): Promise<Response> => {
     const subdomainValidation = await validateSubdomain(requestData.subdomain, supabaseUrl, supabaseServiceKey);
     if (!subdomainValidation.valid) {
       logger.warn('Invalid subdomain', { subdomain: requestData.subdomain, error: subdomainValidation.error });
-      return new Response(JSON.stringify({ error: subdomainValidation.error }), {
+      console.error('Subdomain validation failed:', subdomainValidation.error);
+      return new Response(JSON.stringify({ success: false, error: subdomainValidation.error }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -217,22 +218,33 @@ serve(async (req: Request): Promise<Response> => {
     // Step 3: Create gates (if provided)
     let gatesCreated = 0;
     if (requestData.gates && requestData.gates.length > 0) {
+      logger.info('Creating gates', { count: requestData.gates.length, gates: requestData.gates });
+
       const gatesToInsert = requestData.gates.map((gate) => ({
         tenant_id: tenant.id,
-        ...gate,
+        name: gate.name,
+        gate_type: gate.gate_type,
         status: 'active',
+        operating_hours_start: gate.operating_hours_start || null,
+        operating_hours_end: gate.operating_hours_end || null,
+        gps_lat: gate.gps_lat || null,
+        gps_lng: gate.gps_lng || null,
+        rfid_reader_serial: gate.rfid_reader_serial || null,
       }));
 
-      const { error: gatesError, count } = await supabase
+      logger.info('Gates to insert', { gatesToInsert });
+
+      const { data: createdGates, error: gatesError, count } = await supabase
         .from('gates')
         .insert(gatesToInsert)
         .select('id', { count: 'exact' });
 
       if (gatesError) {
-        logger.warn('Failed to create some gates', { error: gatesError.message });
+        logger.error('Failed to create gates', { error: gatesError.message, details: gatesError });
+        console.error('Gates creation error:', gatesError);
       } else {
         gatesCreated = count || 0;
-        logger.info('Gates created', { count: gatesCreated });
+        logger.info('Gates created successfully', { count: gatesCreated, createdGates });
       }
     }
 

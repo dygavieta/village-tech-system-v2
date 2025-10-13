@@ -39,6 +39,11 @@ export function PropertyImportForm({ onSubmit, onValidationChange }: PropertyImp
     onValidationChange?.(isValid);
   }, [errors, onValidationChange]);
 
+  // Notify parent whenever properties change
+  useEffect(() => {
+    onSubmit(properties);
+  }, [properties, onSubmit]);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = e.target.files?.[0];
     if (!uploadedFile) return;

@@ -227,9 +227,9 @@ export function TenantCreationForm({ initialData, onSubmit, onValidationChange }
         </div>
       </div>
 
-      {/* Additional Details Section */}
+      {/* System Capacity Section */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Additional Details</h3>
+        <h3 className="text-lg font-semibold">System Capacity</h3>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">

@@ -28,6 +28,11 @@ export function GateConfigForm({ onSubmit, onValidationChange }: GateConfigFormP
   useEffect(() => {
     onValidationChange?.(true);
   }, [onValidationChange]);
+
+  // Notify parent whenever gates change
+  useEffect(() => {
+    onSubmit(gates);
+  }, [gates, onSubmit]);
   const { register, handleSubmit, reset, setValue, watch } = useForm<Gate>({
     defaultValues: {
       name: '',

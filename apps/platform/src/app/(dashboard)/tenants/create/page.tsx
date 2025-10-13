@@ -114,8 +114,13 @@ export default function CreateTenantPage() {
       if (form) {
         form.requestSubmit();
       }
-    } else {
-      // For steps 2 and 3, just move to next step
+    } else if (currentStep === 2) {
+      // For step 2 (properties), save current data and move to next step
+      // No form submission needed as data is already in state
+      handleNext();
+    } else if (currentStep === 3) {
+      // For step 3 (gates), save current data and move to next step
+      // No form submission needed as data is already in state
       handleNext();
     }
   };

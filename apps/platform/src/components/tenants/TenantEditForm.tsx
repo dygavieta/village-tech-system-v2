@@ -220,9 +220,9 @@ export function TenantEditForm({ tenant }: TenantEditFormProps) {
         </div>
       </div>
 
-      {/* Subscription Limits */}
+      {/* System Capacity */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Subscription Limits</h3>
+        <h3 className="text-lg font-semibold">System Capacity</h3>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
