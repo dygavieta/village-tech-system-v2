@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CheckCircle2 } from 'lucide-react';
 
 export default function CreateHouseholdPage() {
-  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -38,11 +36,6 @@ export default function CreateHouseholdPage() {
             : ''
         }`
       );
-
-      // Redirect to households list after 3 seconds
-      setTimeout(() => {
-        router.push('/households');
-      }, 3000);
     } catch (error) {
       console.error('Error creating household:', error);
       setErrorMessage(
@@ -54,7 +47,7 @@ export default function CreateHouseholdPage() {
   };
 
   const handleCancel = () => {
-    router.push('/households');
+    // Cancel action - form will handle navigation via Link
   };
 
   return (

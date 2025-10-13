@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Upload, FileText, AlertCircle, CheckCircle2, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -34,7 +33,6 @@ interface HouseholdImportRow {
 }
 
 export default function HouseholdImportPage() {
-  const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<HouseholdImportRow[]>([]);
   const [isValidating, setIsValidating] = useState(false);

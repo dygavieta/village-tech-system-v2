@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, User, MapPin, Calendar, Mail, Phone, Home, Car } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { ArrowLeft, User, MapPin, Calendar, Phone, Home, Car } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -69,7 +69,6 @@ interface HouseholdDetail {
 
 export default function HouseholdDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const householdId = params.id as string;
 
   const [household, setHousehold] = useState<HouseholdDetail | null>(null);

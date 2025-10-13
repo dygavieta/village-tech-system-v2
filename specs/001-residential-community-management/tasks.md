@@ -182,11 +182,21 @@ This is a multi-platform monorepo with:
 - [X] T087 [US2] Create sticker approval component in apps/admin/src/components/approvals/StickerApprovalCard.tsx (display request details, document preview, approve/reject actions)
 - [X] T088 [US2] Create sticker list for household in apps/admin/src/components/households/HouseholdStickerList.tsx (table showing all stickers for a household with status, RFID serial, expiration)
 - [X] T089 [US2] Create action to approve/reject sticker in apps/admin/src/lib/actions/approve-sticker.ts (call Edge Function, handle response, invalidate queries)
-- [ ] T089a [US2] Create announcements directory index page in apps/admin/src/app/(dashboard)/announcements/page.tsx (placeholder or redirect to list page)
-- [ ] T089b [US2] Create approvals directory index page in apps/admin/src/app/(dashboard)/approvals/page.tsx (overview of all pending approvals with links to stickers/permits)
-- [ ] T089c [US2] Create fees directory index page in apps/admin/src/app/(dashboard)/fees/page.tsx (placeholder or redirect to main fees management page)
-- [ ] T089d [US2] Create monitoring directory index page in apps/admin/src/app/(dashboard)/monitoring/page.tsx (overview dashboard with links to gates/incidents)
-- [ ] T089e [US2] Create settings directory index page in apps/admin/src/app/(dashboard)/settings/page.tsx (overview with links to rules/gates/preferences)
+- [X] T089a [US2] Create announcements directory index page in apps/admin/src/app/(dashboard)/announcements/page.tsx (placeholder or redirect to list page)
+- [X] T089b [US2] Create approvals directory index page in apps/admin/src/app/(dashboard)/approvals/page.tsx (overview of all pending approvals with links to stickers/permits)
+- [X] T089c [US2] Create fees directory index page in apps/admin/src/app/(dashboard)/fees/page.tsx (placeholder or redirect to main fees management page)
+- [X] T089d [US2] Create monitoring directory index page in apps/admin/src/app/(dashboard)/monitoring/page.tsx (overview dashboard with links to gates/incidents)
+- [X] T089e [US2] Create settings directory index page in apps/admin/src/app/(dashboard)/settings/page.tsx (overview with links to rules/gates/preferences)
+- [X] T089f [US2] Create construction permit approvals subpage in apps/admin/src/app/(dashboard)/approvals/permits/page.tsx (list pending permits with project details, fees, approval actions)
+- [X] T089g [US2] Create village rules management subpage in apps/admin/src/app/(dashboard)/settings/rules/page.tsx (manage rules by category, create/edit rules, version control)
+- [X] T089h [US2] Create gates configuration subpage in apps/admin/src/app/(dashboard)/settings/gates/page.tsx (list all gates, configure operating hours, assign RFID readers, manage guard assignments)
+- [X] T089i [US2] Create curfew settings subpage in apps/admin/src/app/(dashboard)/settings/curfew/page.tsx (set curfew hours, create exceptions, seasonal adjustments)
+- [X] T089j [US2] Create notification preferences subpage in apps/admin/src/app/(dashboard)/settings/notifications/page.tsx (configure channels: push, email, SMS; manage notification types)
+- [X] T089k [US2] Create admin user management subpage in apps/admin/src/app/(dashboard)/settings/users/page.tsx (manage admin officers, roles, permissions by department)
+- [X] T089l [US2] Create branding customization subpage in apps/admin/src/app/(dashboard)/settings/branding/page.tsx (upload logo, customize colors, theme settings, preview across devices)
+- [X] T089m [US2] Create gate activity dashboard subpage in apps/admin/src/app/(dashboard)/monitoring/gates/page.tsx (detailed entry/exit logs, analytics by gate, export functionality)
+- [X] T089n [US2] Create incident reports subpage in apps/admin/src/app/(dashboard)/monitoring/incidents/page.tsx (list all incidents, filter by severity/status, view details, mark as resolved)
+- [X] T089o [US2] Create announcement creation subpage in apps/admin/src/app/(dashboard)/announcements/create/page.tsx (compose announcement with rich editor, set urgency, select audience, schedule delivery)
 
 ### Residence Mobile App Foundation for User Story 2
 
@@ -195,7 +205,11 @@ This is a multi-platform monorepo with:
 - [ ] T092 [US2] Create main app layout for Residence app in apps/residence/lib/features/home/screens/home_screen.dart (bottom navigation: household, stickers, permits, guests, announcements)
 - [ ] T093 [US2] Create household profile screen in apps/residence/lib/features/household/screens/household_profile_screen.dart (display household info, property address, members, contact)
 
-**Note on Directory Index Pages (T089a-T089e)**: These tasks create placeholder index pages for directories that currently exist but lack page.tsx files, which causes 404 errors in Next.js App Router. These pages can be simple overviews or redirects to the main feature pages within each directory. They are not critical for functionality but fix navigation and routing issues.
+**Note on Admin Portal Pages (T089a-T089o)**:
+- Tasks T089a-T089e create main directory index pages (announcements/, approvals/, fees/, monitoring/, settings/) that serve as overview pages or navigation hubs
+- Tasks T089f-T089o create functional subpages within these directories providing full CRUD operations and management interfaces for each feature
+- All pages follow the same design patterns and use Shadcn/ui components with placeholder data (marked with TODO comments for future Supabase integration)
+- These pages complete the admin portal navigation structure and eliminate all 404 errors in the application
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - admin can create households and manage stickers
 
