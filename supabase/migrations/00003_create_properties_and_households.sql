@@ -69,7 +69,7 @@ CREATE POLICY household_head_access_households ON households
 
 CREATE POLICY admin_access_households ON households
   FOR ALL USING (
-    auth.jwt() ->> 'role' IN ('admin_head', 'admin_officer')
+    auth.jwt() ->> 'user_role' IN ('admin_head', 'admin_officer')
     AND tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
   );
 

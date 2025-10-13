@@ -10,7 +10,7 @@
  * - Returns result to client
  */
 
-import { createServerClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
 export interface Property {
@@ -119,7 +119,7 @@ export async function createTenant(input: CreateTenantInput): Promise<CreateTena
     }
 
     // Create Supabase server client
-    const supabase = createServerClient();
+    const supabase = await createClient();
 
     // Get current session
     const {
@@ -196,7 +196,7 @@ export async function createTenant(input: CreateTenantInput): Promise<CreateTena
  */
 export async function validateSubdomain(subdomain: string): Promise<{ available: boolean; error?: string }> {
   try {
-    const supabase = createServerClient();
+    const supabase = await createClient();
 
     const { data, error } = await supabase
       .from('tenants')

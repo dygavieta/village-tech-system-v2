@@ -62,3 +62,4 @@ build/
 supabase/.branches
 supabase/.temp
 /apps/platform/.next
+/apps/admin/.next

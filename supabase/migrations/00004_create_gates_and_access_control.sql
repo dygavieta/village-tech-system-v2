@@ -77,7 +77,7 @@ CREATE POLICY household_access_vehicle_stickers ON vehicle_stickers
 
 CREATE POLICY admin_access_vehicle_stickers ON vehicle_stickers
   FOR ALL USING (
-    auth.jwt() ->> 'role' IN ('admin_head', 'admin_officer')
+    auth.jwt() ->> 'user_role' IN ('admin_head', 'admin_officer')
     AND tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
   );
 
@@ -124,7 +124,7 @@ CREATE POLICY household_access_guests ON guests
 
 CREATE POLICY security_access_guests ON guests
   FOR SELECT USING (
-    auth.jwt() ->> 'role' IN ('security_head', 'security_officer')
+    auth.jwt() ->> 'user_role' IN ('security_head', 'security_officer')
     AND tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
   );
 
@@ -160,7 +160,7 @@ CREATE POLICY tenant_isolation_entry_exit_logs ON entry_exit_logs
 
 CREATE POLICY security_access_entry_exit_logs ON entry_exit_logs
   FOR ALL USING (
-    auth.jwt() ->> 'role' IN ('security_head', 'security_officer', 'admin_head', 'admin_officer')
+    auth.jwt() ->> 'user_role' IN ('security_head', 'security_officer', 'admin_head', 'admin_officer')
     AND tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
   );
 

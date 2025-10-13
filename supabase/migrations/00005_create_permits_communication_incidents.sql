@@ -44,7 +44,7 @@ CREATE POLICY household_access_construction_permits ON construction_permits
 
 CREATE POLICY admin_access_construction_permits ON construction_permits
   FOR ALL USING (
-    auth.jwt() ->> 'role' IN ('admin_head', 'admin_officer')
+    auth.jwt() ->> 'user_role' IN ('admin_head', 'admin_officer')
     AND tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
   );
 
@@ -101,7 +101,7 @@ CREATE POLICY tenant_isolation_announcements ON announcements
 
 CREATE POLICY admin_create_announcements ON announcements
   FOR INSERT WITH CHECK (
-    auth.jwt() ->> 'role' IN ('admin_head', 'admin_officer')
+    auth.jwt() ->> 'user_role' IN ('admin_head', 'admin_officer')
     AND tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
   );
 
@@ -156,7 +156,7 @@ CREATE POLICY tenant_isolation_incidents ON incidents
 
 CREATE POLICY security_create_incidents ON incidents
   FOR INSERT WITH CHECK (
-    auth.jwt() ->> 'role' IN ('security_head', 'security_officer')
+    auth.jwt() ->> 'user_role' IN ('security_head', 'security_officer')
     AND tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
   );
 
@@ -197,7 +197,7 @@ CREATE POLICY household_access_association_fees ON association_fees
 
 CREATE POLICY admin_access_association_fees ON association_fees
   FOR ALL USING (
-    auth.jwt() ->> 'role' IN ('admin_head', 'admin_officer')
+    auth.jwt() ->> 'user_role' IN ('admin_head', 'admin_officer')
     AND tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
   );
 

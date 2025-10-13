@@ -82,7 +82,7 @@ ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY tenant_isolation_audit_logs ON audit_logs
   FOR SELECT USING (
     tenant_id = (auth.jwt() ->> 'tenant_id')::uuid
-    AND auth.jwt() ->> 'role' IN ('admin_head', 'admin_officer')
+    AND auth.jwt() ->> 'user_role' IN ('admin_head', 'admin_officer')
   );
 
 -- Function to create audit log entries
@@ -132,7 +132,7 @@ BEGIN
   INSERT INTO public.user_profiles (
     id,
     tenant_id,
-    role,
+    "role",
     first_name,
     last_name,
     phone_number

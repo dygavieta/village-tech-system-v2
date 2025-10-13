@@ -65,6 +65,10 @@ async function fetchUserProfile(userId: string): Promise<UserProfile | null> {
     return null;
   }
 
+  if (!data) {
+    return null;
+  }
+
   return data as UserProfile;
 }
 
