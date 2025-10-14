@@ -23,14 +23,18 @@ class AuthLoading extends AuthState {
 class AuthAuthenticated extends AuthState {
   final User user;
   final Session session;
+  final String userRole;
+  final String? gateAssignment;
 
   const AuthAuthenticated({
     required this.user,
     required this.session,
+    required this.userRole,
+    this.gateAssignment,
   });
 
   @override
-  List<Object?> get props => [user, session];
+  List<Object?> get props => [user, session, userRole, gateAssignment];
 }
 
 class AuthUnauthenticated extends AuthState {

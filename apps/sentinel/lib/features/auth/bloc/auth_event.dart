@@ -28,8 +28,21 @@ class AuthSignInRequested extends AuthEvent {
   List<Object?> get props => [email, password];
 }
 
+// Alias for compatibility with login_screen.dart
+class LoginRequested extends AuthSignInRequested {
+  const LoginRequested({
+    required super.email,
+    required super.password,
+  });
+}
+
 class AuthSignOutRequested extends AuthEvent {
   const AuthSignOutRequested();
+}
+
+// Alias for compatibility with login_screen.dart
+class LogoutRequested extends AuthSignOutRequested {
+  const LogoutRequested();
 }
 
 class AuthSessionRefreshRequested extends AuthEvent {

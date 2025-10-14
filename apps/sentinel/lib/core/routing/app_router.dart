@@ -5,11 +5,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/screens/login_screen.dart';
+import '../../features/home/screens/home_screen.dart';
 
 /// Route names
 class Routes {
   static const String splash = '/';
   static const String login = '/login';
+  static const String home = '/home';
   static const String dashboard = '/dashboard';
   static const String scan = '/scan';
   static const String guestEntry = '/guest-entry';
@@ -30,6 +33,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: Routes.login,
       builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: Routes.home,
+      builder: (context, state) => const HomeScreen(),
     ),
     GoRoute(
       path: Routes.dashboard,
@@ -66,15 +73,14 @@ final appRouter = GoRouter(
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
   @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: CircularProgressIndicator()));
-}
-
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: Center(child: Text('Login Screen')));
+  Widget build(BuildContext context) {
+    // TODO: Add splash screen logic (check auth state, redirect)
+    // For now, redirect to login
+    Future.delayed(Duration.zero, () {
+      context.go(Routes.login);
+    });
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
+  }
 }
 
 class DashboardScreen extends StatelessWidget {
