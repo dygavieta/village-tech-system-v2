@@ -173,25 +173,36 @@ DECLARE
   officer_main_id uuid;
 BEGIN
   -- Security Head
-  INSERT INTO auth.users (
-    instance_id, id, aud, role, email, encrypted_password,
-    email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
-    created_at, updated_at, confirmation_token, email_change,
-    email_change_token_new, recovery_token
-  ) VALUES (
-    '00000000-0000-0000-0000-000000000000',
-    gen_random_uuid(),
-    'authenticated', 'authenticated',
-    'security.head@villagetech.com',
-    crypt('SecureHead123!', gen_salt('bf')),
-    NOW(),
-    '{"provider":"email","providers":["email"]}', '{}',
-    NOW(), NOW(), '', '', '', ''
-  )
-  ON CONFLICT (email) DO UPDATE SET
-    encrypted_password = crypt('SecureHead123!', gen_salt('bf')),
-    updated_at = NOW()
-  RETURNING id INTO security_head_id;
+  -- Check if user exists first
+  SELECT id INTO security_head_id
+  FROM auth.users
+  WHERE email = 'security.head@villagetech.com';
+
+  IF security_head_id IS NULL THEN
+    INSERT INTO auth.users (
+      instance_id, id, aud, role, email, encrypted_password,
+      email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
+      created_at, updated_at, confirmation_token, email_change,
+      email_change_token_new, recovery_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000',
+      gen_random_uuid(),
+      'authenticated', 'authenticated',
+      'security.head@villagetech.com',
+      crypt('SecureHead123!', gen_salt('bf')),
+      NOW(),
+      '{"provider":"email","providers":["email"]}',
+      jsonb_build_object('tenant_id', tenant_id, 'role', 'security_head', 'first_name', 'John', 'last_name', 'Smith'),
+      NOW(), NOW(), '', '', '', ''
+    )
+    RETURNING id INTO security_head_id;
+  ELSE
+    UPDATE auth.users
+    SET encrypted_password = crypt('SecureHead123!', gen_salt('bf')),
+        raw_user_meta_data = jsonb_build_object('tenant_id', tenant_id, 'role', 'security_head', 'first_name', 'John', 'last_name', 'Smith'),
+        updated_at = NOW()
+    WHERE id = security_head_id;
+  END IF;
 
   INSERT INTO public.user_profiles (
     id, tenant_id, role, first_name, last_name, phone_number,
@@ -209,25 +220,35 @@ BEGIN
   RAISE NOTICE 'Security Head: security.head@villagetech.com';
 
   -- Officer Gate A
-  INSERT INTO auth.users (
-    instance_id, id, aud, role, email, encrypted_password,
-    email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
-    created_at, updated_at, confirmation_token, email_change,
-    email_change_token_new, recovery_token
-  ) VALUES (
-    '00000000-0000-0000-0000-000000000000',
-    gen_random_uuid(),
-    'authenticated', 'authenticated',
-    'officer.gatea@villagetech.com',
-    crypt('OfficerA123!', gen_salt('bf')),
-    NOW(),
-    '{"provider":"email","providers":["email"]}', '{}',
-    NOW(), NOW(), '', '', '', ''
-  )
-  ON CONFLICT (email) DO UPDATE SET
-    encrypted_password = crypt('OfficerA123!', gen_salt('bf')),
-    updated_at = NOW()
-  RETURNING id INTO officer_a_id;
+  SELECT id INTO officer_a_id
+  FROM auth.users
+  WHERE email = 'officer.gatea@villagetech.com';
+
+  IF officer_a_id IS NULL THEN
+    INSERT INTO auth.users (
+      instance_id, id, aud, role, email, encrypted_password,
+      email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
+      created_at, updated_at, confirmation_token, email_change,
+      email_change_token_new, recovery_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000',
+      gen_random_uuid(),
+      'authenticated', 'authenticated',
+      'officer.gatea@villagetech.com',
+      crypt('OfficerA123!', gen_salt('bf')),
+      NOW(),
+      '{"provider":"email","providers":["email"]}',
+      jsonb_build_object('tenant_id', tenant_id, 'role', 'security_officer', 'first_name', 'Mike', 'last_name', 'Johnson'),
+      NOW(), NOW(), '', '', '', ''
+    )
+    RETURNING id INTO officer_a_id;
+  ELSE
+    UPDATE auth.users
+    SET encrypted_password = crypt('OfficerA123!', gen_salt('bf')),
+        raw_user_meta_data = jsonb_build_object('tenant_id', tenant_id, 'role', 'security_officer', 'first_name', 'Mike', 'last_name', 'Johnson'),
+        updated_at = NOW()
+    WHERE id = officer_a_id;
+  END IF;
 
   INSERT INTO public.user_profiles (
     id, tenant_id, role, first_name, last_name, phone_number,
@@ -245,25 +266,35 @@ BEGIN
   RAISE NOTICE 'Officer Gate A: officer.gatea@villagetech.com';
 
   -- Officer Gate B
-  INSERT INTO auth.users (
-    instance_id, id, aud, role, email, encrypted_password,
-    email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
-    created_at, updated_at, confirmation_token, email_change,
-    email_change_token_new, recovery_token
-  ) VALUES (
-    '00000000-0000-0000-0000-000000000000',
-    gen_random_uuid(),
-    'authenticated', 'authenticated',
-    'officer.gateb@villagetech.com',
-    crypt('OfficerB123!', gen_salt('bf')),
-    NOW(),
-    '{"provider":"email","providers":["email"]}', '{}',
-    NOW(), NOW(), '', '', '', ''
-  )
-  ON CONFLICT (email) DO UPDATE SET
-    encrypted_password = crypt('OfficerB123!', gen_salt('bf')),
-    updated_at = NOW()
-  RETURNING id INTO officer_b_id;
+  SELECT id INTO officer_b_id
+  FROM auth.users
+  WHERE email = 'officer.gateb@villagetech.com';
+
+  IF officer_b_id IS NULL THEN
+    INSERT INTO auth.users (
+      instance_id, id, aud, role, email, encrypted_password,
+      email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
+      created_at, updated_at, confirmation_token, email_change,
+      email_change_token_new, recovery_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000',
+      gen_random_uuid(),
+      'authenticated', 'authenticated',
+      'officer.gateb@villagetech.com',
+      crypt('OfficerB123!', gen_salt('bf')),
+      NOW(),
+      '{"provider":"email","providers":["email"]}',
+      jsonb_build_object('tenant_id', tenant_id, 'role', 'security_officer', 'first_name', 'Sarah', 'last_name', 'Williams'),
+      NOW(), NOW(), '', '', '', ''
+    )
+    RETURNING id INTO officer_b_id;
+  ELSE
+    UPDATE auth.users
+    SET encrypted_password = crypt('OfficerB123!', gen_salt('bf')),
+        raw_user_meta_data = jsonb_build_object('tenant_id', tenant_id, 'role', 'security_officer', 'first_name', 'Sarah', 'last_name', 'Williams'),
+        updated_at = NOW()
+    WHERE id = officer_b_id;
+  END IF;
 
   INSERT INTO public.user_profiles (
     id, tenant_id, role, first_name, last_name, phone_number,
@@ -281,25 +312,35 @@ BEGIN
   RAISE NOTICE 'Officer Gate B: officer.gateb@villagetech.com';
 
   -- Officer Main Gate
-  INSERT INTO auth.users (
-    instance_id, id, aud, role, email, encrypted_password,
-    email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
-    created_at, updated_at, confirmation_token, email_change,
-    email_change_token_new, recovery_token
-  ) VALUES (
-    '00000000-0000-0000-0000-000000000000',
-    gen_random_uuid(),
-    'authenticated', 'authenticated',
-    'officer.main@villagetech.com',
-    crypt('OfficerMain123!', gen_salt('bf')),
-    NOW(),
-    '{"provider":"email","providers":["email"]}', '{}',
-    NOW(), NOW(), '', '', '', ''
-  )
-  ON CONFLICT (email) DO UPDATE SET
-    encrypted_password = crypt('OfficerMain123!', gen_salt('bf')),
-    updated_at = NOW()
-  RETURNING id INTO officer_main_id;
+  SELECT id INTO officer_main_id
+  FROM auth.users
+  WHERE email = 'officer.main@villagetech.com';
+
+  IF officer_main_id IS NULL THEN
+    INSERT INTO auth.users (
+      instance_id, id, aud, role, email, encrypted_password,
+      email_confirmed_at, raw_app_meta_data, raw_user_meta_data,
+      created_at, updated_at, confirmation_token, email_change,
+      email_change_token_new, recovery_token
+    ) VALUES (
+      '00000000-0000-0000-0000-000000000000',
+      gen_random_uuid(),
+      'authenticated', 'authenticated',
+      'officer.main@villagetech.com',
+      crypt('OfficerMain123!', gen_salt('bf')),
+      NOW(),
+      '{"provider":"email","providers":["email"]}',
+      jsonb_build_object('tenant_id', tenant_id, 'role', 'security_officer', 'first_name', 'David', 'last_name', 'Brown'),
+      NOW(), NOW(), '', '', '', ''
+    )
+    RETURNING id INTO officer_main_id;
+  ELSE
+    UPDATE auth.users
+    SET encrypted_password = crypt('OfficerMain123!', gen_salt('bf')),
+        raw_user_meta_data = jsonb_build_object('tenant_id', tenant_id, 'role', 'security_officer', 'first_name', 'David', 'last_name', 'Brown'),
+        updated_at = NOW()
+    WHERE id = officer_main_id;
+  END IF;
 
   INSERT INTO public.user_profiles (
     id, tenant_id, role, first_name, last_name, phone_number,

@@ -61,6 +61,18 @@ CREATE TRIGGER update_association_fees_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
+-- Trigger for audit logging (requires create_audit_log function from 00006)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger WHERE tgname = 'audit_association_fees'
+  ) THEN
+    CREATE TRIGGER audit_association_fees
+      AFTER INSERT OR UPDATE OR DELETE ON association_fees
+      FOR EACH ROW EXECUTE FUNCTION create_audit_log();
+  END IF;
+END $$;
+
 -- Function to automatically update payment_status to overdue
 CREATE OR REPLACE FUNCTION update_overdue_fees()
 RETURNS void AS $$

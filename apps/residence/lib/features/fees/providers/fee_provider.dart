@@ -21,8 +21,10 @@ final feesProvider = StreamProvider.autoDispose<List<AssociationFee>>((ref) {
       .from('household_members')
       .stream(primaryKey: ['id'])
       .eq('user_id', userId)
-      .map((members) {
-        if (members.isEmpty) return <AssociationFee>[];
+      .asyncExpand((members) {
+        if (members.isEmpty) {
+          return Stream.value(<AssociationFee>[]);
+        }
 
         final householdId = members.first['household_id'] as String;
 
@@ -35,8 +37,7 @@ final feesProvider = StreamProvider.autoDispose<List<AssociationFee>>((ref) {
             .map((data) {
               return data.map((json) => AssociationFee.fromJson(json)).toList();
             });
-      })
-      .asyncExpand((stream) => stream);
+      });
 });
 
 /// Provider for unpaid fees

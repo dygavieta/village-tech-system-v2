@@ -51,13 +51,9 @@ CREATE TRIGGER update_construction_permits_updated_at
   BEFORE UPDATE ON construction_permits
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_announcements_updated_at
-  BEFORE UPDATE ON announcements
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_association_fees_updated_at
-  BEFORE UPDATE ON association_fees
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Note: Triggers for Phase 7 tables moved to their respective migrations:
+-- - update_announcements_updated_at -> 00016_create_announcements.sql
+-- - update_association_fees_updated_at -> 00019_create_association_fees.sql
 
 -- Create audit_logs table for tracking sensitive actions
 CREATE TABLE IF NOT EXISTS audit_logs (
@@ -115,9 +111,7 @@ CREATE TRIGGER audit_construction_permits
   AFTER INSERT OR UPDATE OR DELETE ON construction_permits
   FOR EACH ROW EXECUTE FUNCTION create_audit_log();
 
-CREATE TRIGGER audit_association_fees
-  AFTER INSERT OR UPDATE OR DELETE ON association_fees
-  FOR EACH ROW EXECUTE FUNCTION create_audit_log();
+-- Note: audit_association_fees trigger moved to 00019_create_association_fees.sql
 
 CREATE TRIGGER audit_vehicle_stickers
   AFTER UPDATE ON vehicle_stickers
