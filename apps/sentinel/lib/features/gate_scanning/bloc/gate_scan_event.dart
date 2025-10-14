@@ -46,3 +46,23 @@ class ManualEntryRequested extends GateScanEvent {
 class ScanReset extends GateScanEvent {
   const ScanReset();
 }
+
+/// Event to override curfew violation
+class CurfewOverrideRequested extends GateScanEvent {
+  final String rfidSerial;
+  final String gateId;
+  final String overrideReason;
+  final Map<String, dynamic> stickerInfo;
+  final Map<String, dynamic> residentInfo;
+
+  const CurfewOverrideRequested({
+    required this.rfidSerial,
+    required this.gateId,
+    required this.overrideReason,
+    required this.stickerInfo,
+    required this.residentInfo,
+  });
+
+  @override
+  List<Object?> get props => [rfidSerial, gateId, overrideReason, stickerInfo, residentInfo];
+}

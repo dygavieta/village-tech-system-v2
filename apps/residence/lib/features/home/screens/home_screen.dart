@@ -45,6 +45,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 4:
         context.go('/announcements');
         break;
+      case 5:
+        context.go('/fees');
+        break;
     }
   }
 
@@ -214,7 +217,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           NavigationDestination(
             icon: Icon(Icons.campaign_outlined),
             selectedIcon: Icon(Icons.campaign),
-            label: 'Announcements',
+            label: 'News',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.account_balance_wallet_outlined),
+            selectedIcon: Icon(Icons.account_balance_wallet),
+            label: 'Fees',
           ),
         ],
       ),

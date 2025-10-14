@@ -17,7 +17,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Construction, MapPin, User, Calendar, FileText, CheckCircle2, XCircle, Loader2, DollarSign, Users, Clock } from 'lucide-react';
-import { approvePermitRequest } from '@/lib/actions/approve-permit';
+import { useApprovePermitMutation } from '@/lib/hooks/use-permit-mutations';
+import { useToast } from '@/components/ui/use-toast';
 
 interface ConstructionPermitRequest {
   id: string;
@@ -58,12 +59,15 @@ interface PermitApprovalCardProps {
 }
 
 export function PermitApprovalCard({ request, onApproved, onRejected }: PermitApprovalCardProps) {
+  const { toast } = useToast();
   const [showApproveDialog, setShowApproveDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [roadFeeAmount, setRoadFeeAmount] = useState(request.road_fee_amount.toString() || '0');
   const [rejectionReason, setRejectionReason] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use optimistic mutation hook
+  const approveMutation = useApprovePermitMutation();
 
   const handleApprove = async () => {
     const feeAmount = parseFloat(roadFeeAmount);
@@ -72,55 +76,74 @@ export function PermitApprovalCard({ request, onApproved, onRejected }: PermitAp
       return;
     }
 
-    try {
-      setIsSubmitting(true);
-      setError(null);
+    setError(null);
 
-      const result = await approvePermitRequest({
+    approveMutation.mutate(
+      {
         permit_id: request.id,
         decision: 'approved',
         road_fee_amount: feeAmount,
-      });
-
-      if (!result.success) {
-        setError(result.error || 'Failed to approve permit');
-        return;
+      },
+      {
+        onSuccess: (result) => {
+          if (result.success) {
+            setShowApproveDialog(false);
+            toast({
+              title: 'Permit Approved',
+              description: `Construction permit for ${request.household.property.address} has been approved.`,
+            });
+            onApproved?.();
+          } else {
+            setError(result.error || 'Failed to approve permit');
+          }
+        },
+        onError: (err) => {
+          console.error('Error approving permit:', err);
+          setError(err instanceof Error ? err.message : 'Unexpected error');
+          toast({
+            title: 'Error',
+            description: 'Failed to approve permit. Please try again.',
+            variant: 'destructive',
+          });
+        },
       }
-
-      setShowApproveDialog(false);
-      onApproved?.();
-    } catch (err) {
-      console.error('Error approving permit:', err);
-      setError(err instanceof Error ? err.message : 'Unexpected error');
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
 
   const handleReject = async () => {
-    try {
-      setIsSubmitting(true);
-      setError(null);
+    setError(null);
 
-      const result = await approvePermitRequest({
+    approveMutation.mutate(
+      {
         permit_id: request.id,
         decision: 'rejected',
         rejection_reason: rejectionReason.trim() || 'Rejected by admin',
-      });
-
-      if (!result.success) {
-        setError(result.error || 'Failed to reject permit');
-        return;
+      },
+      {
+        onSuccess: (result) => {
+          if (result.success) {
+            setShowRejectDialog(false);
+            setRejectionReason('');
+            toast({
+              title: 'Permit Rejected',
+              description: `Construction permit for ${request.household.property.address} has been rejected.`,
+            });
+            onRejected?.();
+          } else {
+            setError(result.error || 'Failed to reject permit');
+          }
+        },
+        onError: (err) => {
+          console.error('Error rejecting permit:', err);
+          setError(err instanceof Error ? err.message : 'Unexpected error');
+          toast({
+            title: 'Error',
+            description: 'Failed to reject permit. Please try again.',
+            variant: 'destructive',
+          });
+        },
       }
-
-      setShowRejectDialog(false);
-      onRejected?.();
-    } catch (err) {
-      console.error('Error rejecting permit:', err);
-      setError(err instanceof Error ? err.message : 'Unexpected error');
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
 
   const calculateSuggestedFee = () => {
@@ -321,14 +344,14 @@ export function PermitApprovalCard({ request, onApproved, onRejected }: PermitAp
                   value={roadFeeAmount}
                   onChange={(e) => setRoadFeeAmount(e.target.value)}
                   placeholder="0.00"
-                  disabled={isSubmitting}
+                  disabled={approveMutation.isPending}
                   autoFocus
                 />
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setRoadFeeAmount(calculateSuggestedFee().toString())}
-                  disabled={isSubmitting}
+                  disabled={approveMutation.isPending}
                   className="shrink-0"
                 >
                   Suggest Fee
@@ -354,13 +377,13 @@ export function PermitApprovalCard({ request, onApproved, onRejected }: PermitAp
                 setShowApproveDialog(false);
                 setError(null);
               }}
-              disabled={isSubmitting}
+              disabled={approveMutation.isPending}
             >
               Cancel
             </Button>
-            <Button onClick={handleApprove} disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isSubmitting ? 'Approving...' : 'Approve Permit'}
+            <Button onClick={handleApprove} disabled={approveMutation.isPending}>
+              {approveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {approveMutation.isPending ? 'Approving...' : 'Approve Permit'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -391,7 +414,7 @@ export function PermitApprovalCard({ request, onApproved, onRejected }: PermitAp
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="e.g., Incomplete documents, project violates community rules, contractor not licensed"
-                disabled={isSubmitting}
+                disabled={approveMutation.isPending}
                 rows={4}
               />
               <p className="text-sm text-muted-foreground">
@@ -408,17 +431,17 @@ export function PermitApprovalCard({ request, onApproved, onRejected }: PermitAp
                 setError(null);
                 setRejectionReason('');
               }}
-              disabled={isSubmitting}
+              disabled={approveMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleReject}
-              disabled={isSubmitting || !rejectionReason.trim()}
+              disabled={approveMutation.isPending || !rejectionReason.trim()}
             >
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isSubmitting ? 'Rejecting...' : 'Reject Permit'}
+              {approveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {approveMutation.isPending ? 'Rejecting...' : 'Reject Permit'}
             </Button>
           </DialogFooter>
         </DialogContent>

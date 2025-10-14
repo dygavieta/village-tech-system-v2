@@ -313,67 +313,67 @@ This is a multi-platform monorepo with:
 
 ### Backend for User Story 5
 
-- [ ] T138 Create Supabase migration 00015_create_announcements.sql in supabase/migrations/ (announcements table with tenant_id, created_by_admin_id FK, title, content TEXT, urgency, category, target_audience, effective_start, effective_end, requires_acknowledgment BOOLEAN, attachment_urls JSON, timestamps; enable RLS)
-- [ ] T139 Create Supabase migration 00016_create_announcement_reads.sql in supabase/migrations/ (announcement_reads table with announcement_id FK, user_id FK, read_at, acknowledged_at; enable RLS; unique constraint on announcement_id + user_id)
-- [ ] T140 Create Supabase migration 00017_create_village_rules.sql in supabase/migrations/ (village_rules table with tenant_id, category, title, description TEXT, version, effective_date, created_by_admin_id FK, published_at, timestamps; enable RLS)
-- [ ] T141 Create Supabase migration 00018_create_association_fees.sql in supabase/migrations/ (association_fees table with tenant_id, household_id FK, fee_structure, amount, due_date, payment_status, paid_at, payment_reference, invoice_url, receipt_url, late_fee_amount, timestamps; enable RLS)
-- [ ] T142 Create Supabase migration 00019_create_incidents.sql in supabase/migrations/ (incidents table with tenant_id, gate_id FK, reported_by_guard_id FK, incident_type, location, severity, description TEXT, photo_urls JSON, video_urls JSON, involved_parties JSON, resolution_status, resolved_by_admin_id FK, resolved_at, timestamps; enable RLS)
-- [ ] T143 [P] [US5] Create Edge Function send-announcement in supabase/functions/send-announcement/index.ts (accepts announcement data; creates announcement record, filters recipients by target_audience, sends push notifications, emails, SMS for critical; returns announcement_id and recipients_count)
-- [ ] T144 [P] [US5] Create Edge Function stripe-webhook in supabase/functions/stripe-webhook/index.ts (handle Stripe payment_intent.succeeded event; update association_fees payment_status, generate receipt, send confirmation email)
+- [X] T138 Create Supabase migration 00016_create_announcements.sql in supabase/migrations/ (announcements table with tenant_id, created_by_admin_id FK, title, content TEXT, urgency, category, target_audience, effective_start, effective_end, requires_acknowledgment BOOLEAN, attachment_urls JSON, timestamps; enable RLS)
+- [X] T139 Create Supabase migration 00017_create_announcement_acknowledgments.sql in supabase/migrations/ (announcement_acknowledgments table with announcement_id FK, user_id FK, acknowledged_at; enable RLS; unique constraint on announcement_id + user_id)
+- [X] T140 Create Supabase migration 00018_create_village_rules.sql in supabase/migrations/ (village_rules table with tenant_id, category, title, description TEXT, version, effective_date, created_by_admin_id FK, published_at, timestamps; enable RLS; includes rule_acknowledgments table)
+- [X] T141 Create Supabase migration 00019_create_association_fees.sql in supabase/migrations/ (association_fees table with tenant_id, household_id FK, fee_type, amount, due_date, payment_status, paid_at, payment_reference, invoice_url, receipt_url, late_fee_amount, timestamps; enable RLS; includes payment_reminders table)
+- [X] T142 Create Supabase migration 00020_create_incidents.sql in supabase/migrations/ (incidents table with tenant_id, reported_by_security_id FK, incident_type, location, severity, description TEXT, evidence_photo_urls JSON, status, resolved_by_admin_id FK, resolved_at, timestamps; enable RLS)
+- [X] T143 [P] [US5] Create Edge Function send-announcement in supabase/functions/send-announcement/index.ts (accepts announcement data; creates announcement record, filters recipients by target_audience, sends push notifications, emails, SMS for critical; returns announcement_id and recipients_count)
+- [X] T144 [P] [US5] Create Edge Function stripe-webhook in supabase/functions/stripe-webhook/index.ts (handle Stripe payment_intent.succeeded event; update association_fees payment_status, generate receipt, send confirmation email)
 
 ### Admin Web App for User Story 5
 
-- [ ] T145 [US5] Create announcements list page in apps/admin/src/app/(dashboard)/announcements/page.tsx (list all announcements, filter by urgency/category, create new announcement button)
-- [ ] T146 [US5] Create announcement creation page in apps/admin/src/app/(dashboard)/announcements/create/page.tsx (form for title, rich text content, urgency, category, target audience selection, effective dates, attachments upload)
-- [ ] T147 [US5] Create announcement form component in apps/admin/src/components/announcements/AnnouncementForm.tsx (rich text editor with @tiptap/react, audience selector with checkboxes, date pickers)
-- [ ] T148 [US5] Create announcement detail page in apps/admin/src/app/(dashboard)/announcements/[id]/page.tsx (view announcement, read/acknowledgment tracking, recipients list)
-- [ ] T149 [US5] Create action to send announcement in apps/admin/src/lib/actions/send-announcement.ts (call Edge Function, handle file uploads to Supabase Storage, invalidate queries)
-- [ ] T150 [US5] Create village rules page in apps/admin/src/app/(dashboard)/settings/rules/page.tsx (list all rules by category, create/edit/publish rules, version history)
-- [ ] T151 [US5] Create rule editor component in apps/admin/src/components/settings/RuleEditor.tsx (category selector, title, rich text description, effective date, publish button)
-- [ ] T151a [US5] Create rule version history component in apps/admin/src/components/settings/RuleVersionHistory.tsx (display all versions, diff viewer, rollback capability)
-- [ ] T151b [US5] Create rule acknowledgment tracking page in apps/admin/src/app/(dashboard)/settings/rules/[id]/acknowledgments/page.tsx (list residents who acknowledged, send reminders to non-responders)
-- [ ] T151c [US5] Create rule acknowledgment screen for Residence app in apps/residence/lib/features/announcements/screens/rule_acknowledgment_screen.dart (display new/updated rules requiring acknowledgment, checkbox + signature)
-- [ ] T151d [US5] Create Edge Function enforce-rule-acknowledgment in supabase/functions/enforce-rule-acknowledgment/index.ts (send notifications for critical rules, track acknowledgment status, escalate to admin for non-compliance)
+- [X] T145 [US5] Create announcements list page in apps/admin/src/app/(dashboard)/announcements/page.tsx (list all announcements, filter by urgency/category, create new announcement button)
+- [X] T146 [US5] Create announcement creation page in apps/admin/src/app/(dashboard)/announcements/create/page.tsx (form for title, rich text content, urgency, category, target audience selection, effective dates, attachments upload)
+- [X] T147 [US5] Create announcement form component in apps/admin/src/components/announcements/AnnouncementForm.tsx (rich text editor with @tiptap/react, audience selector with checkboxes, date pickers)
+- [X] T148 [US5] Create announcement detail page in apps/admin/src/app/(dashboard)/announcements/[id]/page.tsx (view announcement, read/acknowledgment tracking, recipients list)
+- [X] T149 [US5] Create action to send announcement in apps/admin/src/lib/actions/send-announcement.ts (call Edge Function, handle file uploads to Supabase Storage, invalidate queries)
+- [X] T150 [US5] Create village rules page in apps/admin/src/app/(dashboard)/settings/rules/page.tsx (list all rules by category, create/edit/publish rules, version history)
+- [X] T151 [US5] Create rule editor component in apps/admin/src/components/settings/RuleEditor.tsx (category selector, title, rich text description, effective date, publish button)
+- [X] T151a [US5] Create rule version history component in apps/admin/src/components/settings/RuleVersionHistory.tsx (display all versions, diff viewer, rollback capability)
+- [X] T151b [US5] Create rule acknowledgment tracking page in apps/admin/src/app/(dashboard)/settings/rules/[id]/acknowledgments/page.tsx (list residents who acknowledged, send reminders to non-responders)
+- [X] T151c [US5] Create rule acknowledgment screen for Residence app in apps/residence/lib/features/announcements/screens/rule_acknowledgment_screen.dart (display new/updated rules requiring acknowledgment, checkbox + signature)
+- [X] T151d [US5] Create Edge Function enforce-rule-acknowledgment in supabase/functions/enforce-rule-acknowledgment/index.ts (send notifications for critical rules, track acknowledgment status, escalate to admin for non-compliance)
 
 ### Curfew Configuration & Enforcement
 
-- [ ] T152a [US5] Create curfew settings form in apps/admin/src/app/(dashboard)/settings/curfew/page.tsx (start/end times, days of week, seasonal adjustments, exception list)
-- [ ] T152b [US5] Create curfew exception management component in apps/admin/src/components/settings/CurfewExceptions.tsx (add exceptions for events, holidays, construction permits)
-- [ ] T152c [US5] Add curfew validation to gate scanning logic in apps/sentinel/lib/features/gate_scanning/blocs/gate_scan_bloc.dart (check entry time against curfew rules, alert guard for violations, allow override with justification)
-- [ ] T152d [US5] Create curfew alert notification service in supabase/functions/_shared/curfew-alerts.ts (send alerts to admin and household for violations, log curfew override events)
+- [X] T152a [US5] Create curfew settings form in apps/admin/src/app/(dashboard)/settings/curfew/page.tsx (start/end times, days of week, seasonal adjustments, exception list)
+- [X] T152b [US5] Create curfew exception management component in apps/admin/src/components/settings/CurfewExceptions.tsx (add exceptions for events, holidays, construction permits)
+- [X] T152c [US5] Add curfew validation to gate scanning logic in apps/sentinel/lib/features/gate_scanning/blocs/gate_scan_bloc.dart (check entry time against curfew rules, alert guard for violations, allow override with justification)
+- [X] T152d [US5] Create curfew alert notification service in supabase/functions/_shared/curfew-alerts.ts (send alerts to admin and household for violations, log curfew override events)
 
-- [ ] T152 [US5] Create association fees page in apps/admin/src/app/(dashboard)/fees/page.tsx (fee structure configuration, generate invoices for all households, payment tracking table)
-- [ ] T153 [US5] Create fee invoice generation component in apps/admin/src/components/fees/InvoiceGenerator.tsx (select billing period, calculate amounts, preview invoices, batch generate with Stripe)
-- [ ] T154 [US5] Create fee payment tracking component in apps/admin/src/components/fees/PaymentTracker.tsx (table showing all fees, filter by payment_status, send reminders, apply late fees)
+- [X] T152 [US5] Create association fees page in apps/admin/src/app/(dashboard)/fees/page.tsx (fee structure configuration, generate invoices for all households, payment tracking table)
+- [X] T153 [US5] Create fee invoice generation component in apps/admin/src/components/fees/InvoiceGenerator.tsx (select billing period, calculate amounts, preview invoices, batch generate with Stripe)
+- [X] T154 [US5] Create fee payment tracking component in apps/admin/src/components/fees/PaymentTracker.tsx (table showing all fees, filter by payment_status, send reminders, apply late fees)
 
 ### Payment Reminder Automation
 
-- [ ] T154a [US5] Create Supabase migration 00020_create_payment_reminders.sql in supabase/migrations/ (payment_reminders table with fee_id FK, reminder_type, scheduled_date, sent_at, delivery_status; enable RLS)
-- [ ] T154b [US5] Create scheduled job for payment reminders using pg_cron in supabase/migrations/00021_setup_payment_reminder_cron.sql (daily job at 9 AM to check overdue fees, generate reminders at 7/14/30 day intervals)
-- [ ] T154c [US5] Create Edge Function send-payment-reminder in supabase/functions/send-payment-reminder/index.ts (generate reminder email/SMS with invoice link, calculate late fees, update reminder status)
-- [ ] T154d [US5] Create payment reminder configuration page in apps/admin/src/app/(dashboard)/fees/reminders/page.tsx (configure reminder intervals, customize message templates, view reminder history)
+- [X] T154a [US5] Create Supabase migration 00022_create_payment_reminders.sql in supabase/migrations/ (payment_reminders table with fee_id FK, reminder_type, scheduled_date, sent_at, delivery_status; enable RLS) - NOTE: Included in T141 migration
+- [X] T154b [US5] Create scheduled job for payment reminders using pg_cron in supabase/migrations/00021_setup_payment_reminder_cron.sql (daily job at 9 AM to check overdue fees, generate reminders at 7/14/30 day intervals)
+- [X] T154c [US5] Create Edge Function send-payment-reminder in supabase/functions/send-payment-reminder/index.ts (generate reminder email/SMS with invoice link, calculate late fees, update reminder status)
+- [X] T154d [US5] Create payment reminder configuration page in apps/admin/src/app/(dashboard)/fees/reminders/page.tsx (configure reminder intervals, customize message templates, view reminder history)
 
-- [ ] T155 [US5] Create gate activity dashboard in apps/admin/src/app/(dashboard)/monitoring/gates/page.tsx (realtime entry/exit logs, charts by hour/day, filter by gate/entry_type)
-- [ ] T156 [US5] Create incident reports page in apps/admin/src/app/(dashboard)/monitoring/incidents/page.tsx (list all incidents, filter by severity/status, view details, resolve incidents)
-- [ ] T157 [US5] Create incident detail page in apps/admin/src/app/(dashboard)/monitoring/incidents/[id]/page.tsx (view incident details, photos/videos, involved parties, resolution form)
-- [ ] T158 [US5] Create action to resolve incident in apps/admin/src/lib/actions/resolve-incident.ts (update incident status, add resolution notes, send notifications)
+- [X] T155 [US5] Create gate activity dashboard in apps/admin/src/app/(dashboard)/monitoring/gates/page.tsx (realtime entry/exit logs, charts by hour/day, filter by gate/entry_type)
+- [X] T156 [US5] Create incident reports page in apps/admin/src/app/(dashboard)/monitoring/incidents/page.tsx (list all incidents, filter by severity/status, view details, resolve incidents)
+- [X] T157 [US5] Create incident detail page in apps/admin/src/app/(dashboard)/monitoring/incidents/[id]/page.tsx (view incident details, photos/videos, involved parties, resolution form)
+- [X] T158 [US5] Create action to resolve incident in apps/admin/src/lib/actions/resolve-incident.ts (update incident status, add resolution notes, send notifications)
 
 ### Residence Mobile App for User Story 5
 
-- [ ] T159 [US5] Create announcements screen in apps/residence/lib/features/announcements/screens/announcements_screen.dart (list all announcements for household, filter by category/urgency, mark as read)
-- [ ] T160 [US5] Create announcement detail screen in apps/residence/lib/features/announcements/screens/announcement_detail_screen.dart (view full content, attachments, acknowledge if required)
-- [ ] T161 [US5] Create announcement provider for Residence app in apps/residence/lib/features/announcements/providers/announcement_provider.dart (FutureProvider to fetch announcements, subscribe to realtime announcements channel, update read status)
-- [ ] T162 [US5] Create village rules screen in apps/residence/lib/features/announcements/screens/village_rules_screen.dart (list all published rules by category, view rule details)
-- [ ] T163 [US5] Create association fees screen in apps/residence/lib/features/fees/screens/fees_screen.dart (list all fees with payment_status, view invoices, pay online button)
-- [ ] T164 [US5] Create fee payment screen in apps/residence/lib/features/fees/screens/fee_payment_screen.dart (display invoice details, integrate flutter_stripe for payment, confirm payment)
-- [ ] T165 [US5] Create fee provider for Residence app in apps/residence/lib/features/fees/providers/fee_provider.dart (FutureProvider to fetch fees, handle Stripe payment confirmation)
+- [X] T159 [US5] Create announcements screen in apps/residence/lib/features/announcements/screens/announcements_screen.dart (list all announcements for household, filter by category/urgency, mark as read)
+- [X] T160 [US5] Create announcement detail screen in apps/residence/lib/features/announcements/screens/announcement_detail_screen.dart (view full content, attachments, acknowledge if required)
+- [X] T161 [US5] Create announcement provider for Residence app in apps/residence/lib/features/announcements/providers/announcement_provider.dart (FutureProvider to fetch announcements, subscribe to realtime announcements channel, update read status)
+- [X] T162 [US5] Create village rules screen in apps/residence/lib/features/announcements/screens/village_rules_screen.dart (list all published rules by category, view rule details)
+- [X] T163 [US5] Create association fees screen in apps/residence/lib/features/fees/screens/fees_screen.dart (list all fees with payment_status, view invoices, pay online button)
+- [X] T164 [US5] Create fee payment screen in apps/residence/lib/features/fees/screens/fee_payment_screen.dart (display invoice details, integrate flutter_stripe for payment, confirm payment)
+- [X] T165 [US5] Create fee provider for Residence app in apps/residence/lib/features/fees/providers/fee_provider.dart (FutureProvider to fetch fees, handle Stripe payment confirmation)
 
 ### Sentinel Mobile App for User Story 5
 
-- [ ] T166 [US5] Create incident reporting screen in apps/sentinel/lib/features/incidents/screens/create_incident_screen.dart (form for incident_type, location, severity, description, photo/video capture, involved parties)
-- [ ] T167 [US5] Create incident list screen in apps/sentinel/lib/features/incidents/screens/incidents_screen.dart (list incidents reported by guard, view details, track resolution status)
-- [ ] T168 [US5] Create incident bloc for Sentinel in apps/sentinel/lib/features/incidents/blocs/incident_bloc.dart (create incident with media upload to Supabase Storage, emit real-time alert to admin)
-- [ ] T169 [US5] Create announcements for security screen in apps/sentinel/lib/features/announcements/screens/announcements_screen.dart (list announcements targeted to security personnel, mark as read)
+- [X] T166 [US5] Create incident reporting screen in apps/sentinel/lib/features/incidents/screens/create_incident_screen.dart (form for incident_type, location, severity, description, photo/video capture, involved parties)
+- [X] T167 [US5] Create incident list screen in apps/sentinel/lib/features/incidents/screens/incidents_screen.dart (list incidents reported by guard, view details, track resolution status)
+- [X] T168 [US5] Create incident bloc for Sentinel in apps/sentinel/lib/features/incidents/blocs/incident_bloc.dart (create incident with media upload to Supabase Storage, emit real-time alert to admin)
+- [X] T169 [US5] Create announcements for security screen in apps/sentinel/lib/features/announcements/screens/announcements_screen.dart (list announcements targeted to security personnel, mark as read)
 
 **Checkpoint**: All communication and monitoring features should now be fully functional across all apps
 
@@ -389,12 +389,12 @@ This is a multi-platform monorepo with:
 - [ ] T173 [P] Add loading states for all async operations in Admin app
 - [ ] T174 [P] Add loading states for all async operations in Residence app (CircularProgressIndicator, shimmer effects)
 - [ ] T175 [P] Add loading states for all async operations in Sentinel app
-- [ ] T176 [P] Implement optimistic updates for critical mutations in Admin app (sticker approval, permit approval using TanStack Query)
-- [ ] T177 [P] Implement optimistic updates for critical mutations in Residence app (guest approval, fee payment using Riverpod)
+- [X] T176 [P] Implement optimistic updates for critical mutations in Admin app (sticker approval, permit approval using TanStack Query)
+- [X] T177 [P] Implement optimistic updates for critical mutations in Residence app (guest approval, fee payment using Riverpod)
 - [ ] T178 [P] Add form validation feedback for all forms in Platform app (inline errors, field-level validation with Zod + React Hook Form)
-- [ ] T179 [P] Add form validation feedback for all forms in Admin app
-- [ ] T180 [P] Add form validation feedback for all forms in Residence app (Flutter form validators)
-- [ ] T181 [P] Add form validation feedback for all forms in Sentinel app
+- [X] T179 [P] Add form validation feedback for all forms in Admin app
+- [X] T180 [P] Add form validation feedback for all forms in Residence app (Flutter form validators)
+- [X] T181 [P] Add form validation feedback for all forms in Sentinel app
 - [ ] T182 [P] Implement accessibility features for Platform app (ARIA labels, keyboard navigation, focus management, WCAG 2.1 AA compliance)
 - [ ] T183 [P] Implement accessibility features for Admin app
 - [ ] T184 [P] Implement accessibility features for Residence app (Semantics widgets, screen reader support)

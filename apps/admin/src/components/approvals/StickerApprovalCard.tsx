@@ -16,7 +16,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Car, MapPin, User, FileText, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
-import { approveStickerRequest } from '@/lib/actions/approve-sticker';
+import { useApproveStickerMutation } from '@/lib/hooks/use-sticker-mutations';
+import { useToast } from '@/components/ui/use-toast';
 
 interface StickerRequest {
   id: string;
@@ -52,12 +53,15 @@ interface StickerApprovalCardProps {
 }
 
 export function StickerApprovalCard({ request, onApproved, onRejected }: StickerApprovalCardProps) {
+  const { toast } = useToast();
   const [showApproveDialog, setShowApproveDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rfidSerial, setRfidSerial] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Use optimistic mutation hook
+  const approveMutation = useApproveStickerMutation();
 
   const handleApprove = async () => {
     if (!rfidSerial.trim()) {
@@ -65,55 +69,75 @@ export function StickerApprovalCard({ request, onApproved, onRejected }: Sticker
       return;
     }
 
-    try {
-      setIsSubmitting(true);
-      setError(null);
+    setError(null);
 
-      const result = await approveStickerRequest({
+    approveMutation.mutate(
+      {
         sticker_id: request.id,
         decision: 'approved',
         rfid_serial: rfidSerial.trim(),
-      });
-
-      if (!result.success) {
-        setError(result.error || 'Failed to approve sticker');
-        return;
+      },
+      {
+        onSuccess: (result) => {
+          if (result.success) {
+            setShowApproveDialog(false);
+            setRfidSerial('');
+            toast({
+              title: 'Sticker Approved',
+              description: `Vehicle sticker for ${request.vehicle_plate} has been approved.`,
+            });
+            onApproved?.();
+          } else {
+            setError(result.error || 'Failed to approve sticker');
+          }
+        },
+        onError: (err) => {
+          console.error('Error approving sticker:', err);
+          setError(err instanceof Error ? err.message : 'Unexpected error');
+          toast({
+            title: 'Error',
+            description: 'Failed to approve sticker. Please try again.',
+            variant: 'destructive',
+          });
+        },
       }
-
-      setShowApproveDialog(false);
-      onApproved?.();
-    } catch (err) {
-      console.error('Error approving sticker:', err);
-      setError(err instanceof Error ? err.message : 'Unexpected error');
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
 
   const handleReject = async () => {
-    try {
-      setIsSubmitting(true);
-      setError(null);
+    setError(null);
 
-      const result = await approveStickerRequest({
+    approveMutation.mutate(
+      {
         sticker_id: request.id,
         decision: 'rejected',
         rejection_reason: rejectionReason.trim() || 'Rejected by admin',
-      });
-
-      if (!result.success) {
-        setError(result.error || 'Failed to reject sticker');
-        return;
+      },
+      {
+        onSuccess: (result) => {
+          if (result.success) {
+            setShowRejectDialog(false);
+            setRejectionReason('');
+            toast({
+              title: 'Sticker Rejected',
+              description: `Vehicle sticker for ${request.vehicle_plate} has been rejected.`,
+            });
+            onRejected?.();
+          } else {
+            setError(result.error || 'Failed to reject sticker');
+          }
+        },
+        onError: (err) => {
+          console.error('Error rejecting sticker:', err);
+          setError(err instanceof Error ? err.message : 'Unexpected error');
+          toast({
+            title: 'Error',
+            description: 'Failed to reject sticker. Please try again.',
+            variant: 'destructive',
+          });
+        },
       }
-
-      setShowRejectDialog(false);
-      onRejected?.();
-    } catch (err) {
-      console.error('Error rejecting sticker:', err);
-      setError(err instanceof Error ? err.message : 'Unexpected error');
-    } finally {
-      setIsSubmitting(false);
-    }
+    );
   };
 
   return (
@@ -250,7 +274,7 @@ export function StickerApprovalCard({ request, onApproved, onRejected }: Sticker
                 value={rfidSerial}
                 onChange={(e) => setRfidSerial(e.target.value)}
                 placeholder="Enter RFID serial (e.g., RFID-123456)"
-                disabled={isSubmitting}
+                disabled={approveMutation.isPending}
                 autoFocus
               />
               <p className="text-sm text-muted-foreground">
@@ -267,13 +291,13 @@ export function StickerApprovalCard({ request, onApproved, onRejected }: Sticker
                 setError(null);
                 setRfidSerial('');
               }}
-              disabled={isSubmitting}
+              disabled={approveMutation.isPending}
             >
               Cancel
             </Button>
-            <Button onClick={handleApprove} disabled={isSubmitting || !rfidSerial.trim()}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isSubmitting ? 'Approving...' : 'Approve Sticker'}
+            <Button onClick={handleApprove} disabled={approveMutation.isPending || !rfidSerial.trim()}>
+              {approveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {approveMutation.isPending ? 'Approving...' : 'Approve Sticker'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -304,7 +328,7 @@ export function StickerApprovalCard({ request, onApproved, onRejected }: Sticker
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="e.g., Invalid documents, duplicate request"
-                disabled={isSubmitting}
+                disabled={approveMutation.isPending}
               />
             </div>
           </div>
@@ -317,13 +341,13 @@ export function StickerApprovalCard({ request, onApproved, onRejected }: Sticker
                 setError(null);
                 setRejectionReason('');
               }}
-              disabled={isSubmitting}
+              disabled={approveMutation.isPending}
             >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleReject} disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {isSubmitting ? 'Rejecting...' : 'Reject Sticker'}
+            <Button variant="destructive" onClick={handleReject} disabled={approveMutation.isPending}>
+              {approveMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {approveMutation.isPending ? 'Rejecting...' : 'Reject Sticker'}
             </Button>
           </DialogFooter>
         </DialogContent>

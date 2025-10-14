@@ -39,7 +39,12 @@
       "Bash(npx tsc:*)",
       "Bash(timeout 180 npm run build)",
       "WebSearch",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(for:*)",
+      "Bash(do echo \"=== Checking $file ===\")",
+      "Bash(head:*)",
+      "Bash(done)",
+      "Bash(deno check:*)"
     ],
     "deny": [],
     "ask": []

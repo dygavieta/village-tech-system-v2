@@ -6,6 +6,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sentinel/features/auth/bloc/auth_bloc.dart';
+import 'package:sentinel/features/gate_scanning/bloc/gate_scan_bloc.dart';
+import 'package:sentinel/features/incidents/bloc/incident_bloc.dart';
+import 'package:sentinel/features/announcements/bloc/announcement_bloc.dart';
 
 /// Multi-BLoC provider wrapper for the entire app
 class AppBlocProviders extends StatelessWidget {
@@ -24,8 +27,21 @@ class AppBlocProviders extends StatelessWidget {
         BlocProvider(
           create: (context) => AuthBloc()..add(const AuthCheckRequested()),
         ),
-        // Additional BLoCs will be added here as features are implemented
-        // e.g., GateScanBloc, IncidentBloc, etc.
+
+        // Gate Scanning BLoC
+        BlocProvider(
+          create: (context) => GateScanBloc(),
+        ),
+
+        // Incident Management BLoC
+        BlocProvider(
+          create: (context) => IncidentBloc(),
+        ),
+
+        // Announcements BLoC
+        BlocProvider(
+          create: (context) => AnnouncementBloc(),
+        ),
       ],
       child: child,
     );
