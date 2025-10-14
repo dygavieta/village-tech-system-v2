@@ -34,7 +34,8 @@
       "Bash(timeout 300 npx shadcn@latest add alert tabs progress --yes)",
       "Bash(export CI=true)",
       "Bash(npm run build)",
-      "Bash(flutter:*)"
+      "Bash(flutter:*)",
+      "Bash(supabase status:*)"
     ],
     "deny": [],
     "ask": []

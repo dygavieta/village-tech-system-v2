@@ -43,11 +43,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     try {
-      final authService = ref.read(authServiceProvider);
+      final authNotifier = ref.read(authNotifierProvider.notifier);
 
       if (_useMagicLink) {
         // Send magic link to email
-        await authService.signInWithMagicLink(
+        await authNotifier.signInWithMagicLink(
           email: _emailController.text.trim(),
         );
 
@@ -61,14 +61,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         }
       } else {
         // Sign in with email and password
-        final response = await authService.signInWithEmail(
+        await authNotifier.signInWithEmail(
           email: _emailController.text.trim(),
           password: _passwordController.text,
         );
 
-        if (response.session != null && mounted) {
-          // Navigate to home screen on successful login
-          context.go('/home');
+        // Check if login was successful
+        final authState = ref.read(authNotifierProvider);
+        if (authState.hasValue && authState.value != null && mounted) {
+          // Navigate to household screen on successful login
+          context.go('/household');
         }
       }
     } catch (error) {

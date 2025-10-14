@@ -31,7 +31,78 @@ final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService(supabase);
 });
 
-/// Authentication service class
+/// Auth notifier for managing authentication state
+class AuthNotifier extends StateNotifier<AsyncValue<Session?>> {
+  final SupabaseClient _supabase;
+
+  AuthNotifier(this._supabase) : super(const AsyncValue.loading()) {
+    _init();
+  }
+
+  void _init() {
+    final session = _supabase.auth.currentSession;
+    state = AsyncValue.data(session);
+  }
+
+  /// Get current session
+  Future<Session?> getCurrentSession() async {
+    return _supabase.auth.currentSession;
+  }
+
+  /// Sign in with email and password
+  Future<void> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      final response = await _supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+      state = AsyncValue.data(response.session);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+
+  /// Sign in with magic link
+  Future<void> signInWithMagicLink({
+    required String email,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await _supabase.auth.signInWithOtp(
+        email: email,
+        emailRedirectTo: 'io.supabase.residence://login-callback/',
+      );
+      state = const AsyncValue.data(null);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+
+  /// Sign out
+  Future<void> signOut() async {
+    try {
+      await _supabase.auth.signOut();
+      state = const AsyncValue.data(null);
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
+  }
+
+  /// Get current user
+  User? get currentUser => _supabase.auth.currentUser;
+}
+
+/// Auth notifier provider
+final authNotifierProvider = StateNotifierProvider<AuthNotifier, AsyncValue<Session?>>((ref) {
+  final supabase = ref.watch(supabaseClientProvider);
+  return AuthNotifier(supabase);
+});
+
+/// Authentication service class (kept for backward compatibility)
 class AuthService {
   final SupabaseClient _supabase;
 
