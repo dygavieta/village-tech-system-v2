@@ -269,11 +269,11 @@ This is a multi-platform monorepo with:
 
 ### Backend for User Story 4
 
-- [ ] T113 Create Supabase migration 00012_create_entry_exit_logs.sql in supabase/migrations/ (entry_exit_logs table with gate_id, tenant_id, entry_type, sticker_id FK, guest_id FK, permit_id FK, direction, timestamp, guard_on_duty_id FK, vehicle_plate, purpose, notes; enable RLS; add indexes on gate_id, timestamp)
-- [ ] T114 Create Supabase migration 00013_create_deliveries.sql in supabase/migrations/ (deliveries table with household_id, guest_id FK, delivery_company, driver_name, vehicle_plate, package_description, household_response, entry_log_id FK, exit_log_id FK, hold_location, status, timestamps; enable RLS)
-- [ ] T115 Create Supabase migration 00014_create_guest_approval_requests.sql in supabase/migrations/ (guest_approval_requests table with household_id, guest_name, vehicle_plate, gate_id, requested_by_guard_id FK, status, response, timeout_at TIMESTAMP, responded_at, timestamps; enable RLS for realtime subscriptions)
-- [ ] T116 [P] [US4] Create Edge Function request-guest-approval in supabase/functions/request-guest-approval/index.ts (accepts household_id, guest_name, vehicle_plate, gate_id; creates approval request, sends push notification to household; returns request_id and timeout)
-- [ ] T117 [P] [US4] Create Edge Function sync-offline-logs in supabase/functions/sync-offline-logs/index.ts (accepts batch of entry_exit_logs from Sentinel app; validates, deduplicates, inserts logs; returns sync status)
+- [X] T113 Create Supabase migration 00013_update_entry_exit_logs.sql in supabase/migrations/ (ALTER entry_exit_logs ADD COLUMN permit_id UUID REFERENCES construction_permits(id), ADD COLUMN purpose TEXT; update indexes)
+- [X] T114 Create Supabase migration 00014_create_deliveries.sql in supabase/migrations/ (deliveries table with household_id, guest_id FK, delivery_company, driver_name, vehicle_plate, package_description, household_response, entry_log_id FK, exit_log_id FK, hold_location, status, timestamps; enable RLS)
+- [X] T115 Create Supabase migration 00015_create_guest_approval_requests.sql in supabase/migrations/ (guest_approval_requests table with household_id, guest_name, vehicle_plate, gate_id, requested_by_guard_id FK, status, response, timeout_at TIMESTAMP, responded_at, timestamps; enable RLS for realtime subscriptions)
+- [X] T116 [P] [US4] Create Edge Function request-guest-approval in supabase/functions/request-guest-approval/index.ts (accepts household_id, guest_name, vehicle_plate, gate_id; creates approval request, sends push notification to household; returns request_id and timeout)
+- [X] T117 [P] [US4] Create Edge Function sync-offline-logs in supabase/functions/sync-offline-logs/index.ts (accepts batch of entry_exit_logs from Sentinel app; validates, deduplicates, inserts logs; returns sync status)
 
 ### Sentinel Mobile App for User Story 4
 
