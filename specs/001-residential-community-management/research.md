@@ -14,17 +14,20 @@ This document consolidates architectural research, technology choices, and best 
 
 ### 1. Multi-Tenancy Strategy
 
-**Decision**: Row-Level Security (RLS) with schema-per-tenant approach
+**Decision**: Single shared PostgreSQL database with row-level tenant isolation via tenant_id column and Row-Level Security (RLS) policies
 
 **Rationale**:
-- **Data Isolation**: RLS policies in PostgreSQL provide strong guarantees of tenant data separation
-- **Performance**: Single database reduces connection overhead and enables cross-tenant analytics for superadmin
-- **Supabase Native**: RLS is a core Supabase feature with first-class support
-- **Cost Efficiency**: Shared infrastructure reduces operational costs vs. database-per-tenant
+- **Data Isolation**: RLS policies in PostgreSQL provide strong guarantees of tenant data separation through tenant_id filtering
+- **Simplified Operations**: Single database simplifies schema migrations, backups, and disaster recovery (all tenants migrate atomically)
+- **Performance**: Reduces connection overhead and enables efficient cross-tenant analytics for superadmin
+- **Supabase Native**: RLS is a core Supabase feature with first-class support and automatic policy enforcement
+- **Cost Efficiency**: Shared infrastructure reduces operational costs vs. database-per-tenant or schema-per-tenant approaches
+- **Scalability Path**: Architecture supports future migration to separate schemas or databases if requirements change
 
 **Alternatives Considered**:
-- **Database-per-tenant**: Rejected due to connection pool limits (100 tenants = 100 databases), migration complexity, and higher infrastructure costs
-- **Application-level filtering**: Rejected due to security risks (one bug = data leakage), insufficient audit trail
+- **Schema-per-tenant**: Rejected due to migration complexity (sequential per-schema migrations) and connection pool management overhead
+- **Database-per-tenant**: Rejected due to connection pool limits (100 tenants = 100 databases), highest migration complexity, and infrastructure costs
+- **Application-level filtering**: Rejected due to security risks (one bug = data leakage), insufficient audit trail, no database-level enforcement
 
 **Implementation Pattern**:
 ```sql
@@ -392,6 +395,134 @@ jobs:
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Vercel GitHub Integration](https://vercel.com/docs/git/vercel-for-github)
 - [Fastlane CI/CD](https://docs.fastlane.tools/best-practices/continuous-integration/)
+
+---
+
+### 11. Differentiated Authentication Strategy
+
+**Decision**: User-type-specific authentication: Admins (mandatory 2FA), Household heads (optional 2FA), Family members (password only), Security officers (PIN + biometric)
+
+**Rationale**:
+- **Risk-Based Security**: Higher privileges (admins) require stronger authentication; lower-risk users get simpler UX
+- **Mobile Biometrics**: Security officers use PIN + fingerprint/face recognition for fast gate operations without typing passwords
+- **User Experience**: Family members (often non-technical users) get streamlined password-only auth to reduce friction
+- **Compliance Ready**: Mandatory 2FA for admins meets common security audit requirements
+
+**Alternatives Considered**:
+- **Universal 2FA**: Rejected due to poor UX for residents and elderly users who struggle with TOTP apps
+- **Password-only for all**: Rejected due to inadequate security for admin and financial operations
+
+**Implementation Pattern**:
+```typescript
+// Supabase Auth - Enforce 2FA for admins
+const { data, error } = await supabase.auth.mfa.enroll({
+  factorType: 'totp',
+  friendlyName: 'Admin 2FA'
+});
+
+// Flutter Biometric Auth (Security officers)
+final LocalAuthentication auth = LocalAuthentication();
+final bool canAuthenticateBiometrics = await auth.canCheckBiometrics;
+if (canAuthenticateBiometrics) {
+  final bool didAuthenticate = await auth.authenticate(
+    localizedReason: 'Scan fingerprint to access Sentinel',
+    options: const AuthenticationOptions(biometricOnly: true)
+  );
+}
+```
+
+**References**:
+- [Supabase MFA Documentation](https://supabase.com/docs/guides/auth/auth-mfa)
+- [Flutter Local Auth Plugin](https://pub.dev/packages/local_auth)
+
+---
+
+### 12. Disaster Recovery & Backup Strategy
+
+**Decision**: Real-time synchronous replication to secondary region with automated failover (RTO=15min, RPO=0) + continuous point-in-time backup (1-year retention, 30-min restore)
+
+**Rationale**:
+- **Zero Data Loss**: Synchronous replication ensures no transaction is lost during region failure
+- **Fast Recovery**: 15-minute automated failover meets 99.5% uptime SLA
+- **Compliance**: 1-year backup retention supports audit requirements for financial and access control data
+- **Multi-Region Safety**: 3 geographically distributed backup locations protect against regional disasters
+
+**Alternatives Considered**:
+- **Asynchronous replication**: Rejected due to potential data loss (RPO > 0)
+- **Daily backups only**: Rejected due to inadequate RTO (24+ hours) for critical security operations
+- **Single-region backups**: Rejected due to regional disaster risk (fire, flood, datacenter failure)
+
+**Implementation Pattern**:
+```sql
+-- Supabase/PostgreSQL Logical Replication (managed by Supabase)
+-- Automatic in Supabase Pro/Enterprise plans with multi-region setup
+
+-- Point-in-Time Recovery (PITR)
+-- Restore to specific timestamp via Supabase CLI:
+-- supabase db restore --timestamp "2025-10-14T10:30:00Z"
+```
+
+**References**:
+- [Supabase High Availability](https://supabase.com/docs/guides/platform/going-into-prod#high-availability)
+- [PostgreSQL Streaming Replication](https://www.postgresql.org/docs/current/warm-standby.html)
+
+---
+
+### 13. Observability & Monitoring Stack
+
+**Decision**: Full observability with structured logging, comprehensive metrics, distributed tracing, APM integration, and automated alerting
+
+**Rationale**:
+- **Structured Logging**: JSON logs with tenant_id, user_id, trace_id enable fast troubleshooting across distributed system
+- **Business Metrics**: Track gate scans/hour, approval response times, payment success rates for SLA monitoring
+- **Distributed Tracing**: Follow requests across Next.js → Supabase Edge Functions → PostgreSQL for performance debugging
+- **Automated Alerts**: Proactive detection of API errors, latency spikes, authentication failures before users report issues
+- **Compliance**: Immutable audit logs for sensitive operations meet regulatory requirements
+
+**Alternatives Considered**:
+- **Basic logs only**: Rejected due to insufficient visibility for debugging distributed system issues
+- **Metrics without tracing**: Rejected because tracing is essential for identifying bottlenecks in multi-service flows
+- **Self-hosted observability**: Rejected due to operational overhead; managed platforms (Datadog/New Relic) offer better reliability
+
+**Implementation Pattern**:
+```typescript
+// Structured logging in Edge Functions
+import { Logger } from '@supabase/functions-js';
+
+const logger = new Logger({
+  tenant_id: req.headers.get('x-tenant-id'),
+  trace_id: req.headers.get('x-trace-id')
+});
+
+logger.info('Processing permit approval', {
+  permit_id: permitId,
+  user_id: userId
+});
+
+// APM integration with Sentry
+Sentry.init({
+  dsn: Deno.env.get('SENTRY_DSN'),
+  tracesSampleRate: 1.0,
+  beforeSend(event) {
+    event.tags = {
+      ...event.tags,
+      tenant_id: currentTenantId
+    };
+    return event;
+  }
+});
+```
+
+**Alerting Thresholds**:
+- API error rate > 5% → Critical alert
+- p95 latency > 500ms → Warning alert
+- Authentication failures > 10/min/user → Security alert
+- Sentinel app offline > 15min → Critical alert
+
+**References**:
+- [Supabase Logging](https://supabase.com/docs/guides/platform/logs)
+- [Sentry for Deno](https://docs.sentry.io/platforms/javascript/guides/deno/)
+- [Datadog APM Integration](https://docs.datadoghq.com/tracing/)
 
 ---
 

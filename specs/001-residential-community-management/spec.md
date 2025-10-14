@@ -110,7 +110,7 @@ An admin head or officer sends announcements to residents and security personnel
 #### Tenant Management (Platform App - Superadmin)
 
 - **FR-001**: System MUST allow superadmin to create new residential community tenants with unique subdomain, community name, and basic configuration (community type, number of residences, timezone, language)
-- **FR-002**: System MUST provision isolated tenant database schema or separate database per tenant to ensure complete data isolation between communities
+- **FR-002**: System MUST enforce tenant data isolation using row-level security with tenant_id column on all multi-tenant tables, ensuring queries automatically filter by authenticated tenant context and preventing cross-tenant data access
 - **FR-003**: System MUST support tenant branding configuration including logo upload and color scheme customization
 - **FR-004**: System MUST define subscription limits per tenant (maximum residences, admin users, security personnel, storage quota)
 - **FR-005**: System MUST support property/residence bulk import via CSV with validation, error reporting, preview, and duplicate detection for up to 5000 properties
@@ -158,6 +158,41 @@ An admin head or officer sends announcements to residents and security personnel
 - **FR-031**: Security officers MUST be able to verify construction workers against active permits, match IDs to registered worker lists, and log entry/exit with photo capture
 - **FR-032**: System MUST enable offline mode for Sentinel app with local cache of valid stickers and sync entry logs when connectivity is restored
 
+#### Authentication & Security
+
+- **FR-042**: System MUST implement differentiated authentication by user type: Admin users require email/password with mandatory 2FA enrollment (TOTP or SMS) enforced on first login; Household heads use email/password with optional 2FA that can be enabled in account settings; Family members use email/password authentication only; Security officers authenticate via 6-digit PIN combined with biometric verification (fingerprint or face recognition) on mobile devices
+- **FR-043**: System MUST enforce password complexity requirements (minimum 8 characters, at least one uppercase, one lowercase, one number, one special character) for all email/password accounts
+- **FR-044**: System MUST implement session management with secure token storage, automatic timeout after 30 minutes of inactivity for web apps, and persistent sessions with biometric re-authentication for mobile apps
+- **FR-045**: System MUST support account recovery via email verification for email/password accounts and admin-assisted reset for security officer PIN/biometric accounts
+
+#### Data Reliability & Disaster Recovery
+
+- **FR-046**: System MUST implement real-time synchronous replication of all tenant databases to a geographically separate secondary region with automatic consistency verification
+- **FR-047**: System MUST perform continuous point-in-time backup with 1-year retention period, enabling restore to any specific timestamp within the retention window
+- **FR-048**: System MUST support automated failover to secondary region within 15 minutes of primary region failure with zero data loss (RPO = 0)
+- **FR-049**: System MUST enable database restore from backup to production or staging environment within 30 minutes (RTO = 30 minutes) with automated validation of restore integrity
+- **FR-050**: System MUST maintain backup redundancy across at least 3 geographically distributed storage locations with encryption at rest (AES-256)
+- **FR-051**: System MUST perform monthly disaster recovery drills with automated testing of failover procedures and restore capabilities, logging results for audit
+
+#### Observability & Monitoring
+
+- **FR-052**: System MUST implement structured JSON logging for all applications and services with standardized fields (timestamp, severity, tenant_id, user_id, request_id, trace_id, message, context) and configurable log levels (DEBUG, INFO, WARN, ERROR, FATAL)
+- **FR-053**: System MUST collect and export comprehensive metrics including infrastructure metrics (CPU, memory, disk, network), application metrics (request rate, error rate, latency percentiles), and business metrics (gate scans per hour, approval response times, payment success rates, active users per tenant)
+- **FR-054**: System MUST implement distributed tracing across all services with unique trace IDs propagated through API calls, database queries, and message queues, enabling end-to-end request flow visualization
+- **FR-055**: System MUST integrate Application Performance Monitoring (APM) to track transaction performance, identify slow queries, detect N+1 problems, and profile memory usage with automatic anomaly detection
+- **FR-056**: System MUST send logs, metrics, and traces to centralized observability platform (e.g., Datadog, New Relic, Grafana Cloud) with retention of detailed data for 30 days and aggregated data for 1 year
+- **FR-057**: System MUST implement automated alerting for critical conditions: API error rate > 5%, p95 latency > 500ms, database connection pool exhaustion, disk usage > 80%, failover events, authentication failures > 10 per minute per user, and offline Sentinel devices > 15 minutes
+- **FR-058**: System MUST provide real-time monitoring dashboards displaying SLA compliance (uptime, latency, error budgets), tenant-level usage metrics, gate operation statistics, and system health indicators accessible to operations team
+- **FR-059**: System MUST implement audit logging for all sensitive operations (authentication events, authorization failures, data modifications, admin actions, permission changes) with immutable logs retained for 3 years
+
+#### Multi-Tenancy & Data Isolation
+
+- **FR-060**: System MUST implement PostgreSQL Row-Level Security (RLS) policies on all tenant-scoped tables to automatically enforce tenant_id filtering based on authenticated user's tenant context
+- **FR-061**: System MUST include tenant_id as a non-nullable foreign key in all tables storing tenant-specific data (residences, households, users, stickers, permits, announcements, logs) with indexed lookups
+- **FR-062**: System MUST validate tenant_id in application middleware before database queries, rejecting requests with missing or mismatched tenant context with 403 Forbidden error
+- **FR-063**: System MUST prevent superadmin platform users from directly accessing tenant data unless explicitly impersonating a tenant with full audit trail of impersonation events
+- **FR-064**: System MUST run database schema migrations atomically across the shared database with zero-downtime deployment using blue-green or rolling update strategy
+
 #### Communication & Monitoring (Admin App)
 
 - **FR-033**: Admin users MUST be able to create announcements with title, rich text body, urgency level (critical, important, info), category, effective dates, and attachments
@@ -197,7 +232,7 @@ An admin head or officer sends announcements to residents and security personnel
 - **SC-003**: Household heads can complete self-service tasks (add family member, request sticker, register guest, submit permit) in under 3 minutes per task
 - **SC-004**: Gate guards can process resident vehicle entry via RFID scan in under 5 seconds from approach to barrier open
 - **SC-005**: Guest approval requests are delivered to households within 5 seconds and responses are reflected in Sentinel app within 10 seconds
-- **SC-006**: System maintains 99.5% uptime for all critical operations (tenant access, gate scanning, real-time approvals)
+- **SC-006**: System maintains 99.5% uptime for all critical operations (tenant access, gate scanning, real-time approvals) with automated failover completing within 15 minutes and zero data loss during region failures
 - **SC-007**: Platform supports 100 active community tenants with complete data isolation and no cross-tenant data leakage
 - **SC-008**: System handles 5,000 concurrent users across all applications without performance degradation
 - **SC-009**: Announcements reach all targeted recipients within 30 seconds of sending
@@ -213,21 +248,37 @@ An admin head or officer sends announcements to residents and security personnel
 - **SC-019**: Platform and Admin web apps achieve Lighthouse Performance score >= 90 with Time to Interactive (TTI) < 2 seconds on simulated 4G connection (Fast 3G profile)
 - **SC-020**: Residence and Sentinel mobile apps launch to first interactive frame in < 3 seconds on mid-range Android devices (equivalent to Samsung Galaxy A50 or better)
 - **SC-021**: API response times for critical operations (gate scan validation, guest approval, sticker lookup) maintain p95 latency < 200ms under normal load (1000 req/s)
+- **SC-022**: Observability platform captures 100% of errors with full trace context, enabling root cause identification within 15 minutes for 95% of production incidents
+- **SC-023**: Automated alerts trigger within 60 seconds of threshold breach with < 2% false positive rate
+
+## Clarifications
+
+### Session 2025-10-14
+
+- Q: How should authentication be implemented across different user types? → A: Differentiated approach: Admins (mandatory 2FA), Household heads (optional 2FA), Family members (password only), Security officers (PIN + biometric on mobile)
+- Q: What backup and disaster recovery strategy should be implemented? → A: Real-time synchronous replication to secondary region; automated failover within 15 minutes; continuous backup with 1-year retention and 30-minute restore capability
+- Q: What observability strategy should be implemented for monitoring and troubleshooting? → A: Full observability stack: structured logging + comprehensive metrics + distributed tracing across all services; APM integration; automated alerting; SLA monitoring dashboards
+- Q: What RFID technology standard should be supported for vehicle sticker scanning? → A: TBA - not sure yet
+- Q: How should the schema-per-tenant architecture handle database operations at scale? → A: Single shared database, isolated by tenant_id for now
 
 ## Assumptions
 
 - Communities using the platform have existing processes for collecting resident information, vehicle registrations, and construction permit applications that can be digitized
-- Security personnel at gates have access to tablets or mobile devices with Bluetooth/USB for RFID reader connectivity
+- Security personnel at gates have access to tablets or mobile devices with Bluetooth/USB for RFID reader connectivity and support biometric authentication (fingerprint/face recognition)
+- RFID technology standard (UHF vs HF vs dual-mode) is TBA and must be decided before hardware procurement; software architecture will support pluggable RFID reader drivers to accommodate different protocols
 - Internet connectivity is available at all gate locations, though offline fallback is supported
 - Households have email addresses and mobile devices capable of running the Residence app (iOS/Android or web browser)
 - Payment gateway integration (Stripe, PayPal, or local provider) will be configured per tenant based on their region and preferences
 - Community policies for sticker allocations, fee structures, and curfew hours vary by tenant and are configurable by admin
 - CCTV integration for incident management is optional and will be added in later phases if required
-- Multi-tenancy architecture will use schema-per-tenant approach with shared application infrastructure
+- Multi-tenancy architecture uses single shared PostgreSQL database with row-level tenant isolation via tenant_id column and Row-Level Security (RLS) policies; this approach simplifies operations and schema migrations while maintaining data isolation; future migration to separate schemas or databases is possible if scalability requirements change
 - Default sticker allocation is 3 per household unless configured otherwise by admin
-- Default authentication is email/password with 2FA for admin users; SSO can be added later if needed
+- Authentication strategy is differentiated by user type: Admin users require email/password with mandatory 2FA (TOTP or SMS); Household heads use email/password with optional 2FA; Family members use email/password only; Security officers use 6-digit PIN combined with biometric authentication (fingerprint or face recognition) on Sentinel mobile app; SSO can be added later if needed
 - TypeScript strict mode is required for all web applications and Edge Functions with the following compiler options: `strict: true`, `strictNullChecks: true`, `noImplicitAny: true`, `strictFunctionTypes: true`, `strictPropertyInitialization: true`, and `noUnusedLocals: true` for production builds
-- Performance targets assume modern hosting infrastructure (cloud-based, horizontally scalable)
-- Data retention for entry logs is 1 year, incident reports 3 years, financial records 7 years per compliance standards
+- Performance targets assume modern hosting infrastructure (cloud-based, horizontally scalable) with multi-region deployment capability
+- Infrastructure requires real-time synchronous replication to secondary region with automated failover capability (RPO = 0, RTO = 15 minutes)
+- Backup infrastructure requires continuous point-in-time backup with 1-year retention and 30-minute restore capability across 3 geographically distributed storage locations
+- Observability stack includes structured JSON logging, comprehensive metrics collection (infrastructure, application, business), distributed tracing, APM integration, and centralized platform (e.g., Datadog, New Relic, Grafana Cloud) with 30-day detailed retention and 1-year aggregated retention
+- Data retention for entry logs is 1 year, incident reports 3 years, financial records 7 years, audit logs 3 years per compliance standards; all backups are encrypted at rest with AES-256
 - Guest approval timeout defaults to 2 minutes with fallback to phone call; configurable per community
 - Delinquent household policy allows gate access but restricts new service requests (stickers, permits, guests) until fees are current; admin can configure stricter policies per community
