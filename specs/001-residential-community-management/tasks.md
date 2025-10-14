@@ -33,9 +33,9 @@ This is a multi-platform monorepo with:
 - [X] T002 [P] Initialize root package.json with workspace configuration for npm workspaces
 - [X] T003 [P] Configure ESLint + Prettier for web apps with shared config in root
 - [X] T004 [P] Setup TypeScript configuration with path aliases for monorepo
-- [ ] T004a [P] Verify TypeScript strict mode in tsconfig.json for Platform app (apps/platform/tsconfig.json with strict: true, strictNullChecks: true, noImplicitAny: true, strictFunctionTypes: true, strictPropertyInitialization: true, noUnusedLocals: true)
-- [ ] T004b [P] Verify TypeScript strict mode in tsconfig.json for Admin app (apps/admin/tsconfig.json with same strict options)
-- [ ] T004c [P] Verify TypeScript strict mode for Edge Functions (supabase/functions/tsconfig.json with strict options)
+- [X] T004a [P] Verify TypeScript strict mode in tsconfig.json for Platform app (apps/platform/tsconfig.json with strict: true, strictNullChecks: true, noImplicitAny: true, strictFunctionTypes: true, strictPropertyInitialization: true, noUnusedLocals: true)
+- [X] T004b [P] Verify TypeScript strict mode in tsconfig.json for Admin app (apps/admin/tsconfig.json with same strict options)
+- [X] T004c [P] Verify TypeScript strict mode for Edge Functions (supabase/functions/tsconfig.json with strict options)
 - [X] T005 [P] Create Platform web app using `npx create-next-app@latest apps/platform --typescript --tailwind --app --use-npm`
 - [X] T006 [P] Create Admin web app using `npx create-next-app@latest apps/admin --typescript --tailwind --app --use-npm`
 - [X] T007 [P] Create Residence mobile app using `flutter create apps/residence --org com.villagetech --project-name residence`
@@ -185,10 +185,10 @@ This is a multi-platform monorepo with:
 - [X] T087 [US2] Create sticker approval component in apps/admin/src/components/approvals/StickerApprovalCard.tsx (display request details, document preview, approve/reject actions)
 - [X] T088 [US2] Create sticker list for household in apps/admin/src/components/households/HouseholdStickerList.tsx (table showing all stickers for a household with status, RFID serial, expiration)
 - [X] T089 [US2] Create action to approve/reject sticker in apps/admin/src/lib/actions/approve-sticker.ts (call Edge Function, handle response, invalidate queries)
-- [ ] T088a [US2] Create sticker allocation configuration page in apps/admin/src/app/(dashboard)/settings/allocations/page.tsx (global default setting, bulk override tool)
-- [ ] T088b [US2] Create household allocation override component in apps/admin/src/components/households/AllocationOverride.tsx (individual household limit adjustment with notes)
-- [ ] T088c [US2] Add allocation validation to sticker approval logic in apps/admin/src/lib/actions/approve-sticker.ts (check current count vs. limit before approval)
-- [ ] T088d [US2] Create allocation summary widget in apps/admin/src/components/households/AllocationSummary.tsx (visual display of used/available stickers)
+- [X] T088a [US2] Create sticker allocation configuration page in apps/admin/src/app/(dashboard)/settings/allocations/page.tsx (global default setting, bulk override tool)
+- [X] T088b [US2] Create household allocation override component in apps/admin/src/components/households/AllocationOverride.tsx (individual household limit adjustment with notes)
+- [X] T088c [US2] Add allocation validation to sticker approval logic in apps/admin/src/lib/actions/approve-sticker.ts (check current count vs. limit before approval)
+- [X] T088d [US2] Create allocation summary widget in apps/admin/src/components/households/AllocationSummary.tsx (visual display of used/available stickers)
 - [X] T089a [US2] Create announcements directory index page in apps/admin/src/app/(dashboard)/announcements/page.tsx (placeholder or redirect to list page)
 - [X] T089b [US2] Create approvals directory index page in apps/admin/src/app/(dashboard)/approvals/page.tsx (overview of all pending approvals with links to stickers/permits)
 - [X] T089c [US2] Create fees directory index page in apps/admin/src/app/(dashboard)/fees/page.tsx (placeholder or redirect to main fees management page)
@@ -207,10 +207,10 @@ This is a multi-platform monorepo with:
 
 ### Residence Mobile App Foundation for User Story 2
 
-- [ ] T090 [US2] Create authentication flow for Residence app in apps/residence/lib/features/auth/screens/login_screen.dart (email/password login, magic link support, password reset)
-- [ ] T091 [US2] Create auth provider for Residence app in apps/residence/lib/features/auth/providers/auth_provider.dart (Riverpod provider for Supabase Auth state, user profile)
-- [ ] T092 [US2] Create main app layout for Residence app in apps/residence/lib/features/home/screens/home_screen.dart (bottom navigation: household, stickers, permits, guests, announcements)
-- [ ] T093 [US2] Create household profile screen in apps/residence/lib/features/household/screens/household_profile_screen.dart (display household info, property address, members, contact)
+- [X] T090 [US2] Create authentication flow for Residence app in apps/residence/lib/features/auth/screens/login_screen.dart (email/password login, magic link support, password reset)
+- [X] T091 [US2] Create auth provider for Residence app in apps/residence/lib/features/auth/providers/auth_provider.dart (Riverpod provider for Supabase Auth state, user profile)
+- [X] T092 [US2] Create main app layout for Residence app in apps/residence/lib/features/home/screens/home_screen.dart (bottom navigation: household, stickers, permits, guests, announcements)
+- [X] T093 [US2] Create household profile screen in apps/residence/lib/features/household/screens/household_profile_screen.dart (display household info, property address, members, contact)
 
 **Note on Admin Portal Pages (T089a-T089o)**:
 - Tasks T089a-T089e create main directory index pages (announcements/, approvals/, fees/, monitoring/, settings/) that serve as overview pages or navigation hubs

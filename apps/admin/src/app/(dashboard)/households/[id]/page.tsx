@@ -17,6 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { AllocationSummary } from '@/components/households/AllocationSummary';
+import { AllocationOverride } from '@/components/households/AllocationOverride';
 
 interface HouseholdDetail {
   id: string;
@@ -155,7 +157,7 @@ export default function HouseholdDetailPage() {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Members</CardTitle>
@@ -164,19 +166,6 @@ export default function HouseholdDetailPage() {
           <CardContent>
             <div className="text-2xl font-bold">{household.household_members.length + 1}</div>
             <p className="text-xs text-muted-foreground">Including household head</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Vehicle Stickers</CardTitle>
-            <Car className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {household.vehicle_stickers.length} / {household.sticker_allocation}
-            </div>
-            <p className="text-xs text-muted-foreground">Allocated stickers</p>
           </CardContent>
         </Card>
 
@@ -203,6 +192,34 @@ export default function HouseholdDetailPage() {
             <div className="text-2xl font-bold capitalize">
               {household.property.property_type.replace('_', ' ')}
             </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sticker Allocation Summary */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <AllocationSummary
+          totalAllocation={household.sticker_allocation}
+          usedStickers={household.vehicle_stickers.filter(s => s.status === 'issued' || s.status === 'approved').length}
+          pendingRequests={household.vehicle_stickers.filter(s => s.status === 'pending').length}
+        />
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Allocation Management</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Need to adjust the sticker allocation limit for this household? Use the override tool to increase or decrease the limit with proper justification.
+            </p>
+            <AllocationOverride
+              householdId={household.id}
+              currentAllocation={household.sticker_allocation}
+              usedStickers={household.vehicle_stickers.filter(s => s.status === 'issued' || s.status === 'approved').length}
+              onUpdate={(newAllocation) => {
+                // Refresh household data after update
+                setHousehold(prev => prev ? { ...prev, sticker_allocation: newAllocation } : null);
+              }}
+            />
           </CardContent>
         </Card>
       </div>

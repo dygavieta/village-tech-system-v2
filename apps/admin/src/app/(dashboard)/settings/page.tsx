@@ -9,6 +9,7 @@ import {
   Key,
   ArrowRight,
   CheckCircle,
+  Car,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,16 @@ export default function SettingsPage() {
     },
     {
       id: 3,
+      icon: Car,
+      title: 'Sticker Allocations',
+      description: 'Configure default sticker allocation limits per household',
+      status: 'configured',
+      lastUpdated: '2 days ago',
+      link: '/settings/allocations',
+      stats: 'Default: 3 stickers',
+    },
+    {
+      id: 4,
       icon: Clock,
       title: 'Curfew Settings',
       description: 'Set curfew hours, exceptions, and seasonal adjustments',
@@ -57,7 +68,7 @@ export default function SettingsPage() {
       stats: settingsStatus.curfewEnabled ? 'Enabled' : 'Disabled',
     },
     {
-      id: 4,
+      id: 5,
       icon: Bell,
       title: 'Notifications',
       description: 'Configure notification preferences and delivery channels',
@@ -67,7 +78,7 @@ export default function SettingsPage() {
       stats: 'Push, Email, SMS',
     },
     {
-      id: 5,
+      id: 6,
       icon: Users,
       title: 'User Management',
       description: 'Manage admin officers, roles, and permissions',
@@ -77,7 +88,7 @@ export default function SettingsPage() {
       stats: '5 admin users',
     },
     {
-      id: 6,
+      id: 7,
       icon: Palette,
       title: 'Appearance & Branding',
       description: 'Customize logo, colors, and community branding',

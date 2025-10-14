@@ -32,7 +32,8 @@
       "Bash(mkdir:*)",
       "Bash(ls:*)",
       "Bash(timeout 300 npx shadcn@latest add alert tabs progress --yes)",
-      "Bash(export CI=true)"
+      "Bash(export CI=true)",
+      "Bash(npm run build)"
     ],
     "deny": [],
     "ask": []

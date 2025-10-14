@@ -86,6 +86,57 @@ export async function approveStickerRequest(
       };
     }
 
+    // Fetch sticker and household information for allocation validation
+    const { data: stickerData, error: stickerError } = await supabase
+      .from('vehicle_stickers')
+      .select(
+        `
+        id,
+        household_id,
+        household:households (
+          id,
+          sticker_allocation
+        )
+      `
+      )
+      .eq('id', input.sticker_id)
+      .single();
+
+    if (stickerError || !stickerData) {
+      return {
+        success: false,
+        error: 'Failed to fetch sticker information',
+      };
+    }
+
+    // Check allocation limit if approving
+    if (input.decision === 'approved') {
+      // Count currently active stickers for this household
+      const { count: activeStickersCount, error: countError } = await supabase
+        .from('vehicle_stickers')
+        .select('*', { count: 'exact', head: true })
+        .eq('household_id', stickerData.household_id)
+        .in('status', ['approved', 'issued']);
+
+      if (countError) {
+        return {
+          success: false,
+          error: 'Failed to verify allocation limit',
+        };
+      }
+
+      const currentCount = activeStickersCount || 0;
+      const allocationLimit = stickerData.household?.sticker_allocation || 3;
+
+      // Check if approving this sticker would exceed the limit
+      if (currentCount >= allocationLimit) {
+        return {
+          success: false,
+          error: `Cannot approve: Household has reached allocation limit (${currentCount}/${allocationLimit} stickers used). Please override allocation limit or reject this request.`,
+        };
+      }
+    }
+
     // Call the Edge Function
     const { data, error } = await supabase.functions.invoke('approve-sticker', {
       body: {
