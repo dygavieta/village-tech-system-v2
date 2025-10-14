@@ -3,9 +3,11 @@
  * Declarative routing with auth redirects
  */
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/home/screens/home_screen.dart';
@@ -39,12 +41,17 @@ class Routes {
 
 /// Router provider with auth redirect
 final routerProvider = Provider<GoRouter>((ref) {
+  // Watch auth state to trigger router refresh on auth changes
+  final authStateStream = ref.watch(authStateProvider.stream);
+
   return GoRouter(
     initialLocation: Routes.household,
+    refreshListenable: GoRouterRefreshStream(authStateStream),
     redirect: (context, state) {
       // Get current auth state
-      final authState = ref.read(authNotifierProvider);
-      final isAuthenticated = authState.hasValue && authState.value != null;
+      final authState = ref.read(authStateProvider);
+      final isAuthenticated = authState.hasValue &&
+                              authState.value?.session != null;
       final isLoggingIn = state.matchedLocation == Routes.login;
 
       // Redirect to login if not authenticated and not already on login page
@@ -127,3 +134,20 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+/// Helper class to make GoRouter refresh when auth state changes
+class GoRouterRefreshStream extends ChangeNotifier {
+  late final StreamSubscription<AuthState> _subscription;
+
+  GoRouterRefreshStream(Stream<AuthState> stream) {
+    _subscription = stream.listen((_) {
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
