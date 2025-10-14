@@ -147,69 +147,78 @@ export async function createHousehold(
       };
     }
 
-    // Step 5: Create household head user in Supabase Auth
-    // Note: This requires using the service role key, which should be done via an Edge Function
-    // For now, we'll create a placeholder and return instructions
+    // Step 5: Create household head user via Edge Function
     const temporaryPassword = generatePassword(12);
 
-    // TODO: This should call an Edge Function to create the user with admin privileges
-    // For now, we'll simulate the flow
-    console.log('Would create user with:', {
-      email: input.email,
-      password: temporaryPassword,
-      user_metadata: {
+    const { data: authData, error: authError } = await supabase.functions.invoke(
+      'create-household-user',
+      {
+        body: {
+          email: input.email,
+          password: temporaryPassword,
+          tenant_id: tenantId,
+          first_name: input.first_name,
+          middle_name: input.middle_name,
+          last_name: input.last_name,
+          phone_number: input.phone_number,
+        },
+      }
+    );
+
+    if (authError || !authData || !authData.success) {
+      return {
+        success: false,
+        error: 'Failed to create household head user',
+        details: authError?.message || authData?.error || 'Unknown error',
+      };
+    }
+
+    const householdHeadUserId = authData.user_id;
+
+    // Step 6: Create household record
+    const { data: household, error: householdError } = await supabase
+      .from('households')
+      .insert({
         tenant_id: tenantId,
-        role: 'household_head',
-        first_name: input.first_name,
-        middle_name: input.middle_name,
-        last_name: input.last_name,
-        phone_number: input.phone_number,
-      },
-    });
+        property_id: input.property_id,
+        household_head_id: householdHeadUserId,
+        ownership_type: input.ownership_type,
+        move_in_date: input.move_in_date || null,
+        sticker_allocation: input.sticker_allocation || 3,
+      })
+      .select('id')
+      .single();
 
-    // In a real implementation, call an Edge Function:
-    // const { data: authData, error: authError } = await supabase.functions.invoke('create-household-user', {
-    //   body: { email: input.email, ... }
-    // });
-
-    // For now, return a placeholder response
-    return {
-      success: false,
-      error: 'Not implemented',
-      details:
-        'Household creation requires an Edge Function to create users. This will be implemented in the next phase.',
-    };
-
-    // Step 6: Create household record (will be uncommented after Edge Function is ready)
-    // const { data: household, error: householdError } = await supabase
-    //   .from('households')
-    //   .insert({
-    //     tenant_id: tenantId,
-    //     property_id: input.property_id,
-    //     household_head_id: authData.user_id,
-    //     ownership_type: input.ownership_type,
-    //     move_in_date: input.move_in_date || null,
-    //     sticker_allocation: input.sticker_allocation || 3,
-    //   })
-    //   .select('id')
-    //   .single();
+    if (householdError) {
+      return {
+        success: false,
+        error: 'Failed to create household',
+        details: householdError.message,
+      };
+    }
 
     // Step 7: Update property status to occupied
-    // await supabase
-    //   .from('properties')
-    //   .update({ status: 'occupied' })
-    //   .eq('id', input.property_id);
+    const { error: propertyUpdateError } = await supabase
+      .from('properties')
+      .update({ status: 'occupied' })
+      .eq('id', input.property_id);
+
+    if (propertyUpdateError) {
+      console.warn('Failed to update property status:', propertyUpdateError);
+      // Don't fail the whole operation for this
+    }
 
     // Step 8: Send welcome email (via Edge Function or email service)
-    // TODO: Integrate with email service
+    // TODO: Integrate with email service in production
+    console.log('Welcome email would be sent to:', input.email);
 
-    // return {
-    //   success: true,
-    //   household_id: household.id,
-    //   household_head_id: authData.user_id,
-    //   property_address: property.address,
-    //   temporary_password: temporaryPassword,
-    // };
+    return {
+      success: true,
+      household_id: household.id,
+      household_head_id: householdHeadUserId,
+      property_address: property.address,
+      temporary_password: temporaryPassword,
+    };
   } catch (error) {
     console.error('Household creation error:', error);
     return {

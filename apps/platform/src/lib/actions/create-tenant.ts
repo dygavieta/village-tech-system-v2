@@ -160,9 +160,15 @@ export async function createTenant(input: CreateTenantInput): Promise<CreateTena
       };
     }
 
+    // Clean properties: remove 'row' field added by CSV parser
+    const cleanedInput = {
+      ...input,
+      properties: input.properties?.map(({ row, ...property }: any) => property),
+    };
+
     // Call Edge Function
     const { data, error } = await supabase.functions.invoke('create-tenant', {
-      body: input,
+      body: cleanedInput,
       headers: {
         Authorization: `Bearer ${session.access_token}`,
       },

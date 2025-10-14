@@ -196,22 +196,27 @@ serve(async (req: Request): Promise<Response> => {
     // Step 2: Create properties (if provided)
     let propertiesCreated = 0;
     if (requestData.properties && requestData.properties.length > 0) {
+      logger.info('Creating properties', { count: requestData.properties.length, properties: requestData.properties });
+
       const propertiesToInsert = requestData.properties.map((prop) => ({
         tenant_id: tenant.id,
         ...prop,
         status: 'vacant',
       }));
 
-      const { error: propertiesError, count } = await supabase
+      logger.info('Properties to insert', { propertiesToInsert });
+
+      const { data: createdProperties, error: propertiesError, count } = await supabase
         .from('properties')
         .insert(propertiesToInsert)
         .select('id', { count: 'exact' });
 
       if (propertiesError) {
-        logger.warn('Failed to create some properties', { error: propertiesError.message });
+        logger.error('Failed to create properties', { error: propertiesError.message, details: propertiesError });
+        console.error('Properties creation error:', propertiesError);
       } else {
         propertiesCreated = count || 0;
-        logger.info('Properties created', { count: propertiesCreated });
+        logger.info('Properties created successfully', { count: propertiesCreated, createdProperties });
       }
     }
 
