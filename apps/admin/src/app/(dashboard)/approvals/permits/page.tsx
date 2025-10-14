@@ -4,103 +4,26 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Calendar,
-  DollarSign,
-  FileText,
-  Eye,
-  Check,
-  X,
   ArrowLeft,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { getPendingPermitRequests } from '@/lib/actions/approve-permit';
+import { PermitApprovalCard } from '@/components/approvals/PermitApprovalCard';
 
-export default function ConstructionPermitsPage() {
-  // TODO: Replace with actual data from Supabase
+export default async function ConstructionPermitsPage() {
+  // Fetch actual data from Supabase
+  const { data: pendingPermits, error } = await getPendingPermitRequests();
+
+  // TODO: Calculate real stats from database
   const stats = {
-    totalPending: 3,
+    totalPending: pendingPermits?.length || 0,
     approved: 12,
     rejected: 2,
     avgProcessingTime: '36 hours',
   };
 
-  const pendingPermits = [
-    {
-      id: 1,
-      household: 'Block 5 Lot 12',
-      householdHead: 'Juan Dela Cruz',
-      projectType: 'Kitchen Renovation',
-      description: 'Complete kitchen remodeling including cabinets, countertops, and appliances',
-      duration: '30 days',
-      startDate: 'Nov 1, 2025',
-      endDate: 'Nov 30, 2025',
-      fee: '₱5,000',
-      paymentStatus: 'pending' as const,
-      workers: 5,
-      contractor: 'ABC Construction Co.',
-      submittedAt: '2 hours ago',
-      priority: 'high' as const,
-      documents: ['Floor Plan', 'Contract', 'Building Permit'],
-    },
-    {
-      id: 2,
-      household: 'Block 3 Lot 8',
-      householdHead: 'Maria Santos',
-      projectType: 'Bathroom Upgrade',
-      description: 'Bathroom renovation with new fixtures and tiling',
-      duration: '14 days',
-      startDate: 'Oct 20, 2025',
-      endDate: 'Nov 3, 2025',
-      fee: '₱3,000',
-      paymentStatus: 'pending' as const,
-      workers: 3,
-      contractor: 'XYZ Builders',
-      submittedAt: '1 day ago',
-      priority: 'normal' as const,
-      documents: ['Quotation', 'Contract'],
-    },
-    {
-      id: 3,
-      household: 'Block 7 Lot 15',
-      householdHead: 'Pedro Garcia',
-      projectType: 'Garage Extension',
-      description: 'Extending garage to accommodate two vehicles',
-      duration: '45 days',
-      startDate: 'Nov 15, 2025',
-      endDate: 'Dec 30, 2025',
-      fee: '₱8,000',
-      paymentStatus: 'pending' as const,
-      workers: 8,
-      contractor: 'Supreme Construction',
-      submittedAt: '2 days ago',
-      priority: 'normal' as const,
-      documents: ['Blueprint', 'Contract', 'Structural Plan'],
-    },
-  ];
-
-  const getPaymentBadge = (status: 'pending' | 'paid') => {
-    return status === 'paid' ? (
-      <Badge variant="default" className="bg-green-600">
-        <CheckCircle className="mr-1 h-3 w-3" />
-        Paid
-      </Badge>
-    ) : (
-      <Badge variant="secondary">
-        <Clock className="mr-1 h-3 w-3" />
-        Payment Pending
-      </Badge>
-    );
-  };
-
-  const getPriorityBadge = (priority: 'high' | 'normal') => {
-    return priority === 'high' ? (
-      <Badge variant="destructive" className="text-xs">
-        High Priority
-      </Badge>
-    ) : null;
-  };
 
   return (
     <div className="space-y-6">
@@ -187,117 +110,59 @@ export default function ConstructionPermitsPage() {
       </div>
 
       {/* Pending Permits List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pending Construction Permits</CardTitle>
-          <CardDescription>
-            Review project details, documentation, and approve or reject permits
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            {pendingPermits.map((permit) => (
-              <div
-                key={permit.id}
-                className="flex items-start justify-between border rounded-lg p-4"
-              >
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
-                    <Construction className="h-6 w-6 text-orange-600" />
-                  </div>
-                  <div className="flex-1 space-y-3">
-                    {/* Header */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-semibold text-lg">{permit.projectType}</p>
-                        {getPriorityBadge(permit.priority)}
-                        {getPaymentBadge(permit.paymentStatus)}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {permit.household} - {permit.householdHead}
-                      </p>
-                    </div>
-
-                    {/* Project Details */}
-                    <div className="space-y-2">
-                      <p className="text-sm">{permit.description}</p>
-
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">Duration</p>
-                            <p className="font-medium">{permit.duration}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">Road Fee</p>
-                            <p className="font-medium">{permit.fee}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Construction className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">Workers</p>
-                            <p className="font-medium">{permit.workers} persons</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                          <div>
-                            <p className="text-xs text-muted-foreground">Submitted</p>
-                            <p className="font-medium">{permit.submittedAt}</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="text-sm">
-                        <p className="text-muted-foreground mb-1">Project Timeline:</p>
-                        <p className="font-medium">{permit.startDate} - {permit.endDate}</p>
-                      </div>
-
-                      <div className="text-sm">
-                        <p className="text-muted-foreground mb-1">Contractor:</p>
-                        <p className="font-medium">{permit.contractor}</p>
-                      </div>
-
-                      <div className="text-sm">
-                        <p className="text-muted-foreground mb-1">Attached Documents:</p>
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {permit.documents.map((doc, idx) => (
-                            <Badge key={idx} variant="outline" className="text-xs">
-                              <FileText className="h-3 w-3 mr-1" />
-                              {doc}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 pt-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Details
-                      </Button>
-                      <Button variant="default" size="sm" className="bg-green-600 hover:bg-green-700">
-                        <Check className="h-4 w-4 mr-2" />
-                        Approve
-                      </Button>
-                      <Button variant="destructive" size="sm">
-                        <X className="h-4 w-4 mr-2" />
-                        Reject
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+      <div className="space-y-6">
+        {error && (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 text-destructive">
+                <XCircle className="h-5 w-5" />
+                <p>Failed to load pending permits: {typeof error === 'string' ? error : error?.message || 'Unknown error'}</p>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        )}
+
+        {!error && pendingPermits && pendingPermits.length === 0 && (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-12">
+                <Construction className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-medium mb-2">No Pending Permits</h3>
+                <p className="text-muted-foreground">
+                  There are no construction permit requests awaiting your review.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {!error && pendingPermits && pendingPermits.length > 0 && (
+          <>
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Pending Construction Permits</h2>
+              <p className="text-muted-foreground mb-6">
+                Review project details, documentation, and approve or reject permits
+              </p>
+            </div>
+            <div className="grid gap-6">
+              {pendingPermits.map((permit: any) => (
+                <PermitApprovalCard
+                  key={permit.id}
+                  request={permit}
+                  onApproved={() => {
+                    // Refresh the page to show updated data
+                    window.location.reload();
+                  }}
+                  onRejected={() => {
+                    // Refresh the page to show updated data
+                    window.location.reload();
+                  }}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
 
       {/* Info Card */}
       <Card>

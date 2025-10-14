@@ -33,7 +33,6 @@ export interface AdminSession {
 }
 
 export function useAdminSession() {
-  const router = useRouter();
   const supabase = createClient();
 
   return useQuery({

@@ -6,7 +6,6 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
 
 interface ApproveStickerInput {
   sticker_id: string;
@@ -34,8 +33,7 @@ export async function approveStickerRequest(
   input: ApproveStickerInput
 ): Promise<ApproveStickerResult> {
   try {
-    const cookieStore = cookies();
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get the current session
     const {
@@ -182,7 +180,7 @@ export async function approveStickerRequest(
  */
 export async function getPendingStickerRequests() {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data, error } = await supabase
       .from('vehicle_stickers')

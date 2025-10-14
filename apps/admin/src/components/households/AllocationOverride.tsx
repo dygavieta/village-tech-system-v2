@@ -25,7 +25,7 @@ interface AllocationOverrideProps {
 }
 
 export function AllocationOverride({
-  householdId,
+  householdId: _householdId,
   currentAllocation,
   usedStickers,
   onUpdate,

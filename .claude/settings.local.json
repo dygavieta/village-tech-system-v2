@@ -35,7 +35,9 @@
       "Bash(export CI=true)",
       "Bash(npm run build)",
       "Bash(flutter:*)",
-      "Bash(supabase status:*)"
+      "Bash(supabase status:*)",
+      "Bash(npx tsc:*)",
+      "Bash(timeout 180 npm run build)"
     ],
     "deny": [],
     "ask": []

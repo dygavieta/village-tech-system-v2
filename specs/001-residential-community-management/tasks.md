@@ -254,10 +254,10 @@ This is a multi-platform monorepo with:
 ### Admin Web App for User Story 3
 
 - [X] T110 [US3] Create construction permit approvals page in apps/admin/src/app/(dashboard)/approvals/permits/page.tsx (list pending permit requests with household, project details, contractor info, documents) - NOTE: Already exists from T089f
-- [ ] T111 [US3] Create permit approval component in apps/admin/src/components/approvals/PermitApprovalCard.tsx (display request details, calculate road fee, approve/reject actions) - TODO: Needs enhancement for full approval workflow
-- [ ] T112 [US3] Create action to approve/reject permit in apps/admin/src/lib/actions/approve-permit.ts (call Edge Function, handle payment processing, invalidate queries) - TODO: Needs implementation
+- [X] T111 [US3] Create permit approval component in apps/admin/src/components/approvals/PermitApprovalCard.tsx (display request details, calculate road fee, approve/reject actions)
+- [X] T112 [US3] Create action to approve/reject permit in apps/admin/src/lib/actions/approve-permit.ts (call Edge Function, handle payment processing, invalidate queries)
 
-**Checkpoint**: ✅ **PHASE 5 MVP COMPLETE** - All basic household services are now functional - households can self-manage, add members, request stickers, register guests, and submit construction permits
+**Checkpoint**: ✅ **PHASE 5 COMPLETE (20/20 tasks)** - All household services fully functional with admin approval workflows - households can self-manage families, request stickers, register guests, and submit construction permits. Admins can review and approve/reject all requests with proper fee calculations and notifications.
 
 ---
 

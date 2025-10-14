@@ -24,7 +24,7 @@ export default function StickerApprovalsPage() {
         const { data, error: fetchError } = await getPendingStickerRequests();
 
         if (fetchError) {
-          setError(fetchError.message || 'Failed to load sticker requests');
+          setError(typeof fetchError === 'string' ? fetchError : fetchError?.message || 'Failed to load sticker requests');
           return;
         }
 
