@@ -128,6 +128,13 @@ An admin head or officer sends announcements to residents and security personnel
 - **FR-014**: System MUST track sticker issuance workflow (requested → approved → ready for pickup → issued) and link RFID serial numbers to vehicle plates
 - **FR-015**: System MUST support multiple sticker types (resident permanent, beneficial user, temporary guest, contractor) with different validity periods
 
+#### Vehicle Sticker Allocation Management
+
+- **FR-015a**: Admin head MUST be able to configure default sticker allocation per household (global setting for tenant) with minimum value of 1 and maximum value of 20
+- **FR-015b**: Admin head MUST be able to override sticker allocation for individual households with justification notes (e.g., large family, multiple vehicles)
+- **FR-015c**: System MUST validate vehicle sticker requests against household's current allocation limit and reject requests exceeding limit with clear error message displaying available vs. requested count
+- **FR-015d**: System MUST track sticker usage per household and display allocation summary: "X of Y stickers used" on household detail page
+
 #### Resident Services (Residence App - Household Users)
 
 - **FR-016**: Household heads MUST be able to add family members with roles (spouse, child, parent, adult member, minor) and invite adult members to use the app
@@ -203,6 +210,9 @@ An admin head or officer sends announcements to residents and security personnel
 - **SC-016**: Security incident response time from report to admin acknowledgment is under 2 minutes for critical incidents
 - **SC-017**: Guest check-in time at gate reduces by 60% compared to manual phone-call verification
 - **SC-018**: Admin workload for routine approvals (stickers, permits) reduces by 50% through self-service workflows and automation
+- **SC-019**: Platform and Admin web apps achieve Lighthouse Performance score >= 90 with Time to Interactive (TTI) < 2 seconds on simulated 4G connection (Fast 3G profile)
+- **SC-020**: Residence and Sentinel mobile apps launch to first interactive frame in < 3 seconds on mid-range Android devices (equivalent to Samsung Galaxy A50 or better)
+- **SC-021**: API response times for critical operations (gate scan validation, guest approval, sticker lookup) maintain p95 latency < 200ms under normal load (1000 req/s)
 
 ## Assumptions
 
@@ -216,6 +226,7 @@ An admin head or officer sends announcements to residents and security personnel
 - Multi-tenancy architecture will use schema-per-tenant approach with shared application infrastructure
 - Default sticker allocation is 3 per household unless configured otherwise by admin
 - Default authentication is email/password with 2FA for admin users; SSO can be added later if needed
+- TypeScript strict mode is required for all web applications and Edge Functions with the following compiler options: `strict: true`, `strictNullChecks: true`, `noImplicitAny: true`, `strictFunctionTypes: true`, `strictPropertyInitialization: true`, and `noUnusedLocals: true` for production builds
 - Performance targets assume modern hosting infrastructure (cloud-based, horizontally scalable)
 - Data retention for entry logs is 1 year, incident reports 3 years, financial records 7 years per compliance standards
 - Guest approval timeout defaults to 2 minutes with fallback to phone call; configurable per community

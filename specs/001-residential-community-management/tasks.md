@@ -33,6 +33,9 @@ This is a multi-platform monorepo with:
 - [X] T002 [P] Initialize root package.json with workspace configuration for npm workspaces
 - [X] T003 [P] Configure ESLint + Prettier for web apps with shared config in root
 - [X] T004 [P] Setup TypeScript configuration with path aliases for monorepo
+- [ ] T004a [P] Verify TypeScript strict mode in tsconfig.json for Platform app (apps/platform/tsconfig.json with strict: true, strictNullChecks: true, noImplicitAny: true, strictFunctionTypes: true, strictPropertyInitialization: true, noUnusedLocals: true)
+- [ ] T004b [P] Verify TypeScript strict mode in tsconfig.json for Admin app (apps/admin/tsconfig.json with same strict options)
+- [ ] T004c [P] Verify TypeScript strict mode for Edge Functions (supabase/functions/tsconfig.json with strict options)
 - [X] T005 [P] Create Platform web app using `npx create-next-app@latest apps/platform --typescript --tailwind --app --use-npm`
 - [X] T006 [P] Create Admin web app using `npx create-next-app@latest apps/admin --typescript --tailwind --app --use-npm`
 - [X] T007 [P] Create Residence mobile app using `flutter create apps/residence --org com.villagetech --project-name residence`
@@ -182,6 +185,10 @@ This is a multi-platform monorepo with:
 - [X] T087 [US2] Create sticker approval component in apps/admin/src/components/approvals/StickerApprovalCard.tsx (display request details, document preview, approve/reject actions)
 - [X] T088 [US2] Create sticker list for household in apps/admin/src/components/households/HouseholdStickerList.tsx (table showing all stickers for a household with status, RFID serial, expiration)
 - [X] T089 [US2] Create action to approve/reject sticker in apps/admin/src/lib/actions/approve-sticker.ts (call Edge Function, handle response, invalidate queries)
+- [ ] T088a [US2] Create sticker allocation configuration page in apps/admin/src/app/(dashboard)/settings/allocations/page.tsx (global default setting, bulk override tool)
+- [ ] T088b [US2] Create household allocation override component in apps/admin/src/components/households/AllocationOverride.tsx (individual household limit adjustment with notes)
+- [ ] T088c [US2] Add allocation validation to sticker approval logic in apps/admin/src/lib/actions/approve-sticker.ts (check current count vs. limit before approval)
+- [ ] T088d [US2] Create allocation summary widget in apps/admin/src/components/households/AllocationSummary.tsx (visual display of used/available stickers)
 - [X] T089a [US2] Create announcements directory index page in apps/admin/src/app/(dashboard)/announcements/page.tsx (placeholder or redirect to list page)
 - [X] T089b [US2] Create approvals directory index page in apps/admin/src/app/(dashboard)/approvals/page.tsx (overview of all pending approvals with links to stickers/permits)
 - [X] T089c [US2] Create fees directory index page in apps/admin/src/app/(dashboard)/fees/page.tsx (placeholder or redirect to main fees management page)
@@ -323,9 +330,29 @@ This is a multi-platform monorepo with:
 - [ ] T149 [US5] Create action to send announcement in apps/admin/src/lib/actions/send-announcement.ts (call Edge Function, handle file uploads to Supabase Storage, invalidate queries)
 - [ ] T150 [US5] Create village rules page in apps/admin/src/app/(dashboard)/settings/rules/page.tsx (list all rules by category, create/edit/publish rules, version history)
 - [ ] T151 [US5] Create rule editor component in apps/admin/src/components/settings/RuleEditor.tsx (category selector, title, rich text description, effective date, publish button)
+- [ ] T151a [US5] Create rule version history component in apps/admin/src/components/settings/RuleVersionHistory.tsx (display all versions, diff viewer, rollback capability)
+- [ ] T151b [US5] Create rule acknowledgment tracking page in apps/admin/src/app/(dashboard)/settings/rules/[id]/acknowledgments/page.tsx (list residents who acknowledged, send reminders to non-responders)
+- [ ] T151c [US5] Create rule acknowledgment screen for Residence app in apps/residence/lib/features/announcements/screens/rule_acknowledgment_screen.dart (display new/updated rules requiring acknowledgment, checkbox + signature)
+- [ ] T151d [US5] Create Edge Function enforce-rule-acknowledgment in supabase/functions/enforce-rule-acknowledgment/index.ts (send notifications for critical rules, track acknowledgment status, escalate to admin for non-compliance)
+
+### Curfew Configuration & Enforcement
+
+- [ ] T152a [US5] Create curfew settings form in apps/admin/src/app/(dashboard)/settings/curfew/page.tsx (start/end times, days of week, seasonal adjustments, exception list)
+- [ ] T152b [US5] Create curfew exception management component in apps/admin/src/components/settings/CurfewExceptions.tsx (add exceptions for events, holidays, construction permits)
+- [ ] T152c [US5] Add curfew validation to gate scanning logic in apps/sentinel/lib/features/gate_scanning/blocs/gate_scan_bloc.dart (check entry time against curfew rules, alert guard for violations, allow override with justification)
+- [ ] T152d [US5] Create curfew alert notification service in supabase/functions/_shared/curfew-alerts.ts (send alerts to admin and household for violations, log curfew override events)
+
 - [ ] T152 [US5] Create association fees page in apps/admin/src/app/(dashboard)/fees/page.tsx (fee structure configuration, generate invoices for all households, payment tracking table)
 - [ ] T153 [US5] Create fee invoice generation component in apps/admin/src/components/fees/InvoiceGenerator.tsx (select billing period, calculate amounts, preview invoices, batch generate with Stripe)
 - [ ] T154 [US5] Create fee payment tracking component in apps/admin/src/components/fees/PaymentTracker.tsx (table showing all fees, filter by payment_status, send reminders, apply late fees)
+
+### Payment Reminder Automation
+
+- [ ] T154a [US5] Create Supabase migration 00020_create_payment_reminders.sql in supabase/migrations/ (payment_reminders table with fee_id FK, reminder_type, scheduled_date, sent_at, delivery_status; enable RLS)
+- [ ] T154b [US5] Create scheduled job for payment reminders using pg_cron in supabase/migrations/00021_setup_payment_reminder_cron.sql (daily job at 9 AM to check overdue fees, generate reminders at 7/14/30 day intervals)
+- [ ] T154c [US5] Create Edge Function send-payment-reminder in supabase/functions/send-payment-reminder/index.ts (generate reminder email/SMS with invoice link, calculate late fees, update reminder status)
+- [ ] T154d [US5] Create payment reminder configuration page in apps/admin/src/app/(dashboard)/fees/reminders/page.tsx (configure reminder intervals, customize message templates, view reminder history)
+
 - [ ] T155 [US5] Create gate activity dashboard in apps/admin/src/app/(dashboard)/monitoring/gates/page.tsx (realtime entry/exit logs, charts by hour/day, filter by gate/entry_type)
 - [ ] T156 [US5] Create incident reports page in apps/admin/src/app/(dashboard)/monitoring/incidents/page.tsx (list all incidents, filter by severity/status, view details, resolve incidents)
 - [ ] T157 [US5] Create incident detail page in apps/admin/src/app/(dashboard)/monitoring/incidents/[id]/page.tsx (view incident details, photos/videos, involved parties, resolution form)
@@ -391,6 +418,43 @@ This is a multi-platform monorepo with:
 - [ ] T202 [P] Add database query performance monitoring using Supabase query insights (identify slow queries, optimize)
 - [ ] T203 [P] Create backup and disaster recovery procedures in docs/backup-recovery.md (Supabase automated backups, restoration process)
 - [ ] T204 Run quickstart.md validation (verify all setup steps work on fresh environment, test code examples)
+
+---
+
+## Phase 9: Testing & Quality Assurance
+
+**Purpose**: Ensure constitutional testing standards compliance across all applications
+
+### Web Application Tests
+
+- [ ] T205 [P] [QA] Create unit tests for Platform app tenant creation flow in apps/platform/tests/unit/tenant-creation.test.ts (test form validation, CSV parser, subdomain validator)
+- [ ] T206 [P] [QA] Create E2E tests for Platform app using Playwright in apps/platform/tests/e2e/tenant-workflow.spec.ts (test complete tenant creation journey from login to confirmation)
+- [ ] T207 [P] [QA] Create unit tests for Admin app household service in apps/admin/tests/unit/household-service.test.ts (test household creation, sticker approval logic)
+- [ ] T208 [P] [QA] Create E2E tests for Admin app using Playwright in apps/admin/tests/e2e/household-workflow.spec.ts (test household onboarding and sticker approval flow)
+
+### Mobile Application Tests
+
+- [ ] T209 [P] [QA] Create widget tests for Residence app in apps/residence/test/features/stickers/sticker_request_test.dart (test form widgets, validation, state management)
+- [ ] T210 [P] [QA] Create integration tests for Residence app in apps/residence/integration_test/household_workflow_test.dart (test add member, request sticker, register guest flows)
+- [ ] T211 [P] [QA] Create widget tests for Sentinel app in apps/sentinel/test/features/gate_scanning/rfid_scan_test.dart (test scan validation, offline mode, entry logging)
+- [ ] T212 [P] [QA] Create integration tests for Sentinel app in apps/sentinel/integration_test/gate_operations_test.dart (test resident scan, guest approval, offline sync)
+
+### Backend Tests
+
+- [ ] T213 [P] [QA] Create unit tests for Edge Functions in supabase/functions/create-tenant/create-tenant.test.ts (test tenant provisioning logic, subdomain validation, RLS policy application)
+- [ ] T214 [P] [QA] Create integration tests for RLS policies in supabase/tests/rls-isolation.test.ts (test tenant isolation, cross-tenant data leakage prevention)
+- [ ] T215 [P] [QA] Create unit tests for offline sync service in supabase/functions/sync-offline-logs/sync-offline-logs.test.ts (test batch processing, deduplication, error handling)
+
+### Test Coverage & CI Integration
+
+- [ ] T216 [QA] Configure test coverage reporting for Platform app using Vitest coverage (target: 80% for critical paths)
+- [ ] T217 [QA] Configure test coverage reporting for Admin app using Vitest coverage (target: 80% for critical paths)
+- [ ] T218 [QA] Configure test coverage reporting for Residence app using flutter test --coverage (target: 70% for features)
+- [ ] T219 [QA] Configure test coverage reporting for Sentinel app using flutter test --coverage (target: 70% for features)
+- [ ] T220 [QA] Update GitHub Actions workflows to run all tests on PR (add test jobs to platform-deploy.yml, admin-deploy.yml, residence-build.yml, sentinel-build.yml)
+- [ ] T221 [QA] Add test coverage gates to CI/CD (fail build if coverage drops below thresholds)
+
+**Checkpoint**: All constitutional testing requirements satisfied before production release
 
 ---
 

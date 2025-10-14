@@ -104,7 +104,7 @@ A comprehensive multi-tenant HOA management platform enabling superadmins to onb
 
 ### ✅ Backend (Supabase) Principles (Principle III)
 - **Row-Level Security**: RLS policies defined for all tenant data → Passes security-first requirement
-- **Type safety**: TypeScript for Edge Functions, Zod for validation → Passes type safety requirement
+- **Type safety**: TypeScript with strict mode enabled (`strict: true`) for Edge Functions and web applications. All compiler options including `strictNullChecks`, `noImplicitAny`, `strictFunctionTypes`, and `strictPropertyInitialization` must be enabled. Zod for validation. Dart null safety required for Flutter. → Passes type safety requirement
 - **Modular structure**: Edge Functions organized by domain (auth, permits, gates, announcements) → Passes modular structure requirement
 - **Performance monitoring**: Supabase Insights + query profiling → Passes performance monitoring requirement
 - **Data privacy**: RLS ensures tenant isolation, audit logs track access → Passes privacy/compliance requirement
