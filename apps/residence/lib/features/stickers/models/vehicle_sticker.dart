@@ -6,6 +6,7 @@ enum StickerStatus {
   expired,
   lost,
   deactivated,
+  rejected,
 }
 
 class VehicleSticker {
@@ -85,6 +86,8 @@ class VehicleSticker {
         return StickerStatus.lost;
       case 'deactivated':
         return StickerStatus.deactivated;
+      case 'rejected':
+        return StickerStatus.rejected;
       default:
         return StickerStatus.pending;
     }
@@ -106,6 +109,8 @@ class VehicleSticker {
         return 'Lost';
       case StickerStatus.deactivated:
         return 'Deactivated';
+      case StickerStatus.rejected:
+        return 'Rejected';
     }
   }
 }

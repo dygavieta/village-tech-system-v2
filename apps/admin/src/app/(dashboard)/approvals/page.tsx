@@ -6,59 +6,52 @@ import {
   ArrowRight,
   AlertCircle,
   TrendingUp,
+  XCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getApprovalStats, getRecentPendingApprovals } from '@/lib/actions/approvals';
 
-export default function ApprovalsPage() {
-  // TODO: Replace with actual data from Supabase
-  const stats = {
-    totalPending: 8,
-    stickerRequests: 5,
-    permitRequests: 3,
-    avgResponseTime: '4.2 hours',
+export default async function ApprovalsPage() {
+  // Fetch real data from database
+  const { data: stats, error: statsError } = await getApprovalStats();
+  const { data: pendingApprovals, error: approvalsError } = await getRecentPendingApprovals(10);
+
+  // Handle errors
+  if (statsError || approvalsError) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Approvals</h1>
+            <p className="text-muted-foreground">
+              Review and approve pending vehicle stickers and construction permits
+            </p>
+          </div>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-destructive">
+              <XCircle className="h-5 w-5" />
+              <p>Failed to load approval data: {statsError || approvalsError}</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Use empty defaults if data is not available
+  const approvalStats = stats || {
+    totalPending: 0,
+    stickerRequests: 0,
+    permitRequests: 0,
+    avgResponseTime: 'N/A',
   };
 
-  const pendingApprovals = [
-    {
-      id: 1,
-      type: 'sticker' as const,
-      title: 'Vehicle Sticker Request',
-      household: 'Block 5 Lot 12 - Juan Dela Cruz',
-      details: 'Toyota Vios - ABC 1234',
-      submittedAt: '2 hours ago',
-      priority: 'normal' as const,
-    },
-    {
-      id: 2,
-      type: 'permit' as const,
-      title: 'Construction Permit',
-      household: 'Block 3 Lot 8 - Maria Santos',
-      details: 'Kitchen Renovation - 30 days',
-      submittedAt: '5 hours ago',
-      priority: 'high' as const,
-    },
-    {
-      id: 3,
-      type: 'sticker' as const,
-      title: 'Vehicle Sticker Request',
-      household: 'Block 7 Lot 15 - Pedro Garcia',
-      details: 'Honda CR-V - XYZ 5678',
-      submittedAt: '1 day ago',
-      priority: 'normal' as const,
-    },
-    {
-      id: 4,
-      type: 'permit' as const,
-      title: 'Construction Permit',
-      household: 'Block 2 Lot 5 - Anna Reyes',
-      details: 'Bathroom Upgrade - 14 days',
-      submittedAt: '1 day ago',
-      priority: 'normal' as const,
-    },
-  ];
+  const approvalsList = pendingApprovals || [];
 
   const getTypeIcon = (type: 'sticker' | 'permit') => {
     return type === 'sticker' ? (
@@ -89,17 +82,17 @@ export default function ApprovalsPage() {
       </div>
 
       {/* Alert for pending approvals */}
-      {stats.totalPending > 0 && (
+      {approvalStats.totalPending > 0 && (
         <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
           <div className="flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-orange-600 mt-0.5" />
             <div className="flex-1">
               <p className="font-medium text-orange-900">
-                {stats.totalPending} pending approval{stats.totalPending > 1 ? 's' : ''}
+                {approvalStats.totalPending} pending approval{approvalStats.totalPending > 1 ? 's' : ''}
               </p>
               <p className="text-sm text-orange-700 mt-1">
-                {stats.stickerRequests} vehicle sticker request{stats.stickerRequests > 1 ? 's' : ''} and{' '}
-                {stats.permitRequests} construction permit{stats.permitRequests > 1 ? 's' : ''} awaiting your review
+                {approvalStats.stickerRequests} vehicle sticker request{approvalStats.stickerRequests > 1 ? 's' : ''} and{' '}
+                {approvalStats.permitRequests} construction permit{approvalStats.permitRequests > 1 ? 's' : ''} awaiting your review
               </p>
             </div>
           </div>
@@ -114,7 +107,7 @@ export default function ApprovalsPage() {
             <CheckSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalPending}</div>
+            <div className="text-2xl font-bold">{approvalStats.totalPending}</div>
             <p className="text-xs text-muted-foreground">Awaiting approval</p>
           </CardContent>
         </Card>
@@ -125,7 +118,7 @@ export default function ApprovalsPage() {
             <Car className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.stickerRequests}</div>
+            <div className="text-2xl font-bold">{approvalStats.stickerRequests}</div>
             <p className="text-xs text-muted-foreground">Vehicle stickers</p>
           </CardContent>
         </Card>
@@ -136,7 +129,7 @@ export default function ApprovalsPage() {
             <Construction className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.permitRequests}</div>
+            <div className="text-2xl font-bold">{approvalStats.permitRequests}</div>
             <p className="text-xs text-muted-foreground">Construction permits</p>
           </CardContent>
         </Card>
@@ -147,8 +140,8 @@ export default function ApprovalsPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.avgResponseTime}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <div className="text-2xl font-bold">{approvalStats.avgResponseTime}</div>
+            <p className="text-xs text-muted-foreground">Last 30 days</p>
           </CardContent>
         </Card>
       </div>
@@ -162,46 +155,56 @@ export default function ApprovalsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {pendingApprovals.map((approval) => (
-              <div
-                key={approval.id}
-                className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"
-              >
-                <div className="flex items-start gap-3 flex-1">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
-                    {getTypeIcon(approval.type)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{approval.title}</p>
-                      {getPriorityBadge(approval.priority)}
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {approval.household}
-                    </p>
-                    <p className="text-sm mt-1">{approval.details}</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
-                      <Clock className="h-3 w-3" />
-                      Submitted {approval.submittedAt}
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  href={
-                    approval.type === 'sticker'
-                      ? '/approvals/stickers'
-                      : '/approvals/permits'
-                  }
+          {approvalsList.length === 0 ? (
+            <div className="text-center py-12">
+              <CheckSquare className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">All Caught Up!</h3>
+              <p className="text-muted-foreground">
+                There are no pending approvals at the moment.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {approvalsList.map((approval) => (
+                <div
+                  key={approval.id}
+                  className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"
                 >
-                  <Button variant="outline" size="sm">
-                    Review
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            ))}
-          </div>
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                      {getTypeIcon(approval.type)}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{approval.title}</p>
+                        {getPriorityBadge(approval.priority)}
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        {approval.household}
+                      </p>
+                      <p className="text-sm mt-1">{approval.details}</p>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-2">
+                        <Clock className="h-3 w-3" />
+                        Submitted {approval.submittedAt}
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={
+                      approval.type === 'sticker'
+                        ? '/approvals/stickers'
+                        : '/approvals/permits'
+                    }
+                  >
+                    <Button variant="outline" size="sm">
+                      Review
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -221,8 +224,7 @@ export default function ApprovalsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold">{stats.stickerRequests}</p>
+              <div className="flex items-center justify-end">
                 <Button variant="ghost" size="sm">
                   View All
                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -246,8 +248,7 @@ export default function ApprovalsPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
-                <p className="text-2xl font-bold">{stats.permitRequests}</p>
+              <div className="flex items-center justify-end">
                 <Button variant="ghost" size="sm">
                   View All
                   <ArrowRight className="ml-2 h-4 w-4" />

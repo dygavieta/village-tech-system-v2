@@ -9,21 +9,25 @@ import {
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getPendingPermitRequests } from '@/lib/actions/approve-permit';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getPermitsByStatus, getPermitStats, getActivePermits } from '@/lib/actions/approve-permit';
 import { PermitApprovalCard } from '@/components/approvals/PermitApprovalCard';
+import { PermitDisplayCard } from '@/components/approvals/PermitDisplayCard';
 
 export default async function ConstructionPermitsPage() {
-  // Fetch actual data from Supabase
-  const { data: pendingPermits, error } = await getPendingPermitRequests();
+  // Fetch all permit data
+  const { data: pendingPermits, error: pendingError } = await getPermitsByStatus('pending_approval');
+  const { data: approvedPermits, error: approvedError } = await getActivePermits();
+  const { data: rejectedPermits, error: rejectedError } = await getPermitsByStatus('rejected');
+  const { data: statsData, error: statsError } = await getPermitStats();
 
-  // TODO: Calculate real stats from database
-  const stats = {
-    totalPending: pendingPermits?.length || 0,
-    approved: 12,
-    rejected: 2,
-    avgProcessingTime: '36 hours',
+  // Use real stats from database
+  const stats = statsData || {
+    totalPending: 0,
+    approved: 0,
+    rejected: 0,
+    avgProcessingTime: 'N/A',
   };
-
 
   return (
     <div className="space-y-6">
@@ -39,7 +43,7 @@ export default async function ConstructionPermitsPage() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Construction Permits</h1>
             <p className="text-muted-foreground">
-              Review and approve construction permit requests
+              Review and manage construction permit requests
             </p>
           </div>
         </div>
@@ -82,7 +86,7 @@ export default async function ConstructionPermitsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.approved}</div>
-            <p className="text-xs text-muted-foreground">This month</p>
+            <p className="text-xs text-muted-foreground">Active/ongoing</p>
           </CardContent>
         </Card>
 
@@ -109,60 +113,178 @@ export default async function ConstructionPermitsPage() {
         </Card>
       </div>
 
-      {/* Pending Permits List */}
-      <div className="space-y-6">
-        {error && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-2 text-destructive">
-                <XCircle className="h-5 w-5" />
-                <p>Failed to load pending permits: {typeof error === 'string' ? error : error?.message || 'Unknown error'}</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+      {/* Stats Error */}
+      {statsError && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-orange-600">
+              <AlertCircle className="h-5 w-5" />
+              <p>Warning: Failed to load statistics: {statsError}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-        {!error && pendingPermits && pendingPermits.length === 0 && (
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center py-12">
-                <Construction className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Pending Permits</h3>
-                <p className="text-muted-foreground">
-                  There are no construction permit requests awaiting your review.
+      {/* Tabs for different statuses */}
+      <Tabs defaultValue="pending" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="pending" className="gap-2">
+            <Clock className="h-4 w-4" />
+            Pending ({pendingPermits?.length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="approved" className="gap-2">
+            <CheckCircle className="h-4 w-4" />
+            Approved ({approvedPermits?.length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="rejected" className="gap-2">
+            <XCircle className="h-4 w-4" />
+            Rejected ({rejectedPermits?.length || 0})
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Pending Tab */}
+        <TabsContent value="pending" className="space-y-6">
+          {pendingError && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-destructive">
+                  <XCircle className="h-5 w-5" />
+                  <p>Failed to load pending permits: {typeof pendingError === 'string' ? pendingError : pendingError?.message || 'Unknown error'}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {!pendingError && (!pendingPermits || pendingPermits.length === 0) && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-12">
+                  <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No Pending Permits</h3>
+                  <p className="text-muted-foreground">
+                    There are no construction permit requests awaiting your review.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {!pendingError && pendingPermits && pendingPermits.length > 0 && (
+            <>
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Pending Construction Permits</h2>
+                <p className="text-muted-foreground mb-6">
+                  Review project details, documentation, and approve or reject permits
                 </p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <div className="grid gap-6">
+                {pendingPermits.map((permit: any) => (
+                  <PermitApprovalCard
+                    key={permit.id}
+                    request={permit}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </TabsContent>
 
-        {!error && pendingPermits && pendingPermits.length > 0 && (
-          <>
-            <div>
-              <h2 className="text-xl font-semibold mb-4">Pending Construction Permits</h2>
-              <p className="text-muted-foreground mb-6">
-                Review project details, documentation, and approve or reject permits
-              </p>
-            </div>
-            <div className="grid gap-6">
-              {pendingPermits.map((permit: any) => (
-                <PermitApprovalCard
-                  key={permit.id}
-                  request={permit}
-                  onApproved={() => {
-                    // Refresh the page to show updated data
-                    window.location.reload();
-                  }}
-                  onRejected={() => {
-                    // Refresh the page to show updated data
-                    window.location.reload();
-                  }}
-                />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
+        {/* Approved Tab */}
+        <TabsContent value="approved" className="space-y-6">
+          {approvedError && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-destructive">
+                  <XCircle className="h-5 w-5" />
+                  <p>Failed to load approved permits: {typeof approvedError === 'string' ? approvedError : approvedError?.message || 'Unknown error'}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {!approvedError && (!approvedPermits || approvedPermits.length === 0) && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-12">
+                  <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No Active Permits</h3>
+                  <p className="text-muted-foreground">
+                    No approved or active construction permits at the moment.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {!approvedError && approvedPermits && approvedPermits.length > 0 && (
+            <>
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Approved Construction Permits</h2>
+                <p className="text-muted-foreground mb-6">
+                  View permits that are approved, active, or on hold (excludes completed projects)
+                </p>
+              </div>
+              <div className="grid gap-6">
+                {approvedPermits.map((permit: any) => (
+                  <PermitDisplayCard
+                    key={permit.id}
+                    permit={permit}
+                    status="active"
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </TabsContent>
+
+        {/* Rejected Tab */}
+        <TabsContent value="rejected" className="space-y-6">
+          {rejectedError && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center gap-2 text-destructive">
+                  <XCircle className="h-5 w-5" />
+                  <p>Failed to load rejected permits: {typeof rejectedError === 'string' ? rejectedError : rejectedError?.message || 'Unknown error'}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {!rejectedError && (!rejectedPermits || rejectedPermits.length === 0) && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-12">
+                  <XCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No Rejected Permits</h3>
+                  <p className="text-muted-foreground">
+                    No construction permit requests have been rejected.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {!rejectedError && rejectedPermits && rejectedPermits.length > 0 && (
+            <>
+              <div>
+                <h2 className="text-xl font-semibold mb-4">Rejected Construction Permits</h2>
+                <p className="text-muted-foreground mb-6">
+                  View rejected permit requests with rejection reasons
+                </p>
+              </div>
+              <div className="grid gap-6">
+                {rejectedPermits.map((permit: any) => (
+                  <PermitDisplayCard
+                    key={permit.id}
+                    permit={permit}
+                    status="rejected"
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Info Card */}
       <Card>

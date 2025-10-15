@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,6 +60,7 @@ interface PermitApprovalCardProps {
 }
 
 export function PermitApprovalCard({ request, onApproved, onRejected }: PermitApprovalCardProps) {
+  const router = useRouter();
   const { toast } = useToast();
   const [showApproveDialog, setShowApproveDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
@@ -93,6 +95,8 @@ export function PermitApprovalCard({ request, onApproved, onRejected }: PermitAp
               description: `Construction permit for ${request.household.property.address} has been approved.`,
             });
             onApproved?.();
+            // Refresh the server data
+            router.refresh();
           } else {
             setError(result.error || 'Failed to approve permit');
           }
@@ -129,6 +133,8 @@ export function PermitApprovalCard({ request, onApproved, onRejected }: PermitAp
               description: `Construction permit for ${request.household.property.address} has been rejected.`,
             });
             onRejected?.();
+            // Refresh the server data
+            router.refresh();
           } else {
             setError(result.error || 'Failed to reject permit');
           }

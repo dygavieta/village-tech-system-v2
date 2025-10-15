@@ -129,8 +129,14 @@ class _StickerCard extends StatelessWidget {
       case StickerStatus.issued:
         color = Colors.green;
         break;
-      default:
+      case StickerStatus.rejected:
+        color = Colors.red;
+        break;
+      case StickerStatus.expired:
+      case StickerStatus.lost:
+      case StickerStatus.deactivated:
         color = Colors.grey;
+        break;
     }
 
     return Chip(

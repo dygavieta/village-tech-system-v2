@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,6 +54,7 @@ interface StickerApprovalCardProps {
 }
 
 export function StickerApprovalCard({ request, onApproved, onRejected }: StickerApprovalCardProps) {
+  const router = useRouter();
   const { toast } = useToast();
   const [showApproveDialog, setShowApproveDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
@@ -87,6 +89,8 @@ export function StickerApprovalCard({ request, onApproved, onRejected }: Sticker
               description: `Vehicle sticker for ${request.vehicle_plate} has been approved.`,
             });
             onApproved?.();
+            // Refresh the server data
+            router.refresh();
           } else {
             setError(result.error || 'Failed to approve sticker');
           }
@@ -123,6 +127,8 @@ export function StickerApprovalCard({ request, onApproved, onRejected }: Sticker
               description: `Vehicle sticker for ${request.vehicle_plate} has been rejected.`,
             });
             onRejected?.();
+            // Refresh the server data
+            router.refresh();
           } else {
             setError(result.error || 'Failed to reject sticker');
           }
