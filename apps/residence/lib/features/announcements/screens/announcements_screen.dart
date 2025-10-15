@@ -208,7 +208,7 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    dateFormat.format(announcement.publishDate),
+                    dateFormat.format(announcement.effectiveStart),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -242,21 +242,17 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
     IconData icon;
 
     switch (urgency) {
-      case AnnouncementUrgency.urgent:
+      case AnnouncementUrgency.critical:
         color = Colors.red;
         icon = Icons.priority_high;
         break;
-      case AnnouncementUrgency.high:
+      case AnnouncementUrgency.important:
         color = Colors.orange;
         icon = Icons.warning_amber;
         break;
-      case AnnouncementUrgency.medium:
+      case AnnouncementUrgency.info:
         color = Colors.blue;
         icon = Icons.info;
-        break;
-      case AnnouncementUrgency.low:
-        color = Colors.grey;
-        icon = Icons.info_outline;
         break;
     }
 
@@ -357,19 +353,19 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
         return 'Security';
       case AnnouncementCategory.policy:
         return 'Policy';
+      case AnnouncementCategory.general:
+        return 'General';
     }
   }
 
   String _getUrgencyLabel(AnnouncementUrgency urgency) {
     switch (urgency) {
-      case AnnouncementUrgency.urgent:
-        return 'URGENT';
-      case AnnouncementUrgency.high:
-        return 'HIGH';
-      case AnnouncementUrgency.medium:
-        return 'MEDIUM';
-      case AnnouncementUrgency.low:
-        return 'LOW';
+      case AnnouncementUrgency.critical:
+        return 'CRITICAL';
+      case AnnouncementUrgency.important:
+        return 'IMPORTANT';
+      case AnnouncementUrgency.info:
+        return 'INFO';
     }
   }
 }

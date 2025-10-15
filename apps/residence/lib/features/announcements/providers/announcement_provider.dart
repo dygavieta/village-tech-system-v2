@@ -22,7 +22,7 @@ final announcementsProvider = StreamProvider.autoDispose<List<Announcement>>((re
   return supabase
       .from('announcements')
       .stream(primaryKey: ['id'])
-      .order('publish_date', ascending: false)
+      .order('effective_start', ascending: false)
       .map((data) {
         return data.map((json) {
           // Check if user has read this announcement
@@ -258,8 +258,8 @@ class AnnouncementNotifier extends AutoDisposeAsyncNotifier<void> {
             final announcement = Announcement.fromJson(payload.newRecord);
 
             // Show local notification for urgent announcements
-            if (announcement.urgency == AnnouncementUrgency.urgent ||
-                announcement.urgency == AnnouncementUrgency.high) {
+            if (announcement.urgency == AnnouncementUrgency.critical ||
+                announcement.urgency == AnnouncementUrgency.important) {
               NotificationService.showLocalNotification(
                 title: 'New Announcement: ${announcement.title}',
                 body: announcement.content.length > 100

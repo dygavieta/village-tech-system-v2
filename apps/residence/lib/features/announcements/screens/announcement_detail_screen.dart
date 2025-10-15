@@ -128,7 +128,7 @@ class _AnnouncementDetailScreenState
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      dateFormat.format(announcement.publishDate),
+                      dateFormat.format(announcement.effectiveStart),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color:
                                 Theme.of(context).colorScheme.onSurfaceVariant,
@@ -173,7 +173,7 @@ class _AnnouncementDetailScreenState
                 ],
 
                 // Expiry date
-                if (announcement.expiryDate != null) ...[
+                if (announcement.effectiveEnd != null) ...[
                   const Divider(),
                   const SizedBox(height: 16),
                   Row(
@@ -185,7 +185,7 @@ class _AnnouncementDetailScreenState
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Expires on: ${dateFormat.format(announcement.expiryDate!)}',
+                        'Expires on: ${dateFormat.format(announcement.effectiveEnd!)}',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context).colorScheme.error,
                             ),
@@ -397,40 +397,34 @@ class _AnnouncementDetailScreenState
 
   Color _getUrgencyColor(AnnouncementUrgency urgency) {
     switch (urgency) {
-      case AnnouncementUrgency.urgent:
+      case AnnouncementUrgency.critical:
         return Colors.red;
-      case AnnouncementUrgency.high:
+      case AnnouncementUrgency.important:
         return Colors.orange;
-      case AnnouncementUrgency.medium:
+      case AnnouncementUrgency.info:
         return Colors.blue;
-      case AnnouncementUrgency.low:
-        return Colors.grey;
     }
   }
 
   IconData _getUrgencyIcon(AnnouncementUrgency urgency) {
     switch (urgency) {
-      case AnnouncementUrgency.urgent:
+      case AnnouncementUrgency.critical:
         return Icons.priority_high;
-      case AnnouncementUrgency.high:
+      case AnnouncementUrgency.important:
         return Icons.warning_amber;
-      case AnnouncementUrgency.medium:
+      case AnnouncementUrgency.info:
         return Icons.info;
-      case AnnouncementUrgency.low:
-        return Icons.info_outline;
     }
   }
 
   String _getUrgencyLabel(AnnouncementUrgency urgency) {
     switch (urgency) {
-      case AnnouncementUrgency.urgent:
-        return 'URGENT';
-      case AnnouncementUrgency.high:
-        return 'HIGH';
-      case AnnouncementUrgency.medium:
-        return 'MEDIUM';
-      case AnnouncementUrgency.low:
-        return 'LOW';
+      case AnnouncementUrgency.critical:
+        return 'CRITICAL';
+      case AnnouncementUrgency.important:
+        return 'IMPORTANT';
+      case AnnouncementUrgency.info:
+        return 'INFO';
     }
   }
 

@@ -7,27 +7,29 @@ enum AnnouncementCategory {
   maintenance,
   security,
   policy,
+  general,
 }
 
 enum AnnouncementUrgency {
-  low,
-  medium,
-  high,
-  urgent,
+  critical,
+  important,
+  info,
 }
 
 class Announcement {
   final String id;
   final String tenantId;
+  final String createdByAdminId;
   final String title;
   final String content;
   final AnnouncementCategory category;
   final AnnouncementUrgency urgency;
+  final String targetAudience;
+  final List<String>? specificHouseholdIds;
+  final DateTime effectiveStart;
+  final DateTime? effectiveEnd;
   final bool requiresAcknowledgment;
   final List<String>? attachmentUrls;
-  final DateTime publishDate;
-  final DateTime? expiryDate;
-  final String? targetAudience;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -38,15 +40,17 @@ class Announcement {
   Announcement({
     required this.id,
     required this.tenantId,
+    required this.createdByAdminId,
     required this.title,
     required this.content,
     required this.category,
     required this.urgency,
+    required this.targetAudience,
+    this.specificHouseholdIds,
+    required this.effectiveStart,
+    this.effectiveEnd,
     required this.requiresAcknowledgment,
     this.attachmentUrls,
-    required this.publishDate,
-    this.expiryDate,
-    this.targetAudience,
     required this.createdAt,
     required this.updatedAt,
     this.isRead = false,
@@ -57,19 +61,23 @@ class Announcement {
     return Announcement(
       id: json['id'] as String,
       tenantId: json['tenant_id'] as String,
+      createdByAdminId: json['created_by_admin_id'] as String,
       title: json['title'] as String,
       content: json['content'] as String,
       category: _parseCategory(json['category'] as String),
       urgency: _parseUrgency(json['urgency'] as String),
+      targetAudience: json['target_audience'] as String,
+      specificHouseholdIds: json['specific_household_ids'] != null
+          ? List<String>.from(json['specific_household_ids'] as List)
+          : null,
+      effectiveStart: DateTime.parse(json['effective_start'] as String),
+      effectiveEnd: json['effective_end'] != null
+          ? DateTime.parse(json['effective_end'] as String)
+          : null,
       requiresAcknowledgment: json['requires_acknowledgment'] as bool? ?? false,
       attachmentUrls: json['attachment_urls'] != null
           ? List<String>.from(json['attachment_urls'] as List)
           : null,
-      publishDate: DateTime.parse(json['publish_date'] as String),
-      expiryDate: json['expiry_date'] != null
-          ? DateTime.parse(json['expiry_date'] as String)
-          : null,
-      targetAudience: json['target_audience'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       isRead: json['is_read'] as bool? ?? false,
@@ -81,15 +89,17 @@ class Announcement {
     return {
       'id': id,
       'tenant_id': tenantId,
+      'created_by_admin_id': createdByAdminId,
       'title': title,
       'content': content,
       'category': categoryToString(category),
       'urgency': urgencyToString(urgency),
+      'target_audience': targetAudience,
+      'specific_household_ids': specificHouseholdIds,
+      'effective_start': effectiveStart.toIso8601String(),
+      'effective_end': effectiveEnd?.toIso8601String(),
       'requires_acknowledgment': requiresAcknowledgment,
       'attachment_urls': attachmentUrls,
-      'publish_date': publishDate.toIso8601String(),
-      'expiry_date': expiryDate?.toIso8601String(),
-      'target_audience': targetAudience,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -105,23 +115,23 @@ class Announcement {
         return AnnouncementCategory.security;
       case 'policy':
         return AnnouncementCategory.policy;
+      case 'general':
+        return AnnouncementCategory.general;
       default:
-        return AnnouncementCategory.event;
+        return AnnouncementCategory.general;
     }
   }
 
   static AnnouncementUrgency _parseUrgency(String urgency) {
     switch (urgency.toLowerCase()) {
-      case 'low':
-        return AnnouncementUrgency.low;
-      case 'medium':
-        return AnnouncementUrgency.medium;
-      case 'high':
-        return AnnouncementUrgency.high;
-      case 'urgent':
-        return AnnouncementUrgency.urgent;
+      case 'critical':
+        return AnnouncementUrgency.critical;
+      case 'important':
+        return AnnouncementUrgency.important;
+      case 'info':
+        return AnnouncementUrgency.info;
       default:
-        return AnnouncementUrgency.medium;
+        return AnnouncementUrgency.info;
     }
   }
 
@@ -135,19 +145,19 @@ class Announcement {
         return 'security';
       case AnnouncementCategory.policy:
         return 'policy';
+      case AnnouncementCategory.general:
+        return 'general';
     }
   }
 
   static String urgencyToString(AnnouncementUrgency urgency) {
     switch (urgency) {
-      case AnnouncementUrgency.low:
-        return 'low';
-      case AnnouncementUrgency.medium:
-        return 'medium';
-      case AnnouncementUrgency.high:
-        return 'high';
-      case AnnouncementUrgency.urgent:
-        return 'urgent';
+      case AnnouncementUrgency.critical:
+        return 'critical';
+      case AnnouncementUrgency.important:
+        return 'important';
+      case AnnouncementUrgency.info:
+        return 'info';
     }
   }
 
@@ -161,29 +171,29 @@ class Announcement {
         return 'Security';
       case AnnouncementCategory.policy:
         return 'Policy';
+      case AnnouncementCategory.general:
+        return 'General';
     }
   }
 
   String get urgencyDisplay {
     switch (urgency) {
-      case AnnouncementUrgency.low:
-        return 'Low';
-      case AnnouncementUrgency.medium:
-        return 'Medium';
-      case AnnouncementUrgency.high:
-        return 'High';
-      case AnnouncementUrgency.urgent:
-        return 'Urgent';
+      case AnnouncementUrgency.critical:
+        return 'Critical';
+      case AnnouncementUrgency.important:
+        return 'Important';
+      case AnnouncementUrgency.info:
+        return 'Info';
     }
   }
 
   bool get isExpired {
-    if (expiryDate == null) return false;
-    return DateTime.now().isAfter(expiryDate!);
+    if (effectiveEnd == null) return false;
+    return DateTime.now().isAfter(effectiveEnd!);
   }
 
   bool get isActive {
-    return !isExpired && DateTime.now().isAfter(publishDate);
+    return !isExpired && DateTime.now().isAfter(effectiveStart);
   }
 
   Announcement copyWith({
@@ -193,15 +203,17 @@ class Announcement {
     return Announcement(
       id: id,
       tenantId: tenantId,
+      createdByAdminId: createdByAdminId,
       title: title,
       content: content,
       category: category,
       urgency: urgency,
+      targetAudience: targetAudience,
+      specificHouseholdIds: specificHouseholdIds,
+      effectiveStart: effectiveStart,
+      effectiveEnd: effectiveEnd,
       requiresAcknowledgment: requiresAcknowledgment,
       attachmentUrls: attachmentUrls,
-      publishDate: publishDate,
-      expiryDate: expiryDate,
-      targetAudience: targetAudience,
       createdAt: createdAt,
       updatedAt: updatedAt,
       isRead: isRead ?? this.isRead,
