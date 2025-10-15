@@ -14,7 +14,6 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,25 +22,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { validateSubdomain } from '@/lib/actions/create-tenant';
 import { CreateTenantInput } from '@/lib/actions/create-tenant';
+import { tenantCreationSchema, type TenantCreation } from '@/lib/validation/schemas';
 
-const tenantInfoSchema = z.object({
-  name: z.string().min(3, 'Tenant name must be at least 3 characters'),
-  legal_name: z.string().optional(),
-  subdomain: z.string()
-    .min(3, 'Subdomain must be at least 3 characters')
-    .max(63, 'Subdomain must be 63 characters or less')
-    .regex(/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/, 'Subdomain must start and end with alphanumeric characters and can only contain lowercase letters, numbers, and hyphens'),
-  community_type: z.enum(['HOA', 'Condo', 'Gated Village', 'Subdivision']),
-  year_established: z.number().min(1900).max(new Date().getFullYear()).optional().or(z.literal('')),
-  max_residences: z.number().min(1, 'Must have at least 1 residence'),
-  max_admin_users: z.number().min(1).optional(),
-  max_security_users: z.number().min(1).optional(),
-  storage_quota_gb: z.number().min(1).optional(),
-  timezone: z.string().optional(),
-  language: z.string().optional(),
-});
-
-type TenantInfoFormData = z.infer<typeof tenantInfoSchema>;
+type TenantInfoFormData = TenantCreation;
 
 interface TenantCreationFormProps {
   initialData?: Partial<CreateTenantInput>;
@@ -61,7 +44,7 @@ export function TenantCreationForm({ initialData, onSubmit, onValidationChange }
     setValue,
     formState: { errors, isSubmitting, isValid },
   } = useForm<TenantInfoFormData>({
-    resolver: zodResolver(tenantInfoSchema),
+    resolver: zodResolver(tenantCreationSchema),
     mode: 'onChange',
     defaultValues: {
       name: initialData?.name || '',

@@ -22,6 +22,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { getHouseholds } from '@/lib/services/household-service';
+import { useSearchFilterSort } from '@/lib/utils/search-filter';
+import { usePagination, getPaginationInfoText } from '@/lib/utils/pagination';
 
 interface Household {
   id: string;
@@ -49,11 +51,8 @@ interface Household {
 
 export default function HouseholdsPage() {
   const [households, setHouseholds] = useState<Household[]>([]);
-  const [filteredHouseholds, setFilteredHouseholds] = useState<Household[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [ownershipFilter, setOwnershipFilter] = useState<string>('all');
 
   // Fetch households on mount
   useEffect(() => {
@@ -68,7 +67,6 @@ export default function HouseholdsPage() {
         }
 
         setHouseholds(data || []);
-        setFilteredHouseholds(data || []);
       } catch (err) {
         console.error('Error loading households:', err);
         setError('Unexpected error loading households');
@@ -80,31 +78,32 @@ export default function HouseholdsPage() {
     loadHouseholds();
   }, []);
 
-  // Apply filters and search
-  useEffect(() => {
-    let filtered = [...households];
+  // Use search/filter/sort utility
+  const {
+    filteredItems,
+    searchQuery,
+    setSearchQuery,
+    filters,
+    setFilter,
+    isSearching,
+    resultCount,
+  } = useSearchFilterSort({
+    items: households,
+    searchFields: ['property.address', 'household_head.first_name', 'household_head.last_name'],
+    initialFilters: { ownership_type: 'all' },
+  });
 
-    // Apply search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (h) =>
-          h.property?.address?.toLowerCase().includes(query) ||
-          h.household_head?.first_name?.toLowerCase().includes(query) ||
-          h.household_head?.last_name?.toLowerCase().includes(query) ||
-          `${h.household_head?.first_name} ${h.household_head?.last_name}`
-            .toLowerCase()
-            .includes(query)
-      );
-    }
-
-    // Apply ownership filter
-    if (ownershipFilter !== 'all') {
-      filtered = filtered.filter((h) => h.ownership_type === ownershipFilter);
-    }
-
-    setFilteredHouseholds(filtered);
-  }, [searchQuery, ownershipFilter, households]);
+  // Use pagination utility
+  const {
+    paginatedItems: paginatedHouseholds,
+    currentPage,
+    totalPages,
+    nextPage,
+    previousPage,
+    canGoNext,
+    canGoPrevious,
+    meta,
+  } = usePagination(filteredItems, 10);
 
   if (loading) {
     return (
@@ -172,7 +171,10 @@ export default function HouseholdsPage() {
           />
         </div>
 
-        <Select value={ownershipFilter} onValueChange={setOwnershipFilter}>
+        <Select
+          value={filters.ownership_type || 'all'}
+          onValueChange={(value) => setFilter('ownership_type', value === 'all' ? undefined : value)}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Filter by ownership" />
           </SelectTrigger>
@@ -182,6 +184,12 @@ export default function HouseholdsPage() {
             <SelectItem value="renter">Renters</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Results summary */}
+      <div className="text-sm text-muted-foreground">
+        {getPaginationInfoText(meta, 'households')}
+        {isSearching && <span className="ml-2 italic">(searching...)</span>}
       </div>
 
       {/* Stats */}
@@ -232,18 +240,18 @@ export default function HouseholdsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredHouseholds.length === 0 ? (
+            {paginatedHouseholds.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-8">
                   <p className="text-muted-foreground">
-                    {searchQuery || ownershipFilter !== 'all'
+                    {searchQuery || filters.ownership_type
                       ? 'No households match your filters'
                       : 'No households found'}
                   </p>
                 </TableCell>
               </TableRow>
             ) : (
-              filteredHouseholds.map((household) => (
+              paginatedHouseholds.map((household) => (
                 <TableRow key={household.id}>
                   <TableCell>
                     <div>
@@ -309,6 +317,35 @@ export default function HouseholdsPage() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={previousPage}
+            disabled={!canGoPrevious}
+          >
+            Previous
+          </Button>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              Page {currentPage} of {totalPages}
+            </span>
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={nextPage}
+            disabled={!canGoNext}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

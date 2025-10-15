@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Building2, Search, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
+import { usePagination, getPaginationInfoText } from '@/lib/utils/pagination';
 
 interface Tenant {
   id: string;
@@ -30,8 +31,6 @@ interface TenantListProps {
   tenants: Tenant[];
 }
 
-const ITEMS_PER_PAGE = 10;
-
 const statusColors = {
   active: 'bg-green-100 text-green-800 border-green-200',
   inactive: 'bg-gray-100 text-gray-800 border-gray-200',
@@ -42,7 +41,6 @@ const statusColors = {
 export function TenantList({ tenants }: TenantListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [currentPage, setCurrentPage] = useState(1);
 
   // Filter and search tenants
   const filteredTenants = useMemo(() => {
@@ -68,21 +66,28 @@ export function TenantList({ tenants }: TenantListProps) {
     return filtered;
   }, [tenants, statusFilter, searchQuery]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredTenants.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedTenants = filteredTenants.slice(startIndex, endIndex);
+  // Use pagination utility
+  const {
+    currentPage,
+    totalPages,
+    paginatedItems: paginatedTenants,
+    goToPage,
+    nextPage,
+    previousPage,
+    canGoNext,
+    canGoPrevious,
+    meta,
+  } = usePagination(filteredTenants, 10);
 
   // Reset to page 1 when filters change
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    setCurrentPage(1);
+    goToPage(1);
   };
 
   const handleStatusFilterChange = (value: string) => {
     setStatusFilter(value);
-    setCurrentPage(1);
+    goToPage(1);
   };
 
   return (
@@ -115,8 +120,7 @@ export function TenantList({ tenants }: TenantListProps) {
 
       {/* Results count */}
       <div className="text-sm text-muted-foreground">
-        Showing {paginatedTenants.length > 0 ? startIndex + 1 : 0}–{Math.min(endIndex, filteredTenants.length)} of{' '}
-        {filteredTenants.length} {filteredTenants.length === 1 ? 'tenant' : 'tenants'}
+        {getPaginationInfoText(meta, 'tenants')}
       </div>
 
       {/* Table */}
@@ -201,8 +205,8 @@ export function TenantList({ tenants }: TenantListProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
+            onClick={previousPage}
+            disabled={!canGoPrevious}
           >
             <ChevronLeft className="h-4 w-4 mr-1" />
             Previous
@@ -217,8 +221,8 @@ export function TenantList({ tenants }: TenantListProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
+            onClick={nextPage}
+            disabled={!canGoNext}
           >
             Next
             <ChevronRight className="h-4 w-4 ml-1" />
