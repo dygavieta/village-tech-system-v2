@@ -2,6 +2,7 @@
 // Phase 7 User Story 5: Residence Mobile App - Announcements Module
 // Purpose: Riverpod providers with Supabase Realtime for announcements
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/supabase/supabase_client.dart';
@@ -19,20 +20,38 @@ final announcementsProvider = StreamProvider.autoDispose<List<Announcement>>((re
   }
 
   // Get initial data + realtime updates
+  // Note: We fetch read status separately and merge it
   return supabase
       .from('announcements')
       .stream(primaryKey: ['id'])
       .order('effective_start', ascending: false)
-      .map((data) {
+      .asyncMap((data) async {
+        // Fetch all read statuses for current user
+        final readStatuses = await supabase
+            .from('announcement_reads')
+            .select('announcement_id')
+            .eq('user_id', userId);
+
+        final readIds = readStatuses
+            .map((r) => r['announcement_id'] as String)
+            .toSet();
+
+        // Fetch all acknowledgment statuses for current user
+        final ackStatuses = await supabase
+            .from('announcement_acknowledgments')
+            .select('announcement_id')
+            .eq('user_id', userId);
+
+        final ackedIds = ackStatuses
+            .map((r) => r['announcement_id'] as String)
+            .toSet();
+
         return data.map((json) {
-          // Check if user has read this announcement
-          final announcement = Announcement.fromJson(json);
-          _checkReadStatus(supabase, userId, announcement.id).then((isRead) {
-            if (isRead) {
-              // Update local state if needed
-            }
-          });
-          return announcement;
+          final announcementId = json['id'] as String;
+          // Add read and acknowledged status to JSON
+          json['is_read'] = readIds.contains(announcementId);
+          json['is_acknowledged'] = ackedIds.contains(announcementId);
+          return Announcement.fromJson(json);
         }).toList();
       });
 });
@@ -70,10 +89,18 @@ final announcementDetailProvider =
       .from('announcements')
       .stream(primaryKey: ['id'])
       .eq('id', id)
-      .map((data) {
+      .asyncMap((data) async {
         if (data.isEmpty) return null;
 
-        final announcement = Announcement.fromJson(data.first);
+        // Fetch read and acknowledgment status
+        final isRead = await _checkReadStatus(supabase, userId, id);
+        final isAcknowledged = await _checkAcknowledgmentStatus(supabase, userId, id);
+
+        final json = data.first;
+        json['is_read'] = isRead;
+        json['is_acknowledged'] = isAcknowledged;
+
+        final announcement = Announcement.fromJson(json);
 
         // Mark as read when viewed
         _markAnnouncementAsRead(supabase, userId, id);
@@ -175,14 +202,34 @@ class AnnouncementNotifier extends AutoDisposeAsyncNotifier<void> {
         throw Exception('User not authenticated');
       }
 
-      await supabase.from('announcement_reads').upsert({
-        'user_id': userId,
-        'announcement_id': announcementId,
-        'read_at': DateTime.now().toIso8601String(),
-      });
+      // Check if already marked as read
+      final existing = await supabase
+          .from('announcement_reads')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('announcement_id', announcementId)
+          .maybeSingle();
+
+      if (existing != null) {
+        // Already marked as read
+        state = const AsyncData(null);
+        return;
+      }
+
+      // Use upsert with onConflict to handle race conditions
+      await supabase.from('announcement_reads').upsert(
+        {
+          'user_id': userId,
+          'announcement_id': announcementId,
+          'read_at': DateTime.now().toIso8601String(),
+        },
+        onConflict: 'user_id,announcement_id',
+      );
 
       state = const AsyncData(null);
     } catch (e, stack) {
+      // Don't fail silently here since this is an explicit user action
+      debugPrint('Failed to mark announcement as read: $e');
       state = AsyncError(e, stack);
     }
   }
@@ -200,16 +247,36 @@ class AnnouncementNotifier extends AutoDisposeAsyncNotifier<void> {
         throw Exception('User not authenticated');
       }
 
-      // Optimistic update - the UI should update immediately
-      // The realtime subscription will confirm the change
-      await supabase.from('announcement_acknowledgments').insert({
-        'user_id': userId,
-        'announcement_id': announcementId,
-        'acknowledged_at': DateTime.now().toIso8601String(),
-      });
+      // Check if already acknowledged to prevent duplicate errors
+      final existing = await supabase
+          .from('announcement_acknowledgments')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('announcement_id', announcementId)
+          .maybeSingle();
+
+      if (existing != null) {
+        // Already acknowledged
+        state = const AsyncData(null);
+        return;
+      }
+
+      // Use upsert with onConflict to handle race conditions
+      await supabase.from('announcement_acknowledgments').upsert(
+        {
+          'user_id': userId,
+          'announcement_id': announcementId,
+          'acknowledged_at': DateTime.now().toIso8601String(),
+        },
+        onConflict: 'announcement_id,user_id',
+      );
 
       state = const AsyncData(null);
+
+      // Invalidate the detail provider to force refresh with new acknowledgment status
+      ref.invalidate(announcementDetailProvider(announcementId));
     } catch (e, stack) {
+      debugPrint('Failed to acknowledge announcement: $e');
       state = AsyncError(e, stack);
       // UI should show error and allow retry
       rethrow;
@@ -301,11 +368,49 @@ Future<void> _markAnnouncementAsRead(
   String userId,
   String announcementId,
 ) async {
-  await supabase.from('announcement_reads').upsert({
-    'user_id': userId,
-    'announcement_id': announcementId,
-    'read_at': DateTime.now().toIso8601String(),
-  });
+  try {
+    // Check if already marked as read to avoid unnecessary database calls
+    final existing = await supabase
+        .from('announcement_reads')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('announcement_id', announcementId)
+        .maybeSingle();
+
+    if (existing != null) {
+      // Already marked as read, no need to upsert
+      return;
+    }
+
+    // Use upsert with onConflict to handle race conditions
+    await supabase.from('announcement_reads').upsert(
+      {
+        'user_id': userId,
+        'announcement_id': announcementId,
+        'read_at': DateTime.now().toIso8601String(),
+      },
+      onConflict: 'user_id,announcement_id',
+    );
+  } catch (e) {
+    // Silently fail - marking as read is not critical
+    // The error is likely a duplicate key constraint violation
+    debugPrint('Failed to mark announcement as read: $e');
+  }
+}
+
+Future<bool> _checkAcknowledgmentStatus(
+  SupabaseClient supabase,
+  String userId,
+  String announcementId,
+) async {
+  final result = await supabase
+      .from('announcement_acknowledgments')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('announcement_id', announcementId)
+      .maybeSingle();
+
+  return result != null;
 }
 
 Future<bool> _checkRuleAcknowledgment(

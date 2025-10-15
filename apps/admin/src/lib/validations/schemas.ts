@@ -66,7 +66,7 @@ export const createAnnouncementSchema = z.object({
   urgency: z.enum(['critical', 'important', 'info'], {
     required_error: 'Urgency level is required',
   }),
-  category: z.enum(['event', 'maintenance', 'security', 'policy'], {
+  category: z.enum(['event', 'maintenance', 'security', 'policy', 'general'], {
     required_error: 'Category is required',
   }),
   target_audience: z.enum(['all_residents', 'all_security', 'specific_households', 'all'], {
@@ -76,6 +76,7 @@ export const createAnnouncementSchema = z.object({
   effective_start: z.string().datetime().optional(),
   effective_end: z.string().datetime().optional(),
   requires_acknowledgment: z.boolean().default(false),
+  attachment_urls: z.array(z.string().url()).optional(),
 });
 
 export type CreateAnnouncementInput = z.infer<typeof createAnnouncementSchema>;

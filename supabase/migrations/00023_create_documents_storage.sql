@@ -35,6 +35,10 @@ BEGIN
   DROP POLICY IF EXISTS "Users can update their own documents" ON storage.objects;
   DROP POLICY IF EXISTS "Users can delete their own documents" ON storage.objects;
   DROP POLICY IF EXISTS "Superadmins can manage all documents" ON storage.objects;
+  DROP POLICY IF EXISTS "Admins can upload announcement attachments" ON storage.objects;
+  DROP POLICY IF EXISTS "Admins can read announcement attachments" ON storage.objects;
+  DROP POLICY IF EXISTS "Admins can update announcement attachments" ON storage.objects;
+  DROP POLICY IF EXISTS "Admins can delete announcement attachments" ON storage.objects;
 EXCEPTION
   WHEN undefined_object THEN NULL;
 END $$;
@@ -115,4 +119,65 @@ USING (
 WITH CHECK (
   bucket_id = 'documents' AND
   (auth.jwt() ->> 'user_role')::text = 'superadmin'
+);
+
+-- ============================================================================
+-- ANNOUNCEMENT ATTACHMENTS POLICIES
+-- ============================================================================
+-- Admins need to upload announcement attachments to announcements/ folder
+
+-- INSERT: Admins can upload announcement attachments
+CREATE POLICY "Admins can upload announcement attachments"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (
+  bucket_id = 'documents' AND
+  (name LIKE 'announcements/%') AND
+  EXISTS (
+    SELECT 1 FROM public.user_profiles
+    WHERE user_profiles.id = auth.uid()
+    AND user_profiles.role IN ('admin_head', 'admin_officer')
+  )
+);
+
+-- SELECT: Admins can read announcement attachments
+CREATE POLICY "Admins can read announcement attachments"
+ON storage.objects FOR SELECT
+TO authenticated
+USING (
+  bucket_id = 'documents' AND
+  (name LIKE 'announcements/%') AND
+  EXISTS (
+    SELECT 1 FROM public.user_profiles
+    WHERE user_profiles.id = auth.uid()
+    AND user_profiles.role IN ('admin_head', 'admin_officer')
+  )
+);
+
+-- UPDATE: Admins can update announcement attachments metadata
+CREATE POLICY "Admins can update announcement attachments"
+ON storage.objects FOR UPDATE
+TO authenticated
+USING (
+  bucket_id = 'documents' AND
+  (name LIKE 'announcements/%') AND
+  EXISTS (
+    SELECT 1 FROM public.user_profiles
+    WHERE user_profiles.id = auth.uid()
+    AND user_profiles.role IN ('admin_head', 'admin_officer')
+  )
+);
+
+-- DELETE: Admins can delete announcement attachments
+CREATE POLICY "Admins can delete announcement attachments"
+ON storage.objects FOR DELETE
+TO authenticated
+USING (
+  bucket_id = 'documents' AND
+  (name LIKE 'announcements/%') AND
+  EXISTS (
+    SELECT 1 FROM public.user_profiles
+    WHERE user_profiles.id = auth.uid()
+    AND user_profiles.role IN ('admin_head', 'admin_officer')
+  )
 );

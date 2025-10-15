@@ -35,27 +35,38 @@ export async function sendAnnouncement(
       return { success: false, error: 'Authentication required' };
     }
 
-    // Get user's tenant_id from their profile
+    // Get user's tenant_id and role from user_profiles table
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
-      .select('tenant_id, user_role')
+      .select('tenant_id, role')
       .eq('id', user.id)
       .single();
 
-    if (profileError || !profile) {
+    if (profileError) {
+      return { success: false, error: `Failed to fetch user profile: ${profileError.message}` };
+    }
+
+    if (!profile) {
       return { success: false, error: 'User profile not found' };
     }
 
+    const tenantId = profile.tenant_id;
+    const userRole = profile.role;
+
+    if (!tenantId) {
+      return { success: false, error: 'Tenant ID not found' };
+    }
+
     // Check if user is admin
-    if (!['admin_head', 'admin_officer'].includes(profile.user_role)) {
-      return { success: false, error: 'Unauthorized: Admin access required' };
+    if (!userRole || !['admin_head', 'admin_officer'].includes(userRole)) {
+      return { success: false, error: `Unauthorized: Admin access required (current role: ${userRole})` };
     }
 
     // Insert announcement
     const { data: announcement, error: insertError } = await supabase
       .from('announcements')
       .insert({
-        tenant_id: profile.tenant_id,
+        tenant_id: tenantId,
         created_by_admin_id: user.id,
         title: validatedData.title,
         content: validatedData.content,
@@ -70,13 +81,16 @@ export async function sendAnnouncement(
           ? new Date(validatedData.effective_end).toISOString()
           : null,
         requires_acknowledgment: validatedData.requires_acknowledgment,
+        attachment_urls: validatedData.attachment_urls || null,
       })
       .select('id')
       .single();
 
     if (insertError) {
-      console.error('Error inserting announcement:', insertError);
-      return { success: false, error: 'Failed to create announcement' };
+      return {
+        success: false,
+        error: `Failed to create announcement: ${insertError.message || insertError.code || 'Unknown error'}`
+      };
     }
 
     // TODO: Call Edge Function to send push notifications
@@ -93,7 +107,16 @@ export async function sendAnnouncement(
       announcementId: announcement.id,
     };
   } catch (error) {
-    console.error('Error in sendAnnouncement:', error);
+    // Handle Zod validation errors
+    if (error && typeof error === 'object' && 'issues' in error) {
+      const zodError = error as any;
+      const firstIssue = zodError.issues?.[0];
+      return {
+        success: false,
+        error: firstIssue ? `Validation error: ${firstIssue.message} (${firstIssue.path.join('.')})` : 'Validation failed',
+      };
+    }
+
     return {
       success: false,
       error: error instanceof Error ? error.message : 'An unexpected error occurred',

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:residence/features/auth/providers/auth_provider.dart';
+import 'package:residence/features/announcements/providers/announcement_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   final Widget child;
@@ -93,6 +94,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final currentUser = ref.watch(currentUserProvider);
     final userEmail = currentUser?.email ?? 'Guest';
+    final unreadCount = ref.watch(unreadAnnouncementsCountProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -193,33 +195,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: _onDestinationSelected,
-        destinations: const [
-          NavigationDestination(
+        destinations: [
+          const NavigationDestination(
             icon: Icon(Icons.home_outlined),
             selectedIcon: Icon(Icons.home),
             label: 'Household',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.directions_car_outlined),
             selectedIcon: Icon(Icons.directions_car),
             label: 'Stickers',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.construction_outlined),
             selectedIcon: Icon(Icons.construction),
             label: 'Permits',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.people_outline),
             selectedIcon: Icon(Icons.people),
             label: 'Guests',
           ),
           NavigationDestination(
-            icon: Icon(Icons.campaign_outlined),
-            selectedIcon: Icon(Icons.campaign),
+            icon: unreadCount.when(
+              data: (count) => count > 0
+                  ? Badge(
+                      label: Text('$count'),
+                      child: const Icon(Icons.campaign_outlined),
+                    )
+                  : const Icon(Icons.campaign_outlined),
+              loading: () => const Icon(Icons.campaign_outlined),
+              error: (_, __) => const Icon(Icons.campaign_outlined),
+            ),
+            selectedIcon: unreadCount.when(
+              data: (count) => count > 0
+                  ? Badge(
+                      label: Text('$count'),
+                      child: const Icon(Icons.campaign),
+                    )
+                  : const Icon(Icons.campaign),
+              loading: () => const Icon(Icons.campaign),
+              error: (_, __) => const Icon(Icons.campaign),
+            ),
             label: 'News',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.account_balance_wallet_outlined),
             selectedIcon: Icon(Icons.account_balance_wallet),
             label: 'Fees',

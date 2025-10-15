@@ -11,45 +11,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getAnnouncementStats, getRecentAnnouncements } from '@/lib/actions/announcements';
+import { formatDistanceToNow } from 'date-fns';
 
-export default function AnnouncementsPage() {
-  // TODO: Replace with actual data from Supabase
-  const stats = {
-    totalAnnouncements: 12,
-    activeAnnouncements: 5,
-    criticalAlerts: 1,
-    scheduledAnnouncements: 3,
-  };
-
-  const recentAnnouncements = [
-    {
-      id: 1,
-      title: 'Community Pool Maintenance',
-      urgency: 'important' as const,
-      category: 'maintenance' as const,
-      targetAudience: 'All Residents',
-      createdAt: '2 hours ago',
-      status: 'active',
-    },
-    {
-      id: 2,
-      title: 'Gate System Upgrade Tonight',
-      urgency: 'critical' as const,
-      category: 'security' as const,
-      targetAudience: 'All Residents',
-      createdAt: '5 hours ago',
-      status: 'active',
-    },
-    {
-      id: 3,
-      title: 'Annual General Meeting Reminder',
-      urgency: 'info' as const,
-      category: 'event' as const,
-      targetAudience: 'All Residents',
-      createdAt: '1 day ago',
-      status: 'scheduled',
-    },
-  ];
+export default async function AnnouncementsPage() {
+  const [stats, recentAnnouncements] = await Promise.all([
+    getAnnouncementStats(),
+    getRecentAnnouncements(),
+  ]);
 
   const getUrgencyColor = (urgency: 'critical' | 'important' | 'info') => {
     switch (urgency) {
@@ -71,6 +40,37 @@ export default function AnnouncementsPage() {
       case 'info':
         return <Info className="h-4 w-4" />;
     }
+  };
+
+  const getTargetAudienceLabel = (target: string) => {
+    switch (target) {
+      case 'all':
+        return 'All Users';
+      case 'all_residents':
+        return 'All Residents';
+      case 'all_security':
+        return 'All Security';
+      case 'specific_households':
+        return 'Specific Households';
+      default:
+        return target;
+    }
+  };
+
+  const getAnnouncementStatus = (announcement: any) => {
+    const now = new Date();
+    const effectiveStart = new Date(announcement.effective_start);
+    const effectiveEnd = announcement.effective_end ? new Date(announcement.effective_end) : null;
+
+    if (effectiveStart > now) {
+      return { label: 'scheduled', variant: 'secondary' as const };
+    }
+
+    if (effectiveEnd && effectiveEnd < now) {
+      return { label: 'expired', variant: 'outline' as const };
+    }
+
+    return { label: 'active', variant: 'default' as const };
   };
 
   return (
@@ -147,74 +147,99 @@ export default function AnnouncementsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {recentAnnouncements.map((announcement) => (
-              <div
-                key={announcement.id}
-                className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"
-              >
-                <div className="flex items-start gap-3">
+          {recentAnnouncements.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Megaphone className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-lg font-medium">No announcements yet</p>
+              <p className="text-sm text-muted-foreground mb-4">
+                Create your first announcement to communicate with your community
+              </p>
+              <Link href="/announcements/create">
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create Announcement
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentAnnouncements.map((announcement) => {
+                const status = getAnnouncementStatus(announcement);
+                return (
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-full ${getUrgencyColor(
-                      announcement.urgency
-                    )}`}
+                    key={announcement.id}
+                    className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"
                   >
-                    {getUrgencyIcon(announcement.urgency)}
-                  </div>
-                  <div className="flex-1">
+                    <div className="flex items-start gap-3">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-full ${getUrgencyColor(
+                          announcement.urgency
+                        )}`}
+                      >
+                        {getUrgencyIcon(announcement.urgency)}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{announcement.title}</p>
+                          <Badge variant="outline" className="text-xs">
+                            {announcement.category}
+                          </Badge>
+                        </div>
+                        <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            {getTargetAudienceLabel(announcement.target_audience)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {formatDistanceToNow(new Date(announcement.created_at), { addSuffix: true })}
+                          </span>
+                          {announcement.requires_acknowledgment && (
+                            <span className="flex items-center gap-1">
+                              <Bell className="h-3 w-3" />
+                              {announcement.acknowledgment_count || 0} acknowledged
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-2">
-                      <p className="font-medium">{announcement.title}</p>
-                      <Badge variant="outline" className="text-xs">
-                        {announcement.category}
+                      <Badge variant={status.variant}>
+                        {status.label}
                       </Badge>
-                    </div>
-                    <div className="mt-1 flex items-center gap-4 text-xs text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {announcement.targetAudience}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {announcement.createdAt}
-                      </span>
+                      <Link href={`/announcements/${announcement.id}`}>
+                        <Button variant="ghost" size="sm">
+                          View
+                        </Button>
+                      </Link>
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant={
-                      announcement.status === 'active' ? 'default' : 'secondary'
-                    }
-                  >
-                    {announcement.status}
-                  </Badge>
-                  <Button variant="ghost" size="sm">
-                    View
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Quick Actions */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="cursor-pointer hover:bg-accent transition-colors">
-          <CardHeader>
-            <CardTitle className="text-base">View All Announcements</CardTitle>
-            <CardDescription>Browse and manage all announcements</CardDescription>
-          </CardHeader>
-        </Card>
+        <Link href="/announcements">
+          <Card className="cursor-pointer hover:bg-accent transition-colors">
+            <CardHeader>
+              <CardTitle className="text-base">View All Announcements</CardTitle>
+              <CardDescription>Browse and manage all announcements</CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
 
-        <Card className="cursor-pointer hover:bg-accent transition-colors">
+        <Card className="cursor-pointer hover:bg-accent transition-colors opacity-50">
           <CardHeader>
             <CardTitle className="text-base">Analytics</CardTitle>
             <CardDescription>View read rates and engagement metrics</CardDescription>
           </CardHeader>
         </Card>
 
-        <Card className="cursor-pointer hover:bg-accent transition-colors">
+        <Card className="cursor-pointer hover:bg-accent transition-colors opacity-50">
           <CardHeader>
             <CardTitle className="text-base">Templates</CardTitle>
             <CardDescription>Use pre-made announcement templates</CardDescription>
