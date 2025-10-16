@@ -18,6 +18,15 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      auth: {
+        storageKey: 'admin-supabase-auth-token', // Must match client configuration
+        cookieOptions: {
+          domain: process.env.NODE_ENV === 'production' ? '.admin.villagetech.app' : 'localhost',
+          path: '/',
+          sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production'
+        }
+      },
       cookies: {
         get(name: string) {
           return request.cookies.get(name)?.value;
@@ -79,6 +88,42 @@ export async function updateSession(request: NextRequest) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/';
     return NextResponse.redirect(redirectUrl);
+  }
+
+  // Enhanced security: Verify admin role for protected routes
+  if (user && !isPublicRoute) {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      await supabase.auth.signOut();
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/login';
+      redirectUrl.searchParams.set('error', 'unauthorized');
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    // Parse JWT payload to access custom claims (added by custom_access_token_hook)
+    const base64Payload = session.access_token.split('.')[1];
+    const payload = JSON.parse(Buffer.from(base64Payload, 'base64').toString());
+    const userRole = payload.user_role;
+
+    // Only allow admin roles (admin_head, admin_officer) to access admin portal
+    if (!['admin_head', 'admin_officer'].includes(userRole)) {
+      await supabase.auth.signOut();
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/login';
+      redirectUrl.searchParams.set('error', 'access_denied');
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    // Reject superadmin access to admin portal
+    if (userRole === 'superadmin') {
+      await supabase.auth.signOut();
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = '/login';
+      redirectUrl.searchParams.set('error', 'invalid_portal');
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   return response;
