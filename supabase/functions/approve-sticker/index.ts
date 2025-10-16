@@ -14,6 +14,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { createLogger } from '../_shared/logger.ts';
+import { sendEmail, generateStickerApprovalEmail, generateStickerRejectionEmail } from '../_shared/email.ts';
 
 const logger = createLogger({ function: 'approve-sticker' });
 
@@ -115,10 +116,29 @@ serve(async (req: Request): Promise<Response> => {
       });
     }
 
-    // Fetch sticker to verify tenant isolation
+    // Fetch sticker with household and user information to verify tenant isolation and for email
     const { data: sticker, error: stickerFetchError } = await supabase
       .from('vehicle_stickers')
-      .select('id, tenant_id, household_id, vehicle_plate, status')
+      .select(`
+        id,
+        tenant_id,
+        household_id,
+        vehicle_plate,
+        vehicle_make,
+        vehicle_model,
+        vehicle_color,
+        sticker_type,
+        status,
+        households!vehicle_stickers_household_id_fkey(
+          household_head_id,
+          user_profiles!households_household_head_id_fkey(
+            id,
+            email,
+            first_name,
+            last_name
+          )
+        )
+      `)
       .eq('id', requestData.sticker_id)
       .single();
 
@@ -190,14 +210,87 @@ serve(async (req: Request): Promise<Response> => {
       decision: requestData.decision,
     });
 
-    // TODO: Send notification to household
-    // - Fetch household head user
-    // - Send push notification or email about approval/rejection
-    // - Include RFID serial if approved
-    logger.info('Notification should be sent to household', {
-      household_id: updatedSticker.household_id,
-      decision: requestData.decision,
-    });
+    // Send notification email to household head
+    const householdHead = sticker.households?.user_profiles;
+    if (householdHead?.email) {
+      // Fetch tenant name for email
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('name, subdomain')
+        .eq('id', tenantId)
+        .single();
+
+      const tenantName = tenant?.name || 'Your Community';
+      const portalUrl = tenant?.subdomain
+        ? `https://${tenant.subdomain}.villagetech.com/stickers`
+        : undefined;
+
+      if (requestData.decision === 'approved') {
+        const emailTemplate = generateStickerApprovalEmail({
+          recipientName: `${householdHead.first_name} ${householdHead.last_name}`,
+          vehiclePlate: sticker.vehicle_plate,
+          vehicleMake: sticker.vehicle_make || 'N/A',
+          vehicleModel: sticker.vehicle_model || 'N/A',
+          vehicleColor: sticker.vehicle_color || 'N/A',
+          stickerType: sticker.sticker_type || 'standard',
+          rfidSerial: requestData.rfid_serial!,
+          expiryDate: updateData.expiry_date,
+          tenantName,
+          portalUrl,
+        });
+
+        const emailResult = await sendEmail({
+          to: householdHead.email,
+          subject: emailTemplate.subject,
+          htmlBody: emailTemplate.htmlBody,
+          textBody: emailTemplate.textBody,
+        });
+
+        if (emailResult.success) {
+          logger.info('Sticker approval email sent successfully', {
+            to: householdHead.email,
+            messageId: emailResult.messageId,
+          });
+        } else {
+          logger.warn('Failed to send sticker approval email', {
+            to: householdHead.email,
+            error: emailResult.error,
+          });
+        }
+      } else {
+        // Rejection
+        const emailTemplate = generateStickerRejectionEmail({
+          recipientName: `${householdHead.first_name} ${householdHead.last_name}`,
+          vehiclePlate: sticker.vehicle_plate,
+          rejectionReason: requestData.rejection_reason || 'Please contact admin office for details',
+          tenantName,
+          portalUrl,
+        });
+
+        const emailResult = await sendEmail({
+          to: householdHead.email,
+          subject: emailTemplate.subject,
+          htmlBody: emailTemplate.htmlBody,
+          textBody: emailTemplate.textBody,
+        });
+
+        if (emailResult.success) {
+          logger.info('Sticker rejection email sent successfully', {
+            to: householdHead.email,
+            messageId: emailResult.messageId,
+          });
+        } else {
+          logger.warn('Failed to send sticker rejection email', {
+            to: householdHead.email,
+            error: emailResult.error,
+          });
+        }
+      }
+    } else {
+      logger.warn('No email address found for household head', {
+        household_id: updatedSticker.household_id,
+      });
+    }
 
     // Return success response
     const response: ApproveStickerResponse = {

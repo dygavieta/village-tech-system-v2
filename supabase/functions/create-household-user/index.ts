@@ -11,6 +11,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { createLogger } from '../_shared/logger.ts';
+import { sendEmail } from '../_shared/email.ts';
+import { generateHouseholdWelcomeEmail } from '../_shared/email-templates.ts';
 
 const logger = createLogger({ function: 'create-household-user' });
 
@@ -22,6 +24,7 @@ interface CreateHouseholdUserRequest {
   middle_name?: string;
   last_name: string;
   phone_number?: string;
+  property_address?: string;  // For welcome email
 }
 
 interface CreateHouseholdUserResponse {
@@ -158,6 +161,50 @@ serve(async (req: Request): Promise<Response> => {
       user_id: householdUserData.user.id,
       email: householdUserData.user.email
     });
+
+    // Send welcome email to household head
+    try {
+      // Fetch tenant info for branding
+      const { data: tenant } = await supabase
+        .from('tenants')
+        .select('name, subdomain')
+        .eq('id', requestData.tenant_id)
+        .single();
+
+      const tenantName = tenant?.name || 'Your Community';
+      const mobileAppUrl = 'https://villagetech.app/download'; // Adjust as needed
+
+      const emailTemplate = generateHouseholdWelcomeEmail({
+        householdHeadName: `${requestData.first_name} ${requestData.last_name}`,
+        householdHeadEmail: requestData.email,
+        tenantName,
+        propertyAddress: requestData.property_address || 'Your Property',
+        mobileAppUrl,
+        temporaryPassword: requestData.password,
+      });
+
+      const emailResult = await sendEmail({
+        to: requestData.email,
+        subject: emailTemplate.subject,
+        htmlBody: emailTemplate.htmlBody,
+        textBody: emailTemplate.textBody,
+      });
+
+      if (emailResult.success) {
+        logger.info('Welcome email sent successfully', {
+          to: requestData.email,
+          messageId: emailResult.messageId,
+        });
+      } else {
+        logger.warn('Failed to send welcome email', {
+          to: requestData.email,
+          error: emailResult.error,
+        });
+      }
+    } catch (emailError) {
+      // Don't fail user creation if email fails
+      logger.error('Error sending welcome email', emailError as Error);
+    }
 
     // Return success response
     const response: CreateHouseholdUserResponse = {

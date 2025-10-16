@@ -49,7 +49,9 @@
       "Bash(npx next build:*)",
       "Bash(timeout 180 npx next build)",
       "Bash(npx supabase:*)",
-      "Bash(./gradlew --stop)"
+      "Bash(./gradlew --stop)",
+      "Bash(supabase stop:*)",
+      "Bash(supabase start:*)"
     ],
     "deny": [],
     "ask": []

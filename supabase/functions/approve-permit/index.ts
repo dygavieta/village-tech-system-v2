@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { sendEmail, generatePermitApprovalEmail } from "../_shared/email.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -97,13 +98,57 @@ serve(async (req) => {
       throw updateError;
     }
 
-    // TODO: Send notification to household head (email/push notification)
-    // This would integrate with your notification service
-    const notificationMessage = approval_decision === "approved"
-      ? `Your construction permit has been approved${road_fee_amount ? ` with a road fee of ₱${road_fee_amount}` : ""}.`
-      : `Your construction permit has been rejected. Reason: ${rejection_reason}`;
+    // Send notification email to household head
+    const householdHead = permit.household?.household_head;
+    if (householdHead?.email && approval_decision === "approved") {
+      // Fetch tenant info for branding
+      const { data: tenant } = await supabaseClient
+        .from("tenants")
+        .select("tenant_name, subdomain")
+        .eq("id", permit.tenant_id)
+        .single();
 
-    console.log(`Notification to ${permit.household?.household_head?.email}: ${notificationMessage}`);
+      const tenantName = tenant?.tenant_name || "Your Community";
+      const portalUrl = tenant?.subdomain
+        ? `https://${tenant.subdomain}.villagetech.com/permits/${permit.id}`
+        : undefined;
+
+      // Format dates
+      const startDate = new Date(permit.start_date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const endDate = new Date(permit.end_date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      const emailTemplate = generatePermitApprovalEmail({
+        recipientName: `${householdHead.first_name} ${householdHead.last_name}`,
+        projectType: permit.project_type,
+        permitNumber: permit.id.substring(0, 8).toUpperCase(),
+        startDate,
+        endDate,
+        roadFee: road_fee_amount || 0,
+        tenantName,
+        portalUrl,
+      });
+
+      const emailResult = await sendEmail({
+        to: householdHead.email,
+        subject: emailTemplate.subject,
+        htmlBody: emailTemplate.htmlBody,
+        textBody: emailTemplate.textBody,
+      });
+
+      if (emailResult.success) {
+        console.log(`Permit approval email sent to ${householdHead.email}`);
+      } else {
+        console.warn(`Failed to send permit approval email: ${emailResult.error}`);
+      }
+    }
 
     return new Response(
       JSON.stringify({

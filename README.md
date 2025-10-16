@@ -259,6 +259,30 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
+#### Supabase Edge Functions
+Configure in Supabase Dashboard → Settings → Secrets:
+
+```bash
+RESEND_API_KEY=re_xxxxxxxxxxxx             # Resend API key for sending emails
+DEFAULT_FROM_EMAIL=noreply@villagetech.com  # Default sender email address
+```
+
+**Email Service Setup (Resend)**:
+1. Create a free account at [resend.com](https://resend.com)
+2. Verify your sending domain (e.g., villagetech.com)
+3. Generate an API key in the Resend dashboard
+4. Add `RESEND_API_KEY` to Supabase secrets
+5. Configure `DEFAULT_FROM_EMAIL` to match your verified domain
+
+The system will automatically send emails for:
+- Admin activation (tenant creation)
+- Household welcome emails
+- Vehicle sticker approvals/rejections
+- Construction permit approvals
+- Guest visit notifications
+- Payment reminders
+- Critical announcements
+
 #### Mobile Apps (Residence/Sentinel)
 Configure in `lib/core/supabase/supabase_client.dart`:
 ```dart

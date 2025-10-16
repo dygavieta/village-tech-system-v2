@@ -17,6 +17,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { createLogger } from '../_shared/logger.ts';
 import { validateSubdomain } from '../_shared/subdomain-validator.ts';
 import { generateAdminActivationEmail } from '../_shared/email-templates.ts';
+import { sendEmail } from '../_shared/email.ts';
 
 const logger = createLogger({ function: 'create-tenant' });
 
@@ -294,12 +295,27 @@ serve(async (req: Request): Promise<Response> => {
       temporaryPassword,
     });
 
-    // TODO: Integrate with email service (SendGrid/Resend)
-    // For now, just log that email should be sent
-    logger.info('Admin activation email prepared (send via email service)', {
+    // Send activation email using Resend
+    const emailResult = await sendEmail({
       to: requestData.admin_email,
       subject: emailTemplate.subject,
+      htmlBody: emailTemplate.htmlBody,
+      textBody: emailTemplate.textBody,
     });
+
+    if (emailResult.success) {
+      logger.info('Admin activation email sent successfully', {
+        to: requestData.admin_email,
+        messageId: emailResult.messageId,
+      });
+    } else {
+      logger.warn('Failed to send admin activation email', {
+        to: requestData.admin_email,
+        error: emailResult.error,
+      });
+      // Don't fail the entire tenant creation if email fails
+      // Admin can still be notified through other means
+    }
 
     // Return success response
     const response: CreateTenantResponse = {
