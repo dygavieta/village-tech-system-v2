@@ -216,26 +216,11 @@ class _VillageRulesScreenState extends ConsumerState<VillageRulesScreen> {
                 fontWeight: FontWeight.w600,
               ),
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(
-              'Effective: ${dateFormat.format(rule.effectiveDate)}',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-            ),
-            if (rule.version != null) ...[
-              const SizedBox(height: 2),
-              Text(
-                'Version: ${rule.version}',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+        subtitle: Text(
+          'Effective: ${dateFormat.format(rule.effectiveDate)}',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-            ],
-          ],
         ),
         trailing: rule.needsAcknowledgment
             ? Chip(
@@ -256,58 +241,11 @@ class _VillageRulesScreenState extends ConsumerState<VillageRulesScreen> {
                         height: 1.6,
                       ),
                 ),
-                if (rule.needsAcknowledgment) ...[
+                if (rule.requiresAcknowledgment) ...[
                   const SizedBox(height: 16),
                   const Divider(),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () {
-                        context.push(
-                          '/announcements/rules/acknowledge/${rule.id}',
-                        );
-                      },
-                      icon: const Icon(Icons.edit_note),
-                      label: const Text('Acknowledge Rule'),
-                    ),
-                  ),
-                ],
-                if (rule.isAcknowledged && rule.acknowledgedAt != null) ...[
-                  const SizedBox(height: 16),
-                  Card(
-                    color: Colors.green.withOpacity(0.1),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        children: [
-                          Icon(Icons.check_circle, color: Colors.green[700]),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Acknowledged',
-                                  style: TextStyle(
-                                    color: Colors.green[700],
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  dateFormat.format(rule.acknowledgedAt!),
-                                  style: TextStyle(
-                                    color: Colors.green[700],
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  _buildAcknowledgmentSection(rule),
                 ],
               ],
             ),
@@ -315,6 +253,114 @@ class _VillageRulesScreenState extends ConsumerState<VillageRulesScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildAcknowledgmentSection(VillageRule rule) {
+    final notifier = ref.watch(announcementNotifierProvider);
+
+    if (rule.isAcknowledged) {
+      return Card(
+        color: Colors.green.withOpacity(0.1),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.green[700]),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'You have acknowledged this rule',
+                  style: TextStyle(
+                    color: Colors.green[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Card(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.assignment_turned_in,
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Acknowledgment Required',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Please confirm that you have read and understood this rule.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: notifier.isLoading
+                    ? null
+                    : () => _acknowledgeRule(rule.id),
+                icon: notifier.isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.check),
+                label: const Text('Acknowledge'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _acknowledgeRule(String ruleId) async {
+    try {
+      await ref.read(announcementNotifierProvider.notifier).acknowledgeRule(
+            ruleId: ruleId,
+          );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Rule acknowledged successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to acknowledge: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildEmptyState() {
@@ -415,19 +461,15 @@ class _VillageRulesScreenState extends ConsumerState<VillageRulesScreen> {
       case RuleCategory.general:
         return 'General';
       case RuleCategory.parking:
-        return 'Parking';
+        return 'Parking & Vehicles';
       case RuleCategory.noise:
-        return 'Noise';
+        return 'Noise & Disturbance';
       case RuleCategory.pets:
-        return 'Pets';
+        return 'Pets & Animals';
       case RuleCategory.construction:
-        return 'Construction';
-      case RuleCategory.safety:
-        return 'Safety';
-      case RuleCategory.amenities:
-        return 'Amenities';
-      case RuleCategory.other:
-        return 'Other';
+        return 'Construction & Renovation';
+      case RuleCategory.visitors:
+        return 'Visitors & Guests';
     }
   }
 
@@ -443,12 +485,8 @@ class _VillageRulesScreenState extends ConsumerState<VillageRulesScreen> {
         return Icons.pets;
       case RuleCategory.construction:
         return Icons.construction;
-      case RuleCategory.safety:
-        return Icons.security;
-      case RuleCategory.amenities:
-        return Icons.pool;
-      case RuleCategory.other:
-        return Icons.more_horiz;
+      case RuleCategory.visitors:
+        return Icons.people;
     }
   }
 }

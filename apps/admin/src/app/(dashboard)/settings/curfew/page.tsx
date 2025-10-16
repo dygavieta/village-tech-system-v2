@@ -7,6 +7,7 @@ import {
   FileText,
   Calendar,
   Eye,
+  Edit,
   Sun,
   Snowflake,
 } from 'lucide-react';
@@ -247,12 +248,20 @@ export default async function CurfewSettingsPage() {
                         </div>
                       </div>
                     </div>
-                    <Link href={`/settings/curfew/${curfew.id}`}>
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </Button>
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link href={`/settings/curfew/${curfew.id}`}>
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </Button>
+                      </Link>
+                      <Link href={`/settings/curfew/${curfew.id}/edit`}>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
                 );
               })}

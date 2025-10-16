@@ -60,6 +60,11 @@ class _AnnouncementsScreenState extends ConsumerState<AnnouncementsScreen> {
             tooltip: 'Village Rules',
             onPressed: () => context.push('/announcements/rules'),
           ),
+          IconButton(
+            icon: const Icon(Icons.access_time),
+            tooltip: 'Curfew Hours',
+            onPressed: () => context.push('/announcements/curfew'),
+          ),
         ],
       ),
       body: Column(

@@ -9,6 +9,7 @@ import '../../../core/supabase/supabase_client.dart';
 import '../../../core/notifications/notification_service.dart';
 import '../models/announcement.dart';
 import '../models/village_rule.dart';
+import '../models/curfew.dart';
 
 /// Provider for announcements list with realtime updates
 final announcementsProvider = StreamProvider.autoDispose<List<Announcement>>((ref) {
@@ -115,22 +116,73 @@ final villageRulesProvider = StreamProvider.autoDispose<List<VillageRule>>((ref)
   final userId = supabase.auth.currentUser?.id;
 
   if (userId == null) {
+    debugPrint('[VillageRules] No user ID, returning empty list');
     return Stream.value([]);
   }
 
   return supabase
       .from('village_rules')
       .stream(primaryKey: ['id'])
-      .eq('is_active', true)
-      .order('display_order', ascending: true)
-      .map((data) {
-        return data.map((json) {
-          final rule = VillageRule.fromJson(json);
-          // Check acknowledgment status
-          _checkRuleAcknowledgment(supabase, userId, rule.id).then((isAcknowledged) {
-            // Update local state if needed
-          });
-          return rule;
+      .order('created_at', ascending: false)
+      .asyncMap((data) async {
+        debugPrint('[VillageRules] Received ${data.length} rules from stream');
+
+        final now = DateTime.now();
+
+        // Filter for published rules that have reached their effective date
+        final publishedRules = data.where((json) {
+          final publishedAt = json['published_at'];
+          final effectiveDate = json['effective_date'];
+
+          debugPrint('[VillageRules] Rule ${json['id']}: published_at=$publishedAt, effective_date=$effectiveDate');
+
+          // Only include rules that are published and effective
+          if (publishedAt == null) {
+            debugPrint('[VillageRules] Rule ${json['id']} filtered: not published');
+            return false;
+          }
+          if (effectiveDate == null) {
+            debugPrint('[VillageRules] Rule ${json['id']} filtered: no effective date');
+            return false;
+          }
+
+          // Parse the date (effective_date is a DATE field, not TIMESTAMPTZ)
+          final effective = DateTime.parse(effectiveDate as String);
+          final today = DateTime(now.year, now.month, now.day);
+          final effectiveDay = DateTime(effective.year, effective.month, effective.day);
+
+          final isEffective = effectiveDay.isBefore(today) || effectiveDay.isAtSameMomentAs(today);
+
+          if (!isEffective) {
+            debugPrint('[VillageRules] Rule ${json['id']} filtered: not yet effective (effective: $effectiveDay, today: $today)');
+          }
+
+          return isEffective;
+        }).toList();
+
+        debugPrint('[VillageRules] After filtering: ${publishedRules.length} published and effective rules');
+
+        // Fetch all acknowledgment statuses for current user
+        final ackStatuses = await supabase
+            .from('rule_acknowledgments')
+            .select('rule_id, acknowledged_at')
+            .eq('user_id', userId);
+
+        final ackMap = <String, DateTime>{};
+        for (final ack in ackStatuses) {
+          final ruleId = ack['rule_id'] as String;
+          final acknowledgedAt = ack['acknowledged_at'] as String;
+          ackMap[ruleId] = DateTime.parse(acknowledgedAt);
+        }
+
+        debugPrint('[VillageRules] Found ${ackMap.length} acknowledgments for user');
+
+        return publishedRules.map((json) {
+          final ruleId = json['id'] as String;
+          // Add acknowledgment status to JSON
+          json['is_acknowledged'] = ackMap.containsKey(ruleId);
+          json['acknowledged_at'] = ackMap[ruleId]?.toIso8601String();
+          return VillageRule.fromJson(json);
         }).toList();
       });
 });
@@ -151,6 +203,28 @@ final rulesGroupedByCategoryProvider =
     loading: () => Stream.value({}),
     error: (err, stack) => Stream.value({}),
   );
+});
+
+/// Provider for curfews with realtime updates
+final curfewsProvider = StreamProvider.autoDispose<List<Curfew>>((ref) {
+  final supabase = ref.watch(supabaseClientProvider);
+  final userId = supabase.auth.currentUser?.id;
+
+  if (userId == null) {
+    debugPrint('[Curfews] No user ID, returning empty list');
+    return Stream.value([]);
+  }
+
+  // Fetch only active curfews (RLS will handle tenant filtering)
+  return supabase
+      .from('curfews')
+      .stream(primaryKey: ['id'])
+      .eq('is_active', true)
+      .order('created_at', ascending: false)
+      .map((data) {
+        debugPrint('[Curfews] Received ${data.length} curfews from stream');
+        return data.map((json) => Curfew.fromJson(json)).toList();
+      });
 });
 
 /// Provider for unread announcements count
@@ -283,10 +357,9 @@ class AnnouncementNotifier extends AutoDisposeAsyncNotifier<void> {
     }
   }
 
-  /// Acknowledge village rule with signature
+  /// Acknowledge village rule
   Future<void> acknowledgeRule({
     required String ruleId,
-    required String signatureData,
   }) async {
     state = const AsyncLoading();
 
@@ -298,16 +371,35 @@ class AnnouncementNotifier extends AutoDisposeAsyncNotifier<void> {
         throw Exception('User not authenticated');
       }
 
+      // Check if already acknowledged to prevent duplicate errors
+      final existing = await supabase
+          .from('rule_acknowledgments')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('rule_id', ruleId)
+          .maybeSingle();
+
+      if (existing != null) {
+        // Already acknowledged
+        debugPrint('[AcknowledgeRule] Rule $ruleId already acknowledged by user $userId');
+        state = const AsyncData(null);
+        return;
+      }
+
+      // Insert acknowledgment (database schema: id, rule_id, user_id, acknowledged_at)
       await supabase.from('rule_acknowledgments').insert({
         'user_id': userId,
         'rule_id': ruleId,
-        'signature_data': signatureData,
         'acknowledged_at': DateTime.now().toIso8601String(),
       });
 
+      debugPrint('[AcknowledgeRule] Successfully acknowledged rule $ruleId');
       state = const AsyncData(null);
     } catch (e, stack) {
+      debugPrint('[AcknowledgeRule] Failed to acknowledge rule: $e');
       state = AsyncError(e, stack);
+      // Rethrow so the UI can show the error
+      rethrow;
     }
   }
 

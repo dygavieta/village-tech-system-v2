@@ -19,7 +19,7 @@ import '../../features/permits/screens/permits_screen.dart';
 import '../../features/announcements/screens/announcements_screen.dart';
 import '../../features/announcements/screens/announcement_detail_screen.dart';
 import '../../features/announcements/screens/village_rules_screen.dart';
-import '../../features/announcements/screens/rule_acknowledgment_screen.dart';
+import '../../features/announcements/screens/curfew_screen.dart';
 import '../../features/fees/screens/fees_screen.dart';
 import '../../features/fees/screens/fee_payment_screen.dart';
 
@@ -34,7 +34,7 @@ class Routes {
   static const String announcements = '/announcements';
   static const String announcementDetail = '/announcements/detail/:id';
   static const String villageRules = '/announcements/rules';
-  static const String ruleAcknowledgment = '/announcements/rules/acknowledge/:id';
+  static const String curfew = '/announcements/curfew';
   static const String fees = '/fees';
   static const String feePayment = '/fees/payment/:id';
 }
@@ -117,11 +117,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const VillageRulesScreen(),
       ),
       GoRoute(
-        path: '/announcements/rules/acknowledge/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id']!;
-          return RuleAcknowledgmentScreen(ruleId: id);
-        },
+        path: '/announcements/curfew',
+        builder: (context, state) => const CurfewScreen(),
       ),
       // Fee payment route (outside shell for full screen)
       GoRoute(

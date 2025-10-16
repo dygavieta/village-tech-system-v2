@@ -79,8 +79,8 @@ export default function CurfewForm({ mode, initialData }: CurfewFormProps) {
     defaultValues: {
       name: initialData?.name || '',
       description: initialData?.description || '',
-      start_time: initialData?.start_time || '22:00',
-      end_time: initialData?.end_time || '06:00',
+      start_time: initialData?.start_time ? initialData.start_time.substring(0, 5) : '22:00',
+      end_time: initialData?.end_time ? initialData.end_time.substring(0, 5) : '06:00',
       days_of_week: initialData?.days_of_week || ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
       season: initialData?.season || 'all_year',
       season_start_date: initialData?.season_start_date || '',

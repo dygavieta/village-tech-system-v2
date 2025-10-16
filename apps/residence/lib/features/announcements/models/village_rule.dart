@@ -8,22 +8,20 @@ enum RuleCategory {
   noise,
   pets,
   construction,
-  safety,
-  amenities,
-  other,
+  visitors,
 }
 
 class VillageRule {
   final String id;
   final String tenantId;
+  final String createdByAdminId;
+  final RuleCategory category;
   final String title;
   final String description;
-  final RuleCategory category;
-  final bool requiresAcknowledgment;
+  final int version;
   final DateTime effectiveDate;
-  final String? version;
-  final int displayOrder;
-  final bool isActive;
+  final DateTime? publishedAt;
+  final bool requiresAcknowledgment;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -34,14 +32,14 @@ class VillageRule {
   VillageRule({
     required this.id,
     required this.tenantId,
+    required this.createdByAdminId,
+    required this.category,
     required this.title,
     required this.description,
-    required this.category,
-    required this.requiresAcknowledgment,
+    required this.version,
     required this.effectiveDate,
-    this.version,
-    required this.displayOrder,
-    required this.isActive,
+    this.publishedAt,
+    required this.requiresAcknowledgment,
     required this.createdAt,
     required this.updatedAt,
     this.isAcknowledged = false,
@@ -52,14 +50,16 @@ class VillageRule {
     return VillageRule(
       id: json['id'] as String,
       tenantId: json['tenant_id'] as String,
+      createdByAdminId: json['created_by_admin_id'] as String,
+      category: _parseCategory(json['category'] as String),
       title: json['title'] as String,
       description: json['description'] as String,
-      category: _parseCategory(json['category'] as String),
-      requiresAcknowledgment: json['requires_acknowledgment'] as bool? ?? false,
+      version: json['version'] as int,
       effectiveDate: DateTime.parse(json['effective_date'] as String),
-      version: json['version'] as String?,
-      displayOrder: json['display_order'] as int? ?? 0,
-      isActive: json['is_active'] as bool? ?? true,
+      publishedAt: json['published_at'] != null
+          ? DateTime.parse(json['published_at'] as String)
+          : null,
+      requiresAcknowledgment: json['requires_acknowledgment'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       isAcknowledged: json['is_acknowledged'] as bool? ?? false,
@@ -73,14 +73,14 @@ class VillageRule {
     return {
       'id': id,
       'tenant_id': tenantId,
+      'created_by_admin_id': createdByAdminId,
+      'category': categoryToString(category),
       'title': title,
       'description': description,
-      'category': categoryToString(category),
-      'requires_acknowledgment': requiresAcknowledgment,
-      'effective_date': effectiveDate.toIso8601String(),
       'version': version,
-      'display_order': displayOrder,
-      'is_active': isActive,
+      'effective_date': effectiveDate.toIso8601String().split('T')[0], // DATE format
+      'published_at': publishedAt?.toIso8601String(),
+      'requires_acknowledgment': requiresAcknowledgment,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -98,12 +98,8 @@ class VillageRule {
         return RuleCategory.pets;
       case 'construction':
         return RuleCategory.construction;
-      case 'safety':
-        return RuleCategory.safety;
-      case 'amenities':
-        return RuleCategory.amenities;
-      case 'other':
-        return RuleCategory.other;
+      case 'visitors':
+        return RuleCategory.visitors;
       default:
         return RuleCategory.general;
     }
@@ -121,12 +117,8 @@ class VillageRule {
         return 'pets';
       case RuleCategory.construction:
         return 'construction';
-      case RuleCategory.safety:
-        return 'safety';
-      case RuleCategory.amenities:
-        return 'amenities';
-      case RuleCategory.other:
-        return 'other';
+      case RuleCategory.visitors:
+        return 'visitors';
     }
   }
 
@@ -135,19 +127,15 @@ class VillageRule {
       case RuleCategory.general:
         return 'General';
       case RuleCategory.parking:
-        return 'Parking';
+        return 'Parking & Vehicles';
       case RuleCategory.noise:
-        return 'Noise';
+        return 'Noise & Disturbance';
       case RuleCategory.pets:
-        return 'Pets';
+        return 'Pets & Animals';
       case RuleCategory.construction:
-        return 'Construction';
-      case RuleCategory.safety:
-        return 'Safety';
-      case RuleCategory.amenities:
-        return 'Amenities';
-      case RuleCategory.other:
-        return 'Other';
+        return 'Construction & Renovation';
+      case RuleCategory.visitors:
+        return 'Visitors & Guests';
     }
   }
 
@@ -162,14 +150,14 @@ class VillageRule {
     return VillageRule(
       id: id,
       tenantId: tenantId,
+      createdByAdminId: createdByAdminId,
+      category: category,
       title: title,
       description: description,
-      category: category,
-      requiresAcknowledgment: requiresAcknowledgment,
-      effectiveDate: effectiveDate,
       version: version,
-      displayOrder: displayOrder,
-      isActive: isActive,
+      effectiveDate: effectiveDate,
+      publishedAt: publishedAt,
+      requiresAcknowledgment: requiresAcknowledgment,
       createdAt: createdAt,
       updatedAt: updatedAt,
       isAcknowledged: isAcknowledged ?? this.isAcknowledged,
