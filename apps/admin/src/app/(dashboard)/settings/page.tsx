@@ -15,89 +15,45 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getSettingsStats, getSettingsSections } from '@/lib/actions/settings';
+import { formatDistanceToNow } from 'date-fns';
 
-export default function SettingsPage() {
-  // TODO: Replace with actual data from Supabase
-  const settingsStatus = {
-    villageRulesUpdated: '2 weeks ago',
-    totalRules: 12,
-    gatesConfigured: 3,
-    curfewEnabled: true,
-    notificationsEnabled: true,
+export default async function SettingsPage() {
+  const [stats, sections] = await Promise.all([
+    getSettingsStats(),
+    getSettingsSections(),
+  ]);
+
+  const iconMap = {
+    'village-rules': FileText,
+    'gates': ShieldCheck,
+    'allocations': Car,
+    'curfew': Clock,
+    'notifications': Bell,
+    'users': Users,
+    'branding': Palette,
   };
 
-  const settingsSections = [
-    {
-      id: 1,
-      icon: FileText,
-      title: 'Village Rules',
-      description: 'Manage community policies, regulations, and guidelines',
-      status: 'configured',
-      lastUpdated: settingsStatus.villageRulesUpdated,
-      link: '/settings/rules',
-      stats: `${settingsStatus.totalRules} active rules`,
-    },
-    {
-      id: 2,
-      icon: ShieldCheck,
-      title: 'Gates & Access Control',
-      description: 'Configure gates, operating hours, and security settings',
-      status: 'configured',
-      lastUpdated: '1 week ago',
-      link: '/settings/gates',
-      stats: `${settingsStatus.gatesConfigured} gates active`,
-    },
-    {
-      id: 3,
-      icon: Car,
-      title: 'Sticker Allocations',
-      description: 'Configure default sticker allocation limits per household',
-      status: 'configured',
-      lastUpdated: '2 days ago',
-      link: '/settings/allocations',
-      stats: 'Default: 3 stickers',
-    },
-    {
-      id: 4,
-      icon: Clock,
-      title: 'Curfew Settings',
-      description: 'Set curfew hours, exceptions, and seasonal adjustments',
-      status: settingsStatus.curfewEnabled ? 'enabled' : 'disabled',
-      lastUpdated: '3 days ago',
-      link: '/settings/curfew',
-      stats: settingsStatus.curfewEnabled ? 'Enabled' : 'Disabled',
-    },
-    {
-      id: 5,
-      icon: Bell,
-      title: 'Notifications',
-      description: 'Configure notification preferences and delivery channels',
-      status: settingsStatus.notificationsEnabled ? 'enabled' : 'disabled',
-      lastUpdated: '5 days ago',
-      link: '/settings/notifications',
-      stats: 'Push, Email, SMS',
-    },
-    {
-      id: 6,
-      icon: Users,
-      title: 'User Management',
-      description: 'Manage admin officers, roles, and permissions',
-      status: 'configured',
-      lastUpdated: '1 month ago',
-      link: '/settings/users',
-      stats: '5 admin users',
-    },
-    {
-      id: 7,
-      icon: Palette,
-      title: 'Appearance & Branding',
-      description: 'Customize logo, colors, and community branding',
-      status: 'configured',
-      lastUpdated: '2 months ago',
-      link: '/settings/branding',
-      stats: 'Custom theme active',
-    },
-  ];
+  const linkMap = {
+    'village-rules': '/settings/rules',
+    'gates': '/settings/gates',
+    'allocations': '/settings/allocations',
+    'curfew': '/settings/curfew',
+    'notifications': '/settings/notifications',
+    'users': '/settings/users',
+    'branding': '/settings/branding',
+  };
+
+  const settingsSections = sections.map((section) => ({
+    id: section.id,
+    icon: iconMap[section.id as keyof typeof iconMap],
+    title: section.title,
+    description: section.description,
+    status: section.status,
+    lastUpdated: section.lastUpdated,
+    link: linkMap[section.id as keyof typeof linkMap],
+    stats: section.stats,
+  }));
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -145,7 +101,7 @@ export default function SettingsPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{settingsStatus.totalRules}</div>
+            <div className="text-2xl font-bold">{stats.totalRules}</div>
             <p className="text-xs text-muted-foreground">Active rules</p>
           </CardContent>
         </Card>
@@ -156,7 +112,7 @@ export default function SettingsPage() {
             <ShieldCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{settingsStatus.gatesConfigured}</div>
+            <div className="text-2xl font-bold">{stats.gatesConfigured}</div>
             <p className="text-xs text-muted-foreground">Operational</p>
           </CardContent>
         </Card>
@@ -168,10 +124,10 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {settingsStatus.curfewEnabled ? 'On' : 'Off'}
+              {stats.curfewEnabled ? 'On' : 'Off'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {settingsStatus.curfewEnabled ? 'Enforced' : 'Not enforced'}
+              {stats.curfewEnabled ? 'Enforced' : 'Not enforced'}
             </p>
           </CardContent>
         </Card>
@@ -183,7 +139,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {settingsStatus.notificationsEnabled ? 'On' : 'Off'}
+              {stats.notificationsEnabled ? 'On' : 'Off'}
             </div>
             <p className="text-xs text-muted-foreground">3 channels active</p>
           </CardContent>
@@ -215,7 +171,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between text-sm">
                   <div className="space-y-1">
                     <p className="text-muted-foreground">
-                      Last updated: {section.lastUpdated}
+                      Last updated: {section.lastUpdated ? formatDistanceToNow(new Date(section.lastUpdated), { addSuffix: true }) : 'Never'}
                     </p>
                     <p className="font-medium">{section.stats}</p>
                   </div>

@@ -90,7 +90,7 @@ export default function HouseholdsPage() {
   } = useSearchFilterSort({
     items: households,
     searchFields: ['property.address', 'household_head.first_name', 'household_head.last_name'],
-    initialFilters: { ownership_type: 'all' },
+    initialFilters: {},
   });
 
   // Use pagination utility
@@ -172,7 +172,7 @@ export default function HouseholdsPage() {
         </div>
 
         <Select
-          value={filters.ownership_type || 'all'}
+          value={filters.ownership_type ?? 'all'}
           onValueChange={(value) => setFilter('ownership_type', value === 'all' ? undefined : value)}
         >
           <SelectTrigger className="w-[180px]">
