@@ -44,12 +44,11 @@ export async function getSettingsStats(): Promise<SettingsStats> {
     .select('id', { count: 'exact', head: true })
     .eq('status', 'active');
 
-  // Check if curfew rules exist
+  // Check if active curfews exist
   const { count: curfewRulesCount } = await supabase
-    .from('village_rules')
+    .from('curfews')
     .select('id', { count: 'exact', head: true })
-    .eq('category', 'curfew')
-    .not('published_at', 'is', null);
+    .eq('is_active', true);
 
   // Get admin users count
   const { count: totalAdminUsers } = await supabase
@@ -119,18 +118,16 @@ export async function getSettingsSections(): Promise<SettingsSection[]> {
   // Get sticker allocation from tenant settings (default is 3)
   const defaultStickerAllocation = 3;
 
-  // Check curfew rules
+  // Check active curfews
   const { count: curfewRulesCount } = await supabase
-    .from('village_rules')
+    .from('curfews')
     .select('id', { count: 'exact', head: true })
-    .eq('category', 'curfew')
-    .not('published_at', 'is', null);
+    .eq('is_active', true);
 
-  const { data: lastCurfewRule } = await supabase
-    .from('village_rules')
+  const { data: lastCurfew } = await supabase
+    .from('curfews')
     .select('updated_at')
-    .eq('category', 'curfew')
-    .not('published_at', 'is', null)
+    .eq('is_active', true)
     .order('updated_at', { ascending: false })
     .limit(1)
     .single();
@@ -185,8 +182,8 @@ export async function getSettingsSections(): Promise<SettingsSection[]> {
       title: 'Curfew Settings',
       description: 'Set curfew hours, exceptions, and seasonal adjustments',
       status: (curfewRulesCount || 0) > 0 ? 'enabled' : 'disabled',
-      lastUpdated: lastCurfewRule?.updated_at || null,
-      stats: (curfewRulesCount || 0) > 0 ? 'Enabled' : 'Disabled',
+      lastUpdated: lastCurfew?.updated_at || null,
+      stats: (curfewRulesCount || 0) > 0 ? `${curfewRulesCount} active curfew${curfewRulesCount === 1 ? '' : 's'}` : 'No active curfews',
     },
     {
       id: 'notifications',

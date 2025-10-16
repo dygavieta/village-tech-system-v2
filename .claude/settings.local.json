@@ -51,7 +51,8 @@
       "Bash(npx supabase:*)",
       "Bash(./gradlew --stop)",
       "Bash(supabase stop:*)",
-      "Bash(supabase start:*)"
+      "Bash(supabase start:*)",
+      "Bash(pnpm remove:*)"
     ],
     "deny": [],
     "ask": []
