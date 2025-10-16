@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { createClient } from '@/lib/supabase/server';
 import { GatesTabContent } from '@/components/tenants/GatesTabContent';
 import { AdminsTabContent } from '@/components/tenants/AdminsTabContent';
+import { PropertiesTabContent } from '@/components/tenants/PropertiesTabContent';
 import {
   Building2,
   Globe,
@@ -48,11 +49,13 @@ async function getTenantDetails(tenantId: string) {
     return null;
   }
 
-  // Fetch properties count
-  const { count: propertiesCount } = await supabase
+  // Fetch properties
+  const { data: properties } = await supabase
     .from('properties')
-    .select('*', { count: 'exact', head: true })
-    .eq('tenant_id', tenantId);
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .order('created_at', { ascending: false })
+    .limit(10);
 
   // Fetch gates
   const { data: gates } = await supabase
@@ -71,7 +74,7 @@ async function getTenantDetails(tenantId: string) {
 
   return {
     tenant,
-    propertiesCount: propertiesCount || 0,
+    properties: properties || [],
     gates: gates || [],
     adminUsers: adminUsers || [],
   };
@@ -101,7 +104,7 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
     notFound();
   }
 
-  const { tenant, propertiesCount, gates, adminUsers } = tenantData;
+  const { tenant, properties, gates, adminUsers } = tenantData;
 
   return (
     <div className="space-y-6">
@@ -144,9 +147,9 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
             <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{propertiesCount}</div>
+            <div className="text-2xl font-bold">{properties.length}</div>
             <p className="text-xs text-muted-foreground">
-              of {tenant.total_residences} max
+              of {tenant.max_residences} max
             </p>
           </CardContent>
         </Card>
@@ -178,6 +181,7 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
       <Tabs defaultValue="info" className="space-y-4">
         <TabsList>
           <TabsTrigger value="info">Information</TabsTrigger>
+          <TabsTrigger value="properties">Properties ({properties.length})</TabsTrigger>
           <TabsTrigger value="gates">Gates ({gates.length})</TabsTrigger>
           <TabsTrigger value="admins">Admins ({adminUsers.length})</TabsTrigger>
           <TabsTrigger value="branding">Branding</TabsTrigger>
@@ -226,7 +230,7 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
                       <Building2 className="h-4 w-4" />
                       Total Residences
                     </div>
-                    <p>{tenant.total_residences}</p>
+                    <p>{tenant.max_residences}</p>
                   </div>
 
                   <div>
@@ -262,6 +266,24 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* Properties Tab */}
+        <TabsContent value="properties" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Property Management</CardTitle>
+              <CardDescription>
+                Add, edit, and manage residential properties for this community
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PropertiesTabContent
+                tenantId={tenant.id}
+                tenantTotalResidences={tenant.max_residences}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Gates Tab */}

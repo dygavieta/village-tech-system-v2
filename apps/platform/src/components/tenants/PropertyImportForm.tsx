@@ -23,9 +23,10 @@ import { parsePropertyCSV, downloadPropertyTemplate, type Property } from '@/lib
 interface PropertyImportFormProps {
   onSubmit: (properties: Property[]) => void;
   onValidationChange?: (isValid: boolean) => void;
+  isImporting?: boolean;
 }
 
-export function PropertyImportForm({ onSubmit, onValidationChange }: PropertyImportFormProps) {
+export function PropertyImportForm({ onSubmit, onValidationChange, isImporting = false }: PropertyImportFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -39,10 +40,7 @@ export function PropertyImportForm({ onSubmit, onValidationChange }: PropertyImp
     onValidationChange?.(isValid);
   }, [errors, onValidationChange]);
 
-  // Notify parent whenever properties change
-  useEffect(() => {
-    onSubmit(properties);
-  }, [properties, onSubmit]);
+  // Don't auto-submit - wait for user action
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = e.target.files?.[0];
@@ -255,6 +253,25 @@ export function PropertyImportForm({ onSubmit, onValidationChange }: PropertyImp
               </Table>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      {showPreview && properties.length > 0 && (
+        <div className="flex justify-end gap-3 pt-4 border-t">
+          <Button variant="outline" onClick={handleClearFile}>
+            Clear File
+          </Button>
+          <Button onClick={handleSubmit} disabled={errors.length > 0 || isImporting}>
+            {isImporting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Importing...
+              </>
+            ) : (
+              <>Import {properties.length} Properties</>
+            )}
+          </Button>
         </div>
       )}
 
