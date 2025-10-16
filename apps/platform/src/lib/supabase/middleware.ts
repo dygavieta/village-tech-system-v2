@@ -7,15 +7,6 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import type { Database } from '@village-tech/database-types';
 
-// Platform-specific cookie configuration
-const platformCookieOptions: CookieOptions = {
-  name: 'platform-auth-token', // Must match client configuration
-  domain: process.env.NODE_ENV === 'production' ? 'villagetech.app' : 'localhost',
-  path: '/',
-  sameSite: 'lax',
-  secure: process.env.NODE_ENV === 'production'
-};
-
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
     request: {
@@ -27,27 +18,15 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      auth: {
-        cookieOptions: platformCookieOptions,
-        storageKey: 'platform-supabase-auth-token' // Must match client configuration
-      },
       cookies: {
         get(name: string) {
-          // Only look for platform-specific cookies
-          if (name === 'platform-auth-token' || name.startsWith('platform-')) {
-            return request.cookies.get(name)?.value;
-          }
           return request.cookies.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          // Only set platform-specific cookies
-          const cookieName = name === 'sb-access-token' ? 'platform-auth-token' : name;
-          const finalOptions = name === 'sb-access-token' ? platformCookieOptions : options;
-
           request.cookies.set({
-            name: cookieName,
+            name,
             value,
-            ...finalOptions,
+            ...options,
           });
           response = NextResponse.next({
             request: {
@@ -55,20 +34,16 @@ export async function updateSession(request: NextRequest) {
             },
           });
           response.cookies.set({
-            name: cookieName,
+            name,
             value,
-            ...finalOptions,
+            ...options,
           });
         },
         remove(name: string, options: CookieOptions) {
-          // Only remove platform-specific cookies
-          const cookieName = name === 'sb-access-token' ? 'platform-auth-token' : name;
-          const finalOptions = name === 'sb-access-token' ? platformCookieOptions : options;
-
           request.cookies.set({
-            name: cookieName,
+            name,
             value: '',
-            ...finalOptions,
+            ...options,
           });
           response = NextResponse.next({
             request: {
@@ -76,9 +51,9 @@ export async function updateSession(request: NextRequest) {
             },
           });
           response.cookies.set({
-            name: cookieName,
+            name,
             value: '',
-            ...finalOptions,
+            ...options,
           });
         },
       },
