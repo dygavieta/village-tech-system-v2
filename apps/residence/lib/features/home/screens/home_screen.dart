@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_colors.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   final Widget child;
@@ -49,30 +50,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedIndex = _getSelectedIndex(context);
+
     return Scaffold(
       body: widget.child,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _getSelectedIndex(context),
+        selectedIndex: selectedIndex,
         onDestinationSelected: _onDestinationSelected,
-        destinations: const [
+        backgroundColor: Colors.white,
+        indicatorColor: Colors.transparent,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        height: 70,
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
+            icon: Icon(
+              Icons.home_outlined,
+              color: selectedIndex == 0 ? AppColors.primary : AppColors.textTertiary,
+            ),
+            selectedIcon: Icon(
+              Icons.home,
+              color: AppColors.primary,
+            ),
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.list_outlined),
-            selectedIcon: Icon(Icons.list),
+            icon: Icon(
+              Icons.list_outlined,
+              color: selectedIndex == 1 ? AppColors.primary : AppColors.textTertiary,
+            ),
+            selectedIcon: Icon(
+              Icons.list,
+              color: AppColors.primary,
+            ),
             label: 'Services',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
+            icon: Icon(
+              Icons.person_outline,
+              color: selectedIndex == 2 ? AppColors.primary : AppColors.textTertiary,
+            ),
+            selectedIcon: Icon(
+              Icons.person,
+              color: AppColors.primary,
+            ),
             label: 'Profile',
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
+            icon: Icon(
+              Icons.settings_outlined,
+              color: selectedIndex == 3 ? AppColors.primary : AppColors.textTertiary,
+            ),
+            selectedIcon: Icon(
+              Icons.settings,
+              color: AppColors.primary,
+            ),
             label: 'Settings',
           ),
         ],
