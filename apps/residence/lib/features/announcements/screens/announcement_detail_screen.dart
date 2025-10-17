@@ -44,20 +44,11 @@ class _AnnouncementDetailScreenState
     return Scaffold(
       appBar: AppBar(
         title: const Text('Announcement'),
-        actions: [
-          announcementAsync.when(
-            data: (announcement) {
-              if (announcement == null) return const SizedBox.shrink();
-              return IconButton(
-                icon: const Icon(Icons.share),
-                tooltip: 'Share',
-                onPressed: () => _shareAnnouncement(announcement),
-              );
-            },
-            loading: () => const SizedBox.shrink(),
-            error: (_, __) => const SizedBox.shrink(),
-          ),
-        ],
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: announcementAsync.when(
         data: (announcement) {
@@ -73,135 +64,146 @@ class _AnnouncementDetailScreenState
   }
 
   Widget _buildAnnouncementDetail(Announcement announcement) {
-    final dateFormat = DateFormat('MMMM dd, yyyy \'at\' hh:mm a');
+    final dateFormat = DateFormat('MMMM dd, yyyy - hh:mm a');
 
     return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header section
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: _getUrgencyColor(announcement.urgency).withOpacity(0.1),
-              border: Border(
-                bottom: BorderSide(
-                  color: _getUrgencyColor(announcement.urgency),
-                  width: 3,
+          // Category and urgency badges
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildCategoryBadge(announcement.category),
+              _buildUrgencyBadge(announcement.urgency),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Title
+          Text(
+            announcement.title,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  height: 1.2,
                 ),
-              ),
+          ),
+          const SizedBox(height: 8),
+
+          // Date
+          Text(
+            dateFormat.format(announcement.effectiveStart),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+          const SizedBox(height: 24),
+
+          // Content
+          Text(
+            announcement.content,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  height: 1.7,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withOpacity(0.8),
+                ),
+          ),
+          const SizedBox(height: 32),
+
+          // Attachments
+          if (announcement.attachmentUrls?.isNotEmpty ?? false) ...[
+            Text(
+              'Attachments',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Category and urgency badges
-                Row(
-                  children: [
-                    Chip(
-                      label: Text(announcement.categoryDisplay),
-                      backgroundColor:
-                          Theme.of(context).colorScheme.primaryContainer,
-                    ),
-                    const SizedBox(width: 8),
-                    _buildUrgencyBadge(announcement.urgency),
-                  ],
-                ),
-                const SizedBox(height: 16),
+            const SizedBox(height: 16),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1,
+              ),
+              itemCount: announcement.attachmentUrls!.length,
+              itemBuilder: (context, index) {
+                return _buildAttachmentItem(
+                    announcement.attachmentUrls![index]);
+              },
+            ),
+            const SizedBox(height: 32),
+          ],
 
-                // Title
-                Text(
-                  announcement.title,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 8),
-
-                // Date
-                Row(
-                  children: [
-                    Icon(
-                      Icons.calendar_today,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      dateFormat.format(announcement.effectiveStart),
+          // Expiry date
+          if (announcement.effectiveEnd != null) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.errorContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.event_busy,
+                    size: 20,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Expires on: ${dateFormat.format(announcement.effectiveEnd!)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(context).colorScheme.error,
+                            fontWeight: FontWeight.w600,
                           ),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(height: 24),
+          ],
+
+          // Acknowledgment section
+          if (announcement.requiresAcknowledgment) ...[
+            _buildAcknowledgmentSection(announcement),
+          ],
+
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryBadge(AnnouncementCategory category) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.info,
+            size: 16,
+            color: Colors.blue.shade800,
           ),
-
-          // Content section
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Content
-                Text(
-                  announcement.content,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        height: 1.6,
-                      ),
-                ),
-                const SizedBox(height: 24),
-
-                // Attachments
-                if (announcement.attachmentUrls?.isNotEmpty ?? false) ...[
-                  const Divider(),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Attachments',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                  const SizedBox(height: 12),
-                  ...announcement.attachmentUrls!.map((url) {
-                    return _buildAttachmentCard(url);
-                  }),
-                  const SizedBox(height: 24),
-                ],
-
-                // Expiry date
-                if (announcement.effectiveEnd != null) ...[
-                  const Divider(),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.event_busy,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Expires on: ${dateFormat.format(announcement.effectiveEnd!)}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                ],
-
-                // Acknowledgment section
-                if (announcement.requiresAcknowledgment) ...[
-                  const Divider(),
-                  const SizedBox(height: 16),
-                  _buildAcknowledgmentSection(announcement),
-                ],
-              ],
+          const SizedBox(width: 6),
+          Text(
+            _getCategoryLabel(category),
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.blue.shade800,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -214,11 +216,10 @@ class _AnnouncementDetailScreenState
     final icon = _getUrgencyIcon(urgency);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -228,7 +229,7 @@ class _AnnouncementDetailScreenState
           Text(
             _getUrgencyLabel(urgency),
             style: TextStyle(
-              fontSize: 13,
+              fontSize: 14,
               color: color,
               fontWeight: FontWeight.bold,
             ),
@@ -238,101 +239,175 @@ class _AnnouncementDetailScreenState
     );
   }
 
-  Widget _buildAttachmentCard(String url) {
+  Widget _buildAttachmentItem(String url) {
     final fileName = url.split('/').last;
+    final isImage = url.toLowerCase().endsWith('.png') ||
+        url.toLowerCase().endsWith('.jpg') ||
+        url.toLowerCase().endsWith('.jpeg');
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: const Icon(Icons.attach_file),
-        title: Text(fileName),
-        trailing: IconButton(
-          icon: const Icon(Icons.download),
-          onPressed: () => _downloadAttachment(url),
+    return InkWell(
+      onTap: () => _downloadAttachment(url),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isImage ? Colors.transparent : Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(12),
+          image: isImage
+              ? DecorationImage(
+                  image: NetworkImage(url),
+                  fit: BoxFit.cover,
+                )
+              : null,
         ),
+        child: isImage
+            ? Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.3),
+                    ],
+                  ),
+                ),
+              )
+            : Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.description,
+                      size: 48,
+                      color: Colors.grey.shade600,
+                    ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        fileName,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
       ),
     );
+  }
+
+  String _getCategoryLabel(AnnouncementCategory category) {
+    switch (category) {
+      case AnnouncementCategory.event:
+        return 'Event';
+      case AnnouncementCategory.maintenance:
+        return 'Maintenance';
+      case AnnouncementCategory.security:
+        return 'Security';
+      case AnnouncementCategory.policy:
+        return 'Policy';
+      case AnnouncementCategory.general:
+        return 'General';
+    }
   }
 
   Widget _buildAcknowledgmentSection(Announcement announcement) {
     final notifier = ref.watch(announcementNotifierProvider);
 
     if (announcement.isAcknowledged) {
-      return Card(
-        color: Colors.green.withOpacity(0.1),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green[700]),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'You have acknowledged this announcement',
-                  style: TextStyle(
-                    color: Colors.green[700],
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return Card(
-      color: Theme.of(context).colorScheme.primaryContainer,
-      child: Padding(
+      return Container(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.green.shade200),
+        ),
+        child: Row(
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.assignment_turned_in,
-                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+            Icon(Icons.check_circle, color: Colors.green[700], size: 24),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'You have acknowledged this announcement',
+                style: TextStyle(
+                  color: Colors.green[800],
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Acknowledgment Required',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Please confirm that you have read and understood this announcement.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                onPressed: notifier.isLoading
-                    ? null
-                    : () => _acknowledgeAnnouncement(announcement.id),
-                icon: notifier.isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.check),
-                label: const Text('Acknowledge'),
               ),
             ),
           ],
         ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.assignment_turned_in,
+                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Acknowledgment Required',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Please confirm that you have read and understood this announcement.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
+                ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton.icon(
+              onPressed: notifier.isLoading
+                  ? null
+                  : () => _acknowledgeAnnouncement(announcement.id),
+              icon: notifier.isLoading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.check),
+              label: const Text('Acknowledge'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,42 +1,108 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../providers/permit_provider.dart';
 import '../models/construction_permit.dart';
 import 'request_permit_screen.dart';
 
-class PermitsScreen extends ConsumerWidget {
+class PermitsScreen extends ConsumerStatefulWidget {
   const PermitsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PermitsScreen> createState() => _PermitsScreenState();
+}
+
+class _PermitsScreenState extends ConsumerState<PermitsScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final permitsAsync = ref.watch(permitsProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Construction Permits'), elevation: 0),
+      appBar: AppBar(
+        title: const Text('Construction Permits'),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/services'),
+        ),
+      ),
       body: permitsAsync.when(
         data: (permits) {
-          if (permits.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.construction, size: 80, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text('No permits yet', style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.grey[600])),
-                  const SizedBox(height: 8),
-                  Text('Request a construction permit', style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[500])),
-                ],
-              ),
-            );
-          }
+          final activePermits = permits
+              .where((p) =>
+                  p.permitStatus == PermitStatus.approved ||
+                  p.permitStatus == PermitStatus.active)
+              .toList();
+          final pendingPermits = permits
+              .where((p) =>
+                  p.permitStatus == PermitStatus.pendingApproval ||
+                  p.permitStatus == PermitStatus.onHold)
+              .toList();
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: permits.length,
-            itemBuilder: (context, index) {
-              final permit = permits[index];
-              return _PermitCard(permit: permit);
-            },
+          return Column(
+            children: [
+              // Hero Banner
+              _buildHeroBanner(context),
+              const SizedBox(height: 16),
+
+              // Tab Bar
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorColor: Theme.of(context).colorScheme.primary,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorWeight: 2,
+                  labelColor: Theme.of(context).colorScheme.primary,
+                  unselectedLabelColor:
+                      Theme.of(context).colorScheme.onSurfaceVariant,
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                  tabs: const [
+                    Tab(text: 'Active Permits'),
+                    Tab(text: 'Pending Permits'),
+                  ],
+                ),
+              ),
+
+              // Tab View
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildPermitList(activePermits, isActive: true),
+                    _buildPermitList(pendingPermits, isActive: false),
+                  ],
+                ),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -57,18 +123,139 @@ class PermitsScreen extends ConsumerWidget {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const RequestPermitScreen()),
-          );
-          if (result == true) {
-            ref.refresh(permitsProvider);
-          }
+    );
+  }
+
+  Widget _buildHeroBanner(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          // Banner Image
+          Container(
+            height: 192,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              image: const DecorationImage(
+                image: NetworkImage(
+                  'https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=800&h=400&fit=crop',
+                ),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.7),
+                  ],
+                ),
+              ),
+              padding: const EdgeInsets.all(24),
+              alignment: Alignment.bottomLeft,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Request a new construction permit',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Get a new permit for your construction.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.white70,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Request Button
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const RequestPermitScreen()),
+                );
+                if (result == true) {
+                  ref.refresh(permitsProvider);
+                }
+              },
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text(
+                'Request Permit',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPermitList(List<ConstructionPermit> permits,
+      {required bool isActive}) {
+    if (permits.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.construction_outlined,
+                size: 64,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                isActive ? 'No Active Permits' : 'No Pending Permits',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                isActive
+                    ? 'You don\'t have any active construction permits yet'
+                    : 'You don\'t have any pending permit requests',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: permits.length,
+        itemBuilder: (context, index) {
+          final permit = permits[index];
+          return _PermitCard(permit: permit);
         },
-        icon: const Icon(Icons.add),
-        label: const Text('Request Permit'),
       ),
     );
   }
@@ -82,91 +269,136 @@ class _PermitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 1,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header with category badge and menu
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: Text(_capitalizeFirst(permit.projectType), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-                _buildStatusChip(permit.permitStatus),
+                _buildCategoryBadge(context, permit.projectType),
+                IconButton(
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  onPressed: () {
+                    // TODO: Show menu options
+                  },
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               ],
             ),
             const SizedBox(height: 8),
-            Text(permit.description, style: TextStyle(color: Colors.grey[700])),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.calendar_today, size: 16, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text('Start: ${_formatDate(permit.startDate)}', style: TextStyle(color: Colors.grey[600])),
-                const SizedBox(width: 16),
-                const Icon(Icons.timelapse, size: 16, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text('${permit.durationDays} days', style: TextStyle(color: Colors.grey[600])),
-              ],
+
+            // Title/Description
+            Text(
+              permit.description,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
             ),
-            if (permit.contractorName != null) ...[
-              const SizedBox(height: 4),
-              Text('Contractor: ${permit.contractorName}', style: TextStyle(color: Colors.grey[600])),
-            ],
-            if (permit.roadFeeAmount > 0) ...[
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.orange[50],
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('Road Fee: ₱${permit.roadFeeAmount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                    Text(permit.paymentStatusDisplay, style: TextStyle(color: permit.paymentStatus == 'paid' ? Colors.green : Colors.orange)),
-                  ],
-                ),
-              ),
-            ],
+            const SizedBox(height: 16),
+
+            // Details with icons
+            _buildDetailRow(
+              context,
+              Icons.calendar_today,
+              '${permit.durationDays} Days',
+            ),
+            const SizedBox(height: 12),
+            _buildDetailRow(
+              context,
+              Icons.schedule,
+              'Starts: ${_formatDate(permit.startDate)}',
+            ),
+            const SizedBox(height: 12),
+            _buildDetailRow(
+              context,
+              Icons.engineering,
+              'Contractor: ${permit.contractorName ?? 'N/A'}',
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatusChip(PermitStatus status) {
-    Color color;
-    switch (status) {
-      case PermitStatus.pendingApproval:
-        color = Colors.orange;
+  Widget _buildCategoryBadge(BuildContext context, String projectType) {
+    Color backgroundColor;
+    Color textColor;
+    String label;
+
+    switch (projectType.toLowerCase()) {
+      case 'renovation':
+        backgroundColor = Colors.blue.shade100;
+        textColor = Colors.blue.shade700;
+        label = 'RENOVATION';
         break;
-      case PermitStatus.approved:
-      case PermitStatus.active:
-        color = Colors.green;
+      case 'landscaping':
+        backgroundColor = Colors.green.shade100;
+        textColor = Colors.green.shade700;
+        label = 'LANDSCAPING';
         break;
-      case PermitStatus.completed:
-        color = Colors.blue;
+      case 'repair':
+        backgroundColor = Colors.orange.shade100;
+        textColor = Colors.orange.shade700;
+        label = 'REPAIR';
         break;
-      case PermitStatus.onHold:
-        color = Colors.grey;
+      case 'new_construction':
+        backgroundColor = Colors.purple.shade100;
+        textColor = Colors.purple.shade700;
+        label = 'NEW CONSTRUCTION';
         break;
-      case PermitStatus.rejected:
-        color = Colors.red;
-        break;
+      default:
+        backgroundColor = Colors.grey.shade100;
+        textColor = Colors.grey.shade700;
+        label = projectType.toUpperCase();
     }
 
-    return Chip(
-      label: Text(permit.permitStatusDisplay, style: const TextStyle(fontSize: 12)),
-      backgroundColor: color.withOpacity(0.1),
-      labelStyle: TextStyle(color: color),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+          color: textColor,
+          letterSpacing: 0.5,
+        ),
+      ),
     );
   }
 
-  String _capitalizeFirst(String text) {
-    if (text.isEmpty) return text;
-    return text.split('_').map((word) => word[0].toUpperCase() + word.substring(1)).join(' ');
+  Widget _buildDetailRow(BuildContext context, IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+      ],
+    );
   }
 
   String _formatDate(DateTime date) {

@@ -205,6 +205,33 @@ final rulesGroupedByCategoryProvider =
   );
 });
 
+/// Provider for single village rule by ID
+final villageRuleByIdProvider =
+    StreamProvider.autoDispose.family<VillageRule?, String>((ref, ruleId) {
+  final supabase = ref.watch(supabaseClientProvider);
+  final userId = supabase.auth.currentUser?.id;
+
+  if (userId == null) {
+    return Stream.value(null);
+  }
+
+  return supabase
+      .from('village_rules')
+      .stream(primaryKey: ['id'])
+      .eq('id', ruleId)
+      .asyncMap((data) async {
+        if (data.isEmpty) return null;
+
+        final json = data.first;
+
+        // Fetch acknowledgment status
+        final isAcknowledged = await _checkRuleAcknowledgment(supabase, userId, ruleId);
+        json['is_acknowledged'] = isAcknowledged;
+
+        return VillageRule.fromJson(json);
+      });
+});
+
 /// Provider for curfews with realtime updates
 final curfewsProvider = StreamProvider.autoDispose<List<Curfew>>((ref) {
   final supabase = ref.watch(supabaseClientProvider);

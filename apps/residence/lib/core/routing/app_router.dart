@@ -11,6 +11,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/home/screens/home_screen.dart';
+import '../../features/home/screens/announcements_home_screen.dart';
+import '../../features/home/screens/services_screen.dart';
+import '../../features/home/screens/profile_screen.dart';
+import '../../features/home/screens/settings_screen.dart';
 import '../../features/household/screens/household_profile_screen.dart';
 import '../../features/household/screens/members_screen.dart';
 import '../../features/stickers/screens/stickers_screen.dart';
@@ -19,6 +23,7 @@ import '../../features/permits/screens/permits_screen.dart';
 import '../../features/announcements/screens/announcements_screen.dart';
 import '../../features/announcements/screens/announcement_detail_screen.dart';
 import '../../features/announcements/screens/village_rules_screen.dart';
+import '../../features/announcements/screens/rule_detail_screen.dart';
 import '../../features/announcements/screens/curfew_screen.dart';
 import '../../features/fees/screens/fees_screen.dart';
 import '../../features/fees/screens/fee_payment_screen.dart';
@@ -26,6 +31,10 @@ import '../../features/fees/screens/fee_payment_screen.dart';
 /// Route names
 class Routes {
   static const String login = '/login';
+  static const String home = '/home';
+  static const String services = '/services';
+  static const String profile = '/profile';
+  static const String settings = '/settings';
   static const String household = '/household';
   static const String members = '/household/members';
   static const String stickers = '/stickers';
@@ -45,7 +54,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final authStateStream = ref.watch(authStateProvider.stream);
 
   return GoRouter(
-    initialLocation: Routes.household,
+    initialLocation: Routes.home,
     refreshListenable: GoRouterRefreshStream(authStateStream),
     redirect: (context, state) {
       // Get current auth state
@@ -59,9 +68,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         return Routes.login;
       }
 
-      // Redirect to household if authenticated and trying to access login
+      // Redirect to home if authenticated and trying to access login
       if (isAuthenticated && isLoggingIn) {
-        return Routes.household;
+        return Routes.home;
       }
 
       return null; // No redirect needed
@@ -74,6 +83,25 @@ final routerProvider = Provider<GoRouter>((ref) {
       ShellRoute(
         builder: (context, state, child) => HomeScreen(child: child),
         routes: [
+          // Main navigation tabs
+          GoRoute(
+            path: Routes.home,
+            builder: (context, state) => const AnnouncementsHomeScreen(),
+          ),
+          GoRoute(
+            path: Routes.services,
+            builder: (context, state) => const ServicesScreen(),
+          ),
+          GoRoute(
+            path: Routes.profile,
+            builder: (context, state) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: Routes.settings,
+            builder: (context, state) => const SettingsScreen(),
+          ),
+
+          // Service-specific routes (accessible from Services tab)
           GoRoute(
             path: Routes.household,
             builder: (context, state) => const HouseholdProfileScreen(),
@@ -95,38 +123,47 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const PermitsScreen(),
           ),
           GoRoute(
-            path: Routes.announcements,
-            builder: (context, state) => const AnnouncementsScreen(),
-          ),
-          GoRoute(
             path: Routes.fees,
             builder: (context, state) => const FeesScreen(),
           ),
+          GoRoute(
+            path: Routes.announcements,
+            builder: (context, state) => const AnnouncementsScreen(),
+          ),
+
+          // Announcement detail routes (with navigation bar)
+          GoRoute(
+            path: '/announcements/detail/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return AnnouncementDetailScreen(announcementId: id);
+            },
+          ),
+          GoRoute(
+            path: '/announcements/rules',
+            builder: (context, state) => const VillageRulesScreen(),
+          ),
+          GoRoute(
+            path: '/rule-detail/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return RuleDetailScreen(ruleId: id);
+            },
+          ),
+          GoRoute(
+            path: '/announcements/curfew',
+            builder: (context, state) => const CurfewScreen(),
+          ),
+
+          // Fee payment route (with navigation bar)
+          GoRoute(
+            path: '/fees/payment/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id']!;
+              return FeePaymentScreen(feeId: id);
+            },
+          ),
         ],
-      ),
-      // Announcement routes (outside shell for full screen)
-      GoRoute(
-        path: '/announcements/detail/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id']!;
-          return AnnouncementDetailScreen(announcementId: id);
-        },
-      ),
-      GoRoute(
-        path: '/announcements/rules',
-        builder: (context, state) => const VillageRulesScreen(),
-      ),
-      GoRoute(
-        path: '/announcements/curfew',
-        builder: (context, state) => const CurfewScreen(),
-      ),
-      // Fee payment route (outside shell for full screen)
-      GoRoute(
-        path: '/fees/payment/:id',
-        builder: (context, state) {
-          final id = state.pathParameters['id']!;
-          return FeePaymentScreen(feeId: id);
-        },
       ),
     ],
   );

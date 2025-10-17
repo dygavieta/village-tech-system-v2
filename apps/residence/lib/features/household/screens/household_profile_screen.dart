@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../providers/household_provider.dart';
 import '../models/household.dart';
@@ -21,6 +22,14 @@ class HouseholdProfileScreen extends ConsumerWidget {
     final statsAsync = ref.watch(householdStatsProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('Household'),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/services'),
+        ),
+      ),
       body: householdAsync.when(
         data: (household) {
           if (household == null) {
@@ -55,17 +64,13 @@ class HouseholdProfileScreen extends ConsumerWidget {
               ref.invalidate(householdStatsProvider);
             },
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Property card
-                  _buildPropertyCard(context, household),
-                  const SizedBox(height: 16),
-
-                  // Household head card
-                  _buildHouseholdHeadCard(context, household),
-                  const SizedBox(height: 16),
+                  // Combined household head + property card
+                  _buildHouseholdInfoCard(context, household),
+                  const SizedBox(height: 32),
 
                   // Household members card
                   membersAsync.when(
@@ -83,7 +88,7 @@ class HouseholdProfileScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 32),
 
                   // Quick stats card
                   statsAsync.when(
@@ -128,296 +133,241 @@ class HouseholdProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPropertyCard(BuildContext context, Household household) {
+  Widget _buildHouseholdInfoCard(BuildContext context, Household household) {
+    final head = household.householdHead;
     final property = household.property;
-    if (property == null) return const SizedBox.shrink();
 
     return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(
-                  Icons.home,
+            // Household head section (centered)
+            if (head != null) ...[
+              CircleAvatar(
+                radius: 40,
+                backgroundColor:
+                    Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                child: Icon(
+                  Icons.person,
+                  size: 40,
                   color: Theme.of(context).colorScheme.primary,
-                  size: 32,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Property Address',
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                head.fullName,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Household Head',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              if (head.phoneNumber != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  head.phoneNumber!,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        property.formattedLocation,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
-                      ),
-                    ],
-                  ),
+                  textAlign: TextAlign.center,
                 ),
               ],
-            ),
-            const Divider(height: 24),
-            if (household.moveInDate != null)
-              _buildInfoRow(
-                context,
-                icon: Icons.calendar_today,
-                label: 'Move-in Date',
-                value: DateFormat('MMMM d, yyyy').format(household.moveInDate!),
-              ),
-            if (household.moveInDate != null) const SizedBox(height: 12),
-            _buildInfoRow(
-              context,
-              icon: Icons.badge,
-              label: 'Ownership',
-              value: household.ownershipTypeDisplay,
-            ),
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 24),
+            ],
+
+            // Property info section
+            _buildPropertyInfoSection(context, household, property),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHouseholdHeadCard(BuildContext context, Household household) {
-    final head = household.householdHead;
-    if (head == null) return const SizedBox.shrink();
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Household Head',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                  child: Icon(
-                    Icons.person,
-                    size: 32,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        head.fullName,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
-                      ),
-                      if (head.email != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          head.email!,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ],
-                      if (head.phoneNumber != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          head.phoneNumber!,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
+  Widget _buildPropertyInfoSection(
+      BuildContext context, Household household, dynamic property) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (property != null) ...[
+          _buildInfoField(
+            context,
+            label: 'Property Address',
+            value: property.formattedLocation,
+          ),
+          const SizedBox(height: 16),
+        ],
+        if (household.moveInDate != null) ...[
+          _buildInfoField(
+            context,
+            label: 'Move-in Date',
+            value: DateFormat('MMMM d, yyyy').format(household.moveInDate!),
+          ),
+          const SizedBox(height: 16),
+        ],
+        _buildInfoField(
+          context,
+          label: 'Ownership Status',
+          value: household.ownershipTypeDisplay,
         ),
-      ),
+      ],
+    );
+  }
+
+  Widget _buildInfoField(
+    BuildContext context, {
+    required String label,
+    required String value,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+      ],
     );
   }
 
   Widget _buildMembersCard(BuildContext context, WidgetRef ref, List<HouseholdMember> members) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      children: [
+        // Header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Household Members',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                FilledButton.tonalIcon(
-                  onPressed: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const AddMemberScreen(),
-                      ),
-                    );
-                    if (result == true) {
-                      // Refresh the members list
-                      ref.invalidate(householdMembersProvider);
-                    }
-                  },
-                  icon: const Icon(Icons.person_add, size: 18),
-                  label: const Text('Add'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (members.isEmpty)
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'No members added yet',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+            Text(
+              'Household Members',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
+            ),
+            TextButton.icon(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddMemberScreen(),
+                  ),
+                );
+                if (result == true) {
+                  ref.invalidate(householdMembersProvider);
+                }
+              },
+              icon: Icon(
+                Icons.add_circle,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              label: Text(
+                'Add Member',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
                 ),
-              )
-            else
-              ...members.asMap().entries.map((entry) {
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Members list card
+        if (members.isEmpty)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Center(
+                child: Text(
+                  'No members added yet',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                ),
+              ),
+            ),
+          )
+        else
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: members.asMap().entries.map((entry) {
                 final index = entry.key;
                 final member = entry.value;
                 return Column(
                   children: [
-                    if (index > 0) const Divider(),
-                    _buildMemberTile(
-                      context,
-                      member: member,
-                    ),
+                    if (index > 0)
+                      const Divider(
+                        height: 1,
+                        indent: 16,
+                        endIndent: 16,
+                      ),
+                    _buildMemberTile(context, member: member),
                   ],
                 );
               }).toList(),
-          ],
-        ),
-      ),
+            ),
+          ),
+      ],
     );
   }
 
   Widget _buildStatsCard(BuildContext context, HouseholdStats stats) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Quick Stats',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatItem(
-                    context,
-                    icon: Icons.directions_car,
-                    label: 'Stickers',
-                    value: '${stats.activeStickers} / ${stats.totalStickers}',
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildStatItem(
-                    context,
-                    icon: Icons.construction,
-                    label: 'Permits',
-                    value: '${stats.activePermits}',
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatItem(
-                    context,
-                    icon: Icons.people,
-                    label: 'Guests',
-                    value: '${stats.upcomingGuests}',
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildStatItem(
-                    context,
-                    icon: Icons.campaign,
-                    label: 'Announcements',
-                    value: '${stats.unreadAnnouncements}',
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-        const SizedBox(width: 12),
         Text(
-          '$label:',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          'Quick Stats',
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildStatItem(
+                context,
+                icon: Icons.directions_car,
+                label: 'Vehicle Stickers',
+                value: '${stats.activeStickers}/${stats.totalStickers}',
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _buildStatItem(
+                context,
+                icon: Icons.construction,
+                label: 'Permits',
+                value: '${stats.activePermits}',
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -428,41 +378,47 @@ class HouseholdProfileScreen extends ConsumerWidget {
     required HouseholdMember member,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
           CircleAvatar(
-            radius: 20,
-            backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+            radius: 24,
+            backgroundColor:
+                Theme.of(context).colorScheme.primary.withOpacity(0.1),
             child: Icon(
-              Icons.person,
-              size: 20,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              _getMemberIcon(member.relationship),
+              size: 24,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   member.fullName,
-                  style: Theme.of(context).textTheme.bodyLarge,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   _capitalizeFirst(member.relationship),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                 ),
               ],
             ),
           ),
-          if (!member.isMinor)
-            Chip(
-              label: const Text('Adult'),
-              visualDensity: VisualDensity.compact,
-            ),
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            onPressed: () {
+              // TODO: Show member options menu
+            },
+          ),
         ],
       ),
     );
@@ -474,35 +430,60 @@ class HouseholdProfileScreen extends ConsumerWidget {
     required String label,
     required String value,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant,
+    return Card(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            size: 32,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 28,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-          ),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                const SizedBox(width: 8),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  IconData _getMemberIcon(String relationship) {
+    switch (relationship.toLowerCase()) {
+      case 'spouse':
+      case 'wife':
+      case 'husband':
+        return Icons.woman;
+      case 'son':
+        return Icons.boy;
+      case 'daughter':
+        return Icons.girl;
+      default:
+        return Icons.person;
+    }
   }
 
   String _capitalizeFirst(String text) {

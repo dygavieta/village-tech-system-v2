@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../providers/guest_provider.dart';
 import '../models/guest.dart';
 import 'register_guest_screen.dart';
@@ -33,13 +35,10 @@ class _GuestsScreenState extends ConsumerState<GuestsScreen> with SingleTickerPr
     return Scaffold(
       appBar: AppBar(
         title: const Text('Guests'),
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'Past'),
-          ],
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/services'),
         ),
       ),
       body: guestsAsync.when(
@@ -47,11 +46,54 @@ class _GuestsScreenState extends ConsumerState<GuestsScreen> with SingleTickerPr
           final upcomingGuests = guests.where((g) => g.isUpcoming).toList();
           final pastGuests = guests.where((g) => g.isPast).toList();
 
-          return TabBarView(
-            controller: _tabController,
+          return Column(
             children: [
-              _buildGuestList(upcomingGuests, 'No upcoming guests'),
-              _buildGuestList(pastGuests, 'No past guests'),
+              // Hero Banner
+              _buildHeroBanner(context),
+              const SizedBox(height: 16),
+
+              // Tab Bar
+              Container(
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                  ),
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorColor: Theme.of(context).colorScheme.primary,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicatorWeight: 2,
+                  labelColor: Theme.of(context).colorScheme.primary,
+                  unselectedLabelColor:
+                      Theme.of(context).colorScheme.onSurfaceVariant,
+                  labelStyle: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  ),
+                  tabs: const [
+                    Tab(text: 'Upcoming Guests'),
+                    Tab(text: 'Past Guests'),
+                  ],
+                ),
+              ),
+
+              // Tab View
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildGuestList(upcomingGuests, 'No upcoming guests'),
+                    _buildGuestList(pastGuests, 'No past guests'),
+                  ],
+                ),
+              ),
             ],
           );
         },
@@ -73,18 +115,56 @@ class _GuestsScreenState extends ConsumerState<GuestsScreen> with SingleTickerPr
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const RegisterGuestScreen()),
-          );
-          if (result == true) {
-            ref.refresh(guestsProvider);
-          }
-        },
-        icon: const Icon(Icons.person_add),
-        label: const Text('Add Guest'),
+    );
+  }
+
+  Widget _buildHeroBanner(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          // Banner Image
+          Container(
+            height: 128,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              image: const DecorationImage(
+                image: NetworkImage(
+                  'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&h=400&fit=crop',
+                ),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Register Button
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const RegisterGuestScreen()),
+                );
+                if (result == true) {
+                  ref.refresh(guestsProvider);
+                }
+              },
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              child: const Text(
+                'Register New Guest',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -92,13 +172,23 @@ class _GuestsScreenState extends ConsumerState<GuestsScreen> with SingleTickerPr
   Widget _buildGuestList(List<Guest> guests, String emptyMessage) {
     if (guests.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.people_outline, size: 80, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(emptyMessage, style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.people_outline,
+                size: 64,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                emptyMessage,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -108,74 +198,136 @@ class _GuestsScreenState extends ConsumerState<GuestsScreen> with SingleTickerPr
       itemCount: guests.length,
       itemBuilder: (context, index) {
         final guest = guests[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              child: const Icon(Icons.person, color: Colors.white),
-            ),
-            title: Text(guest.guestName, style: const TextStyle(fontWeight: FontWeight.w600)),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 4),
-                Text('Visit: ${_formatDate(guest.visitDate)}'),
-                if (guest.vehiclePlate != null) Text('Vehicle: ${guest.vehiclePlate}'),
-                if (guest.expectedArrivalTime != null) Text('Time: ${guest.expectedArrivalTime}'),
-              ],
-            ),
-            trailing: _buildStatusChip(guest.status),
-            isThreeLine: true,
-          ),
-        );
+        return _buildGuestCard(guest);
       },
     );
   }
 
-  Widget _buildStatusChip(GuestStatus status) {
-    Color color;
-    switch (status) {
-      case GuestStatus.preRegistered:
-        color = Colors.blue;
-        break;
-      case GuestStatus.arrived:
-        color = Colors.green;
-        break;
-      case GuestStatus.departed:
-        color = Colors.grey;
-        break;
-      case GuestStatus.overstayed:
-        color = Colors.orange;
-        break;
-      case GuestStatus.rejected:
-        color = Colors.red;
-        break;
-    }
+  Widget _buildGuestCard(Guest guest) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          // Header with guest name
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        guest.guestName,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '_HIDDEN_',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-    return Chip(
-      label: Text(_getStatusText(status), style: const TextStyle(fontSize: 12)),
-      backgroundColor: color.withOpacity(0.1),
-      labelStyle: TextStyle(color: color),
+          // Details section
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Vehicle info
+                Row(
+                  children: [
+                    Icon(
+                      guest.vehiclePlate != null
+                          ? Icons.directions_car
+                          : Icons.no_crash,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      guest.vehiclePlate ?? 'No vehicle',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: guest.vehiclePlate != null
+                                ? Theme.of(context).colorScheme.onSurface
+                                : Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                            fontStyle: guest.vehiclePlate != null
+                                ? FontStyle.normal
+                                : FontStyle.italic,
+                          ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Visit info
+                Row(
+                  children: [
+                    Icon(
+                      _getVisitIcon(guest),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _formatVisitInfo(guest),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  String _getStatusText(GuestStatus status) {
-    switch (status) {
-      case GuestStatus.preRegistered:
-        return 'Pre-registered';
-      case GuestStatus.arrived:
-        return 'Arrived';
-      case GuestStatus.departed:
-        return 'Departed';
-      case GuestStatus.overstayed:
-        return 'Overstayed';
-      case GuestStatus.rejected:
-        return 'Rejected';
+  IconData _getVisitIcon(Guest guest) {
+    // Check if multi-day visit
+    if (guest.checkoutDate != null &&
+        guest.checkoutDate!.difference(guest.visitDate).inDays > 0) {
+      return Icons.date_range;
     }
+    return Icons.schedule;
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  String _formatVisitInfo(Guest guest) {
+    final dateFormat = DateFormat('MMM d, yyyy');
+
+    // Check if multi-day visit
+    if (guest.checkoutDate != null &&
+        guest.checkoutDate!.difference(guest.visitDate).inDays > 0) {
+      return 'Multi-days - ${dateFormat.format(guest.visitDate)}-${guest.checkoutDate!.day}, ${guest.visitDate.year}';
+    }
+
+    // Day trip with time
+    String result = 'Day Trip - ${dateFormat.format(guest.visitDate)}';
+    if (guest.expectedArrivalTime != null) {
+      result += ', ${guest.expectedArrivalTime}';
+    }
+    return result;
   }
 }
