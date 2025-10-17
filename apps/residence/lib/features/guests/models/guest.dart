@@ -74,8 +74,24 @@ class Guest {
       'visit_date': visitDate.toIso8601String().split('T')[0],
       'expected_arrival_time': expectedArrivalTime,
       'checkout_date': checkoutDate?.toIso8601String().split('T')[0],
-      'approved_by_household': true,
+      'status': _statusToString(status),
+      'approved_by_household': approvedByHousehold,
     };
+  }
+
+  static String _statusToString(GuestStatus status) {
+    switch (status) {
+      case GuestStatus.preRegistered:
+        return 'pre_registered';
+      case GuestStatus.arrived:
+        return 'arrived';
+      case GuestStatus.departed:
+        return 'departed';
+      case GuestStatus.overstayed:
+        return 'overstayed';
+      case GuestStatus.rejected:
+        return 'rejected';
+    }
   }
 
   static GuestStatus _parseStatus(String status) {
@@ -110,6 +126,22 @@ class Guest {
     }
   }
 
-  bool get isUpcoming => visitDate.isAfter(DateTime.now()) && status == GuestStatus.preRegistered;
-  bool get isPast => status == GuestStatus.departed || visitDate.isBefore(DateTime.now().subtract(const Duration(days: 1)));
+  bool get isUpcoming {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final visitDay = DateTime(visitDate.year, visitDate.month, visitDate.day);
+
+    // Upcoming: visit date is today or later, and not departed
+    return (visitDay.isAtSameMomentAs(today) || visitDay.isAfter(today)) &&
+           status != GuestStatus.departed;
+  }
+
+  bool get isPast {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final visitDay = DateTime(visitDate.year, visitDate.month, visitDate.day);
+
+    // Past: departed status OR visit date is before today
+    return status == GuestStatus.departed || visitDay.isBefore(today);
+  }
 }

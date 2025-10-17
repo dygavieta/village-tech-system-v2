@@ -3,18 +3,21 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../household/providers/member_provider.dart';
 import '../models/guest.dart';
 
-// Provider to fetch guests
-final guestsProvider = FutureProvider.autoDispose<List<Guest>>((ref) async {
+// Provider to fetch guests with real-time updates
+final guestsProvider = StreamProvider.autoDispose<List<Guest>>((ref) async* {
   final supabase = Supabase.instance.client;
   final householdId = await ref.watch(currentHouseholdIdProvider.future);
 
-  final response = await supabase
+  // Get real-time stream of guests
+  final stream = supabase
       .from('guests')
-      .select()
+      .stream(primaryKey: ['id'])
       .eq('household_id', householdId)
       .order('visit_date', ascending: false);
 
-  return (response as List).map((json) => Guest.fromJson(json)).toList();
+  await for (final data in stream) {
+    yield (data as List).map((json) => Guest.fromJson(json)).toList();
+  }
 });
 
 // State notifier for guest operations

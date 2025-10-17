@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_colors.dart';
 import '../providers/permit_provider.dart';
 import '../models/construction_permit.dart';
 import 'request_permit_screen.dart';
@@ -43,14 +44,16 @@ class _PermitsScreenState extends ConsumerState<PermitsScreen>
       ),
       body: permitsAsync.when(
         data: (permits) {
+          // Active permits: Only fully active permits (approved AND paid)
           final activePermits = permits
-              .where((p) =>
-                  p.permitStatus == PermitStatus.approved ||
-                  p.permitStatus == PermitStatus.active)
+              .where((p) => p.permitStatus == PermitStatus.active)
               .toList();
+
+          // Pending permits: Awaiting approval, awaiting payment, or on hold
           final pendingPermits = permits
               .where((p) =>
                   p.permitStatus == PermitStatus.pendingApproval ||
+                  (p.permitStatus == PermitStatus.approved && p.paymentStatus == 'pending') ||
                   p.permitStatus == PermitStatus.onHold)
               .toList();
 
@@ -326,6 +329,40 @@ class _PermitCard extends StatelessWidget {
               Icons.engineering,
               'Contractor: ${permit.contractorName ?? 'N/A'}',
             ),
+
+            // Show payment status if approved but not paid
+            if (permit.permitStatus == PermitStatus.approved &&
+                permit.paymentStatus == 'pending') ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.warning.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.payment,
+                      size: 20,
+                      color: AppColors.warning,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Payment Required - Permit approved, awaiting payment',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.warning,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -339,28 +376,28 @@ class _PermitCard extends StatelessWidget {
 
     switch (projectType.toLowerCase()) {
       case 'renovation':
-        backgroundColor = Colors.blue.shade100;
-        textColor = Colors.blue.shade700;
+        backgroundColor = AppColors.categoryRepair.withOpacity(0.1);
+        textColor = AppColors.categoryRepair;
         label = 'RENOVATION';
         break;
       case 'landscaping':
-        backgroundColor = Colors.green.shade100;
-        textColor = Colors.green.shade700;
+        backgroundColor = AppColors.categoryLandscaping.withOpacity(0.1);
+        textColor = AppColors.categoryLandscaping;
         label = 'LANDSCAPING';
         break;
       case 'repair':
-        backgroundColor = Colors.orange.shade100;
-        textColor = Colors.orange.shade700;
+        backgroundColor = AppColors.categoryRenovation.withOpacity(0.1);
+        textColor = AppColors.categoryRenovation;
         label = 'REPAIR';
         break;
       case 'new_construction':
-        backgroundColor = Colors.purple.shade100;
-        textColor = Colors.purple.shade700;
+        backgroundColor = AppColors.categoryNewConstruction.withOpacity(0.1);
+        textColor = AppColors.categoryNewConstruction;
         label = 'NEW CONSTRUCTION';
         break;
       default:
-        backgroundColor = Colors.grey.shade100;
-        textColor = Colors.grey.shade700;
+        backgroundColor = AppColors.grey(100);
+        textColor = AppColors.grey(700);
         label = projectType.toUpperCase();
     }
 

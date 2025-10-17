@@ -233,13 +233,25 @@ class _GuestsScreenState extends ConsumerState<GuestsScreen> with SingleTickerPr
                               fontWeight: FontWeight.bold,
                             ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '_HIDDEN_',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      if (guest.phoneNumber != null) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.phone,
+                              size: 16,
                               color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
-                      ),
+                            const SizedBox(width: 4),
+                            Text(
+                              guest.phoneNumber!,
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
