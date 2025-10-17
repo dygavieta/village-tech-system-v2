@@ -1,9 +1,9 @@
 'use client';
 
 /**
- * Add Gate Dialog Component
+ * Edit Gate Dialog Component
  *
- * Modal dialog for adding a new gate to an existing tenant
+ * Modal dialog for editing an existing gate
  */
 
 import { useState } from 'react';
@@ -37,14 +37,15 @@ const gateSchema = z.object({
 
 type GateFormData = z.infer<typeof gateSchema>;
 
-interface AddGateDialogProps {
-  tenantId: string;
+interface EditGateDialogProps {
+  gateId: string;
+  initialData: GateFormData;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
 }
 
-export function AddGateDialog({ tenantId, open, onOpenChange, onSuccess }: AddGateDialogProps) {
+export function EditGateDialog({ gateId, initialData, open, onOpenChange, onSuccess }: EditGateDialogProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,18 +54,11 @@ export function AddGateDialog({ tenantId, open, onOpenChange, onSuccess }: AddGa
   const {
     register,
     handleSubmit,
-    reset,
     setValue,
     formState: { errors },
   } = useForm<GateFormData>({
     resolver: zodResolver(gateSchema),
-    defaultValues: {
-      name: '',
-      gate_type: 'primary',
-      operating_hours_start: '',
-      operating_hours_end: '',
-      rfid_reader_serial: '',
-    },
+    defaultValues: initialData,
   });
 
   const onSubmit = async (data: GateFormData) => {
@@ -72,8 +66,8 @@ export function AddGateDialog({ tenantId, open, onOpenChange, onSuccess }: AddGa
     setError(null);
 
     try {
-      const response = await fetch(`/api/tenants/${tenantId}/gates`, {
-        method: 'POST',
+      const response = await fetch(`/api/gates/${gateId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
@@ -81,20 +75,19 @@ export function AddGateDialog({ tenantId, open, onOpenChange, onSuccess }: AddGa
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to add gate');
+        throw new Error(result.error || 'Failed to update gate');
       }
 
       toast({
-        title: 'Gate added successfully',
-        description: `${data.name} has been added to the tenant.`,
+        title: 'Gate updated successfully',
+        description: `${data.name} has been updated.`,
       });
 
-      reset();
       onOpenChange(false);
       onSuccess?.();
       router.refresh();
     } catch (err) {
-      console.error('Error adding gate:', err);
+      console.error('Error updating gate:', err);
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
@@ -103,8 +96,6 @@ export function AddGateDialog({ tenantId, open, onOpenChange, onSuccess }: AddGa
 
   const handleClose = () => {
     if (!isSubmitting) {
-      reset();
-      setError(null);
       onOpenChange(false);
     }
   };
@@ -113,9 +104,9 @@ export function AddGateDialog({ tenantId, open, onOpenChange, onSuccess }: AddGa
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Add New Gate</DialogTitle>
+          <DialogTitle>Edit Gate</DialogTitle>
           <DialogDescription>
-            Configure a new gate entry point for this community
+            Update the gate configuration details
           </DialogDescription>
         </DialogHeader>
 
@@ -147,7 +138,7 @@ export function AddGateDialog({ tenantId, open, onOpenChange, onSuccess }: AddGa
               Gate Type <span className="text-red-500">*</span>
             </Label>
             <Select
-              defaultValue="primary"
+              defaultValue={initialData.gate_type}
               onValueChange={(value) => setValue('gate_type', value as any)}
               disabled={isSubmitting}
             >
@@ -208,10 +199,10 @@ export function AddGateDialog({ tenantId, open, onOpenChange, onSuccess }: AddGa
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Adding...
+                  Updating...
                 </>
               ) : (
-                'Add Gate'
+                'Update Gate'
               )}
             </Button>
           </DialogFooter>
