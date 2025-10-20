@@ -115,9 +115,6 @@ export async function getSettingsSections(): Promise<SettingsSection[]> {
     .limit(1)
     .single();
 
-  // Get sticker allocation from tenant settings (default is 3)
-  const defaultStickerAllocation = 3;
-
   // Check active curfews
   const { count: curfewRulesCount } = await supabase
     .from('curfews')
@@ -146,11 +143,13 @@ export async function getSettingsSections(): Promise<SettingsSection[]> {
     .limit(1)
     .single();
 
-  // Get tenant branding info
+  // Get tenant settings (branding and sticker allocation)
   const { data: tenant } = await supabase
     .from('tenants')
-    .select('updated_at, logo_url, primary_color')
+    .select('updated_at, logo_url, primary_color, default_sticker_allocation')
     .single();
+
+  const defaultStickerAllocation = tenant?.default_sticker_allocation || 3;
 
   const sections: SettingsSection[] = [
     {
@@ -212,4 +211,174 @@ export async function getSettingsSections(): Promise<SettingsSection[]> {
   ];
 
   return sections;
+}
+
+/**
+ * Update tenant sticker allocation setting
+ */
+export async function updateStickerAllocation(allocation: number) {
+  const supabase = await createClient();
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error('Unauthorized');
+  }
+
+  // Validate allocation is within acceptable range
+  if (allocation < 1 || allocation > 20) {
+    throw new Error('Allocation must be between 1 and 20');
+  }
+
+  // Get user's tenant_id from their profile
+  const { data: userProfile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !userProfile?.tenant_id) {
+    throw new Error('Tenant not found');
+  }
+
+  // Update tenant's default sticker allocation
+  const { error } = await supabase
+    .from('tenants')
+    .update({
+      default_sticker_allocation: allocation,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', userProfile.tenant_id);
+
+  if (error) {
+    throw error;
+  }
+
+  return { success: true };
+}
+
+/**
+ * Get tenant sticker allocation setting
+ */
+export async function getStickerAllocation(): Promise<number> {
+  const supabase = await createClient();
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error('Unauthorized');
+  }
+
+  // Get user's tenant_id from their profile
+  const { data: userProfile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !userProfile?.tenant_id) {
+    throw new Error('Tenant not found');
+  }
+
+  // Get tenant's default sticker allocation
+  const { data: tenant } = await supabase
+    .from('tenants')
+    .select('default_sticker_allocation')
+    .eq('id', userProfile.tenant_id)
+    .single();
+
+  return tenant?.default_sticker_allocation || 3;
+}
+
+/**
+ * Update individual household sticker allocation (override)
+ */
+export async function updateHouseholdAllocation(
+  householdId: string,
+  newAllocation: number,
+  justification: string
+) {
+  const supabase = await createClient();
+
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error('Unauthorized');
+  }
+
+  // Validate allocation is within acceptable range
+  if (newAllocation < 1 || newAllocation > 20) {
+    throw new Error('Allocation must be between 1 and 20');
+  }
+
+  // Validate justification is provided
+  if (!justification || justification.trim().length === 0) {
+    throw new Error('Justification is required for allocation changes');
+  }
+
+  // Get user's tenant_id from their profile
+  const { data: userProfile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('tenant_id, role')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !userProfile?.tenant_id) {
+    throw new Error('Tenant not found');
+  }
+
+  // Verify user has admin permissions
+  if (!['admin_head', 'admin_officer'].includes(userProfile.role)) {
+    throw new Error('Insufficient permissions');
+  }
+
+  // Verify household belongs to the same tenant
+  const { data: household, error: householdError } = await supabase
+    .from('households')
+    .select('id, tenant_id, sticker_allocation')
+    .eq('id', householdId)
+    .eq('tenant_id', userProfile.tenant_id)
+    .single();
+
+  if (householdError || !household) {
+    throw new Error('Household not found or access denied');
+  }
+
+  // Check current sticker usage (count active and pending stickers)
+  const { count: usedStickers } = await supabase
+    .from('vehicle_stickers')
+    .select('id', { count: 'exact', head: true })
+    .eq('household_id', householdId)
+    .in('status', ['pending', 'approved', 'ready_for_pickup', 'issued']);
+
+  // Validate new allocation is not less than currently used stickers
+  if (newAllocation < (usedStickers || 0)) {
+    throw new Error(
+      `Cannot set allocation below ${usedStickers} (household already has ${usedStickers} active/pending stickers)`
+    );
+  }
+
+  // Update household sticker allocation
+  const { error: updateError } = await supabase
+    .from('households')
+    .update({
+      sticker_allocation: newAllocation,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', householdId);
+
+  if (updateError) {
+    throw updateError;
+  }
+
+  // Log the allocation change (optional - you could create an audit log table)
+  console.log(`Allocation override for household ${householdId}:`, {
+    old_allocation: household.sticker_allocation,
+    new_allocation: newAllocation,
+    justification,
+    updated_by: user.id,
+    updated_at: new Date().toISOString(),
+  });
+
+  return { success: true, newAllocation };
 }

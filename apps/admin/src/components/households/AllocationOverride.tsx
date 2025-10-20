@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Settings, AlertCircle } from "lucide-react";
+import { updateHouseholdAllocation } from "@/lib/actions/settings";
 
 interface AllocationOverrideProps {
   householdId: string;
@@ -25,7 +26,7 @@ interface AllocationOverrideProps {
 }
 
 export function AllocationOverride({
-  householdId: _householdId,
+  householdId,
   currentAllocation,
   usedStickers,
   onUpdate,
@@ -62,18 +63,15 @@ export function AllocationOverride({
     setIsSaving(true);
 
     try {
-      // TODO: Integrate with Supabase to update household allocation
-      // await updateHouseholdAllocation(householdId, newAllocation, justification);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await updateHouseholdAllocation(householdId, newAllocation, justification);
 
       onUpdate?.(newAllocation);
       setOpen(false);
       setJustification("");
     } catch (err) {
       console.error("Failed to update allocation:", err);
-      setError("Failed to save allocation. Please try again.");
+      const errorMessage = err instanceof Error ? err.message : "Failed to save allocation. Please try again.";
+      setError(errorMessage);
     } finally {
       setIsSaving(false);
     }

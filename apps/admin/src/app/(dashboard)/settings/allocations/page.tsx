@@ -1,37 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Save, AlertCircle } from "lucide-react";
+import { Save, AlertCircle, Loader2 } from "lucide-react";
+import { getStickerAllocation, updateStickerAllocation } from "@/lib/actions/settings";
 
 export default function StickerAllocationPage() {
   const [defaultAllocation, setDefaultAllocation] = useState(3);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"success" | "error" | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadAllocation();
+  }, []);
+
+  const loadAllocation = async () => {
+    try {
+      const allocation = await getStickerAllocation();
+      setDefaultAllocation(allocation);
+    } catch (error) {
+      console.error("Failed to load allocation settings:", error);
+      setErrorMessage("Failed to load current settings");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
     setSaveStatus(null);
+    setErrorMessage(null);
 
     try {
-      // TODO: Integrate with Supabase to save tenant-level allocation setting
-      // await updateTenantSettings({ default_sticker_allocation: defaultAllocation });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
+      await updateStickerAllocation(defaultAllocation);
       setSaveStatus("success");
     } catch (error) {
       console.error("Failed to save allocation settings:", error);
       setSaveStatus("error");
+      setErrorMessage(error instanceof Error ? error.message : "Failed to save allocation settings");
     } finally {
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -60,6 +84,7 @@ export default function StickerAllocationPage() {
               value={defaultAllocation}
               onChange={(e) => setDefaultAllocation(Number(e.target.value))}
               className="max-w-xs"
+              disabled={isSaving}
             />
             <p className="text-sm text-muted-foreground">
               Valid range: 1-20 stickers per household
@@ -78,14 +103,23 @@ export default function StickerAllocationPage() {
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                Failed to save allocation settings. Please try again.
+                {errorMessage || "Failed to save allocation settings. Please try again."}
               </AlertDescription>
             </Alert>
           )}
 
           <Button onClick={handleSave} disabled={isSaving}>
-            <Save className="mr-2 h-4 w-4" />
-            {isSaving ? "Saving..." : "Save Settings"}
+            {isSaving ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="mr-2 h-4 w-4" />
+                Save Settings
+              </>
+            )}
           </Button>
         </CardContent>
       </Card>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CheckCircle2 } from 'lucide-react';
 
 export default function CreateHouseholdPage() {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -36,6 +38,15 @@ export default function CreateHouseholdPage() {
             : ''
         }`
       );
+
+      // Redirect to household detail page after 2 seconds
+      setTimeout(() => {
+        if (result.household_id) {
+          router.push(`/households/${result.household_id}`);
+        } else {
+          router.push('/households');
+        }
+      }, 2000);
     } catch (error) {
       console.error('Error creating household:', error);
       setErrorMessage(
@@ -92,7 +103,8 @@ export default function CreateHouseholdPage() {
           <CardTitle>Household Details</CardTitle>
           <CardDescription>
             Fill in the information below to create a new household. A household head account will
-            be created automatically and login credentials will be sent via email.
+            be created automatically and login credentials will be sent via email. Vehicle sticker allocation
+            will use your tenant's default setting and can be adjusted later if needed.
           </CardDescription>
         </CardHeader>
         <CardContent>

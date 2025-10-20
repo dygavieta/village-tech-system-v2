@@ -28,7 +28,6 @@ interface HouseholdFormData {
   property_id: string;
   ownership_type: 'owner' | 'renter';
   move_in_date: string;
-  sticker_allocation: number;
   email: string;
   first_name: string;
   middle_name: string;
@@ -54,7 +53,6 @@ export function HouseholdForm({
     property_id: '',
     ownership_type: 'owner',
     move_in_date: new Date().toISOString().split('T')[0],
-    sticker_allocation: 3,
     email: '',
     first_name: '',
     middle_name: '',
@@ -223,23 +221,6 @@ export function HouseholdForm({
           onChange={(e) => handleInputChange('move_in_date', e.target.value)}
           disabled={isSubmitting}
         />
-      </div>
-
-      {/* Sticker Allocation */}
-      <div className="space-y-2">
-        <Label htmlFor="sticker_allocation">Vehicle Sticker Allocation *</Label>
-        <Input
-          id="sticker_allocation"
-          type="number"
-          min="1"
-          max="10"
-          value={formData.sticker_allocation}
-          onChange={(e) => handleInputChange('sticker_allocation', parseInt(e.target.value))}
-          disabled={isSubmitting}
-        />
-        <p className="text-sm text-muted-foreground">
-          Maximum number of vehicle stickers this household can request (typically 3-5)
-        </p>
       </div>
 
       <hr className="my-6" />

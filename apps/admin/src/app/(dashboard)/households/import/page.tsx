@@ -22,7 +22,6 @@ interface HouseholdImportRow {
   property_address: string;
   ownership_type: 'owner' | 'renter';
   move_in_date: string;
-  sticker_allocation: number;
   email: string;
   first_name: string;
   middle_name: string;
@@ -85,7 +84,7 @@ export default function HouseholdImportPage() {
         setValidationErrors([
           `Missing required columns: ${missingColumns.join(', ')}`,
           'Required columns: property_address, ownership_type, email, first_name, last_name',
-          'Optional columns: move_in_date, sticker_allocation, middle_name, phone_number',
+          'Optional columns: move_in_date, middle_name, phone_number',
         ]);
         return;
       }
@@ -133,18 +132,11 @@ export default function HouseholdImportPage() {
           rowErrors.push('Last name is required');
         }
 
-        // Parse optional fields
-        const stickerAllocation = parseInt(row.sticker_allocation || '3');
-        if (isNaN(stickerAllocation) || stickerAllocation < 1 || stickerAllocation > 10) {
-          rowErrors.push('Sticker allocation must be between 1 and 10');
-        }
-
         data.push({
           row: i + 1,
           property_address: row.property_address,
           ownership_type: row.ownership_type as 'owner' | 'renter',
           move_in_date: row.move_in_date || new Date().toISOString().split('T')[0],
-          sticker_allocation: stickerAllocation,
           email: row.email,
           first_name: row.first_name,
           middle_name: row.middle_name || '',
@@ -243,18 +235,20 @@ export default function HouseholdImportPage() {
               <h4 className="font-medium mb-2">Optional Columns:</h4>
               <ul className="text-sm text-muted-foreground space-y-1 ml-4">
                 <li>• <code className="bg-muted px-1">move_in_date</code> - Date in YYYY-MM-DD format (default: today)</li>
-                <li>• <code className="bg-muted px-1">sticker_allocation</code> - Number 1-10 (default: 3)</li>
                 <li>• <code className="bg-muted px-1">middle_name</code> - Household head middle name</li>
                 <li>• <code className="bg-muted px-1">phone_number</code> - Contact phone number</li>
               </ul>
+              <p className="text-sm text-muted-foreground mt-2">
+                <strong>Note:</strong> Vehicle sticker allocation will automatically use your tenant's default setting. Use the override tool on individual household pages to adjust if needed.
+              </p>
             </div>
 
             <div className="bg-muted p-4 rounded-lg">
               <p className="text-sm font-medium mb-2">Example CSV:</p>
               <pre className="text-xs overflow-x-auto">
-{`property_address,ownership_type,email,first_name,last_name,sticker_allocation
-"Block 5 Lot 12",owner,john.doe@email.com,John,Doe,3
-"Block 3 Lot 8",renter,jane.smith@email.com,Jane,Smith,2`}
+{`property_address,ownership_type,email,first_name,last_name
+"Block 5 Lot 12",owner,john.doe@email.com,John,Doe
+"Block 3 Lot 8",renter,jane.smith@email.com,Jane,Smith`}
               </pre>
             </div>
           </div>

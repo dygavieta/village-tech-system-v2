@@ -14,7 +14,6 @@ export interface CreateHouseholdInput {
   property_id: string;
   ownership_type: 'owner' | 'renter';
   move_in_date?: string;
-  sticker_allocation?: number;
   // Household head details
   email: string;
   first_name: string;
@@ -110,7 +109,24 @@ export async function createHousehold(
 
     const tenantId = adminProfile.tenant_id;
 
-    // Step 3: Verify property exists and belongs to the same tenant
+    // Step 3: Get tenant's default sticker allocation
+    const { data: tenant, error: tenantError } = await supabase
+      .from('tenants')
+      .select('default_sticker_allocation')
+      .eq('id', tenantId)
+      .single();
+
+    if (tenantError || !tenant) {
+      return {
+        success: false,
+        error: 'Failed to fetch tenant settings',
+        details: tenantError?.message,
+      };
+    }
+
+    const defaultStickerAllocation = tenant.default_sticker_allocation || 3;
+
+    // Step 4: Verify property exists and belongs to the same tenant
     const { data: property, error: propertyError } = await supabase
       .from('properties')
       .select('id, address, tenant_id, status')
@@ -132,7 +148,7 @@ export async function createHousehold(
       };
     }
 
-    // Step 4: Check if property already has a household
+    // Step 5: Check if property already has a household
     const { data: existingHousehold } = await supabase
       .from('households')
       .select('id')
@@ -147,7 +163,7 @@ export async function createHousehold(
       };
     }
 
-    // Step 5: Create household head user via Edge Function
+    // Step 6: Create household head user via Edge Function
     const temporaryPassword = generatePassword(12);
 
     const { data: authData, error: authError } = await supabase.functions.invoke(
@@ -175,7 +191,7 @@ export async function createHousehold(
 
     const householdHeadUserId = authData.user_id;
 
-    // Step 6: Create household record
+    // Step 7: Create household record with tenant's default sticker allocation
     const { data: household, error: householdError } = await supabase
       .from('households')
       .insert({
@@ -184,7 +200,7 @@ export async function createHousehold(
         household_head_id: householdHeadUserId,
         ownership_type: input.ownership_type,
         move_in_date: input.move_in_date || null,
-        sticker_allocation: input.sticker_allocation || 3,
+        sticker_allocation: defaultStickerAllocation,
       })
       .select('id')
       .single();
@@ -197,7 +213,7 @@ export async function createHousehold(
       };
     }
 
-    // Step 7: Update property status to occupied
+    // Step 8: Update property status to occupied
     const { error: propertyUpdateError } = await supabase
       .from('properties')
       .update({ status: 'occupied' })
@@ -208,7 +224,7 @@ export async function createHousehold(
       // Don't fail the whole operation for this
     }
 
-    // Step 8: Send welcome email (via Edge Function or email service)
+    // Step 9: Send welcome email (via Edge Function or email service)
     // TODO: Integrate with email service in production
     console.log('Welcome email would be sent to:', input.email);
 
