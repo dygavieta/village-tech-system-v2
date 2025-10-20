@@ -6,7 +6,6 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -17,8 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Shield, UserPlus, Mail, Calendar, Activity } from 'lucide-react';
-import Link from 'next/link';
+import { Shield, Mail, Calendar, Activity } from 'lucide-react';
+import { SuperadminsPageClient } from './page.client';
 
 async function getSuperadmins() {
   const supabase = await createClient();
@@ -59,17 +58,8 @@ export default async function SuperadminsPage() {
   const superadmins = await getSuperadmins();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Superadmins</h2>
-          <p className="text-muted-foreground">Manage platform superadministrators</p>
-        </div>
-        <Button disabled>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Add Superadmin
-        </Button>
-      </div>
+    <SuperadminsPageClient>
+      <div className="space-y-6">
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -131,7 +121,6 @@ export default async function SuperadminsPage() {
                   <TableHead>Position</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Last Updated</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -191,11 +180,6 @@ export default async function SuperadminsPage() {
                         {formatDateTime(admin.updated_at)}
                       </span>
                     </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" disabled>
-                        View
-                      </Button>
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -204,13 +188,9 @@ export default async function SuperadminsPage() {
             <div className="text-center py-12">
               <Shield className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
               <h3 className="text-lg font-semibold mb-2">No Superadmins Found</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                There are no superadmin users in the system
+              <p className="text-sm text-muted-foreground">
+                There are no superadmin users in the system. Click &quot;Add Superadmin&quot; above to create one.
               </p>
-              <Button disabled>
-                <UserPlus className="mr-2 h-4 w-4" />
-                Add First Superadmin
-              </Button>
             </div>
           )}
         </CardContent>
@@ -287,6 +267,7 @@ export default async function SuperadminsPage() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </SuperadminsPageClient>
   );
 }

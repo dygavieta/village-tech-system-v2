@@ -21,8 +21,10 @@ const logger = createLogger({ function: 'create-superadmin' });
 interface CreateSuperadminRequest {
   email: string;
   first_name: string;
+  middle_name?: string;
   last_name: string;
   phone_number?: string;
+  position?: string;
 }
 
 /**
@@ -142,14 +144,19 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     // Create auth user
+    // Note: The on_auth_user_created trigger will automatically create the user_profile
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email: requestData.email,
       password: temporaryPassword,
       email_confirm: true, // Auto-confirm email
       user_metadata: {
-        first_name: requestData.first_name,
-        last_name: requestData.last_name,
+        tenant_id: null, // Required by trigger, but will be null for superadmins
         role: 'superadmin',
+        first_name: requestData.first_name,
+        middle_name: requestData.middle_name,
+        last_name: requestData.last_name,
+        phone_number: requestData.phone_number,
+        position: requestData.position || 'Platform Administrator',
       },
     });
 
@@ -163,43 +170,23 @@ serve(async (req: Request): Promise<Response> => {
 
     logger.info('Auth user created', { user_id: authData.user.id });
 
-    // Create user profile with superadmin role
-    const profileData = {
-      id: authData.user.id,
-      first_name: requestData.first_name,
-      last_name: requestData.last_name,
-      phone_number: requestData.phone_number || null,
-      role: 'superadmin',
-      tenant_id: null, // Superadmins are not tied to a tenant
-    };
-
-    logger.info('Inserting user profile', { profileData });
-
-    const { error: profileInsertError } = await supabase
+    // The on_auth_user_created trigger automatically creates the user_profile
+    // Update the profile with additional fields (middle_name, position) that the trigger doesn't handle
+    const { error: profileUpdateError } = await supabase
       .from('user_profiles')
-      .insert(profileData);
+      .update({
+        middle_name: requestData.middle_name || null,
+        position: requestData.position || 'Platform Administrator',
+      })
+      .eq('id', authData.user.id);
 
-    if (profileInsertError) {
-      logger.error('Failed to create user profile', {
-        error: profileInsertError,
-        message: profileInsertError.message,
-        details: profileInsertError.details,
-        hint: profileInsertError.hint,
-        code: profileInsertError.code
+    if (profileUpdateError) {
+      logger.error('Failed to update user profile with additional fields', {
+        error: profileUpdateError,
+        message: profileUpdateError.message,
       });
-
-      // Cleanup: Delete auth user if profile creation failed
-      await supabase.auth.admin.deleteUser(authData.user.id);
-
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: `Failed to create user profile: ${profileInsertError.message || profileInsertError.code || 'Unknown error'}`,
-          details: profileInsertError.details,
-          hint: profileInsertError.hint
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      // Don't fail the entire operation - the core profile was created by the trigger
+      // Just log the warning
     }
 
     logger.info('Superadmin created successfully', { user_id: authData.user.id });
