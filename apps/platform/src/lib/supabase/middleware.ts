@@ -74,9 +74,22 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith(route)
   );
 
+  // Check if it's the root path
+  const isRootPath = request.nextUrl.pathname === '/';
+
   // Redirect authenticated users away from login pages
   if (user && isAuthPage) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // Redirect authenticated users from root to dashboard
+  if (user && isRootPath) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // Redirect unauthenticated users from root to login
+  if (!user && isRootPath) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   // Protect dashboard routes - require authentication

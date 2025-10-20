@@ -299,3 +299,221 @@ Please change your password upon first login.
 
   return { subject, htmlBody, textBody };
 }
+
+/**
+ * Generate superadmin invitation email with credentials
+ */
+export interface SuperadminInvitationEmailData {
+  superadminName: string;
+  superadminEmail: string;
+  portalUrl: string;
+  temporaryPassword: string;
+}
+
+export function generateSuperadminInvitationEmail(data: SuperadminInvitationEmailData): EmailTemplate {
+  const { superadminName, portalUrl, temporaryPassword } = data;
+
+  const subject = `Welcome to VillageTech Platform - Superadmin Access`;
+
+  const htmlBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+      border-radius: 8px 8px 0 0;
+    }
+    .content {
+      background: #f8f9fa;
+      padding: 30px;
+      border-radius: 0 0 8px 8px;
+    }
+    .credentials-box {
+      background: white;
+      border: 2px solid #e9ecef;
+      border-radius: 6px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .credential-item {
+      margin: 15px 0;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+    }
+    .credential-label {
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 5px;
+    }
+    .credential-value {
+      font-family: 'Courier New', monospace;
+      color: #212529;
+      font-size: 14px;
+      word-break: break-all;
+    }
+    .button {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 14px 28px;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: 600;
+      margin: 20px 0;
+    }
+    .button:hover {
+      background: #5568d3;
+    }
+    .warning {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .footer {
+      text-align: center;
+      color: #6c757d;
+      font-size: 12px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #dee2e6;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    li {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 style="margin: 0;">🎉 Welcome to VillageTech Platform</h1>
+    <p style="margin: 10px 0 0 0; opacity: 0.9;">Superadmin Access Granted</p>
+  </div>
+
+  <div class="content">
+    <h2>Hello ${superadminName},</h2>
+
+    <p>You have been granted <strong>Superadmin</strong> access to the VillageTech Platform. As a superadmin, you have full access to manage all tenants, communities, and platform settings.</p>
+
+    <div class="credentials-box">
+      <h3 style="margin-top: 0; color: #495057;">Your Platform Access Credentials</h3>
+
+      <div class="credential-item">
+        <div class="credential-label">Platform URL</div>
+        <div class="credential-value">${portalUrl}</div>
+      </div>
+
+      <div class="credential-item">
+        <div class="credential-label">Email</div>
+        <div class="credential-value">${data.superadminEmail}</div>
+      </div>
+
+      <div class="credential-item">
+        <div class="credential-label">Temporary Password</div>
+        <div class="credential-value">${temporaryPassword}</div>
+      </div>
+    </div>
+
+    <div class="warning">
+      <strong>⚠️ Important Security Notice</strong>
+      <p style="margin: 10px 0 0 0;">This is a temporary password. For security reasons, you must change it immediately upon your first login. Please do not share these credentials with anyone.</p>
+    </div>
+
+    <div style="text-align: center;">
+      <a href="${portalUrl}" class="button">Access Platform Admin Portal</a>
+    </div>
+
+    <h3>Superadmin Responsibilities</h3>
+    <ul>
+      <li><strong>Tenant Management:</strong> Create and manage residential community tenants</li>
+      <li><strong>User Management:</strong> Oversee admin users across all tenants</li>
+      <li><strong>Platform Settings:</strong> Configure global platform settings</li>
+      <li><strong>Analytics:</strong> Monitor platform-wide usage and performance</li>
+      <li><strong>Security:</strong> Ensure platform security and compliance</li>
+    </ul>
+
+    <h3>Next Steps</h3>
+    <ul>
+      <li><strong>Log in</strong> to the platform using the credentials above</li>
+      <li><strong>Change your password</strong> immediately upon first login</li>
+      <li><strong>Set up Multi-Factor Authentication (MFA)</strong> for enhanced security</li>
+      <li><strong>Review platform settings</strong> and familiarize yourself with the dashboard</li>
+    </ul>
+
+    <h3>Need Help?</h3>
+    <p>Our support team is here to assist you.</p>
+    <ul>
+      <li>📧 Email: support@villagetech.com</li>
+      <li>📚 Documentation: https://docs.villagetech.com</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    <p>This email was sent by VillageTech Platform</p>
+    <p>If you did not request this account, please contact support immediately.</p>
+    <p>&copy; ${new Date().getFullYear()} VillageTech. All rights reserved.</p>
+  </div>
+</body>
+</html>
+  `;
+
+  const textBody = `
+Welcome to VillageTech Platform - Superadmin Access
+
+Hello ${superadminName},
+
+You have been granted Superadmin access to the VillageTech Platform. As a superadmin, you have full access to manage all tenants, communities, and platform settings.
+
+YOUR PLATFORM ACCESS CREDENTIALS
+----------------------------------
+Platform URL: ${portalUrl}
+Email: ${data.superadminEmail}
+Temporary Password: ${temporaryPassword}
+
+IMPORTANT SECURITY NOTICE
+This is a temporary password. For security reasons, you must change it immediately upon your first login. Please do not share these credentials with anyone.
+
+SUPERADMIN RESPONSIBILITIES
+- Tenant Management: Create and manage residential community tenants
+- User Management: Oversee admin users across all tenants
+- Platform Settings: Configure global platform settings
+- Analytics: Monitor platform-wide usage and performance
+- Security: Ensure platform security and compliance
+
+NEXT STEPS
+1. Log in to the platform using the credentials above
+2. Change your password immediately upon first login
+3. Set up Multi-Factor Authentication (MFA) for enhanced security
+4. Review platform settings and familiarize yourself with the dashboard
+
+NEED HELP?
+Our support team is here to assist you.
+- Email: support@villagetech.com
+- Documentation: https://docs.villagetech.com
+
+This email was sent by VillageTech Platform
+If you did not request this account, please contact support immediately.
+
+© ${new Date().getFullYear()} VillageTech. All rights reserved.
+  `;
+
+  return { subject, htmlBody, textBody };
+}

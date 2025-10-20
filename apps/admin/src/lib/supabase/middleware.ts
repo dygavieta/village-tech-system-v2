@@ -75,19 +75,33 @@ export async function updateSession(request: NextRequest) {
   const publicRoutes = ['/login', '/forgot-password', '/reset-password'];
   const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname.startsWith(route));
 
+  // Check if it's the root path
+  const isRootPath = request.nextUrl.pathname === '/';
+
+  // Redirect authenticated users from root to dashboard
+  if (user && isRootPath) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  // Redirect unauthenticated users from root to login
+  if (!user && isRootPath) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
   // If user is not authenticated and trying to access a protected route
   if (!user && !isPublicRoute) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = '/login';
-    redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname);
+    // Only set redirectedFrom if it's not the root path
+    if (request.nextUrl.pathname !== '/') {
+      redirectUrl.searchParams.set('redirectedFrom', request.nextUrl.pathname);
+    }
     return NextResponse.redirect(redirectUrl);
   }
 
   // If user is authenticated and trying to access auth pages, redirect to dashboard
   if (user && isPublicRoute) {
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = '/';
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   // Enhanced security: Verify admin role for protected routes
