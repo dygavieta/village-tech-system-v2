@@ -201,7 +201,7 @@ class HouseholdProfileScreen extends ConsumerWidget {
   Widget _buildPropertyInfoSection(
       BuildContext context, Household household, dynamic property) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (property != null) ...[
           _buildInfoField(
