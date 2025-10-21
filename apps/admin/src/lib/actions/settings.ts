@@ -87,6 +87,17 @@ export async function getSettingsSections(): Promise<SettingsSection[]> {
     throw new Error('Unauthorized');
   }
 
+  // Get user's tenant_id from their profile
+  const { data: userProfile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !userProfile?.tenant_id) {
+    throw new Error('Tenant not found');
+  }
+
   // Get rules stats
   const { count: totalRules } = await supabase
     .from('village_rules')
@@ -147,6 +158,7 @@ export async function getSettingsSections(): Promise<SettingsSection[]> {
   const { data: tenant } = await supabase
     .from('tenants')
     .select('updated_at, logo_url, primary_color, default_sticker_allocation')
+    .eq('id', userProfile.tenant_id)
     .single();
 
   const defaultStickerAllocation = tenant?.default_sticker_allocation || 3;
@@ -156,7 +168,7 @@ export async function getSettingsSections(): Promise<SettingsSection[]> {
       id: 'village-rules',
       title: 'Village Rules',
       description: 'Manage community policies, regulations, and guidelines',
-      status: 'configured',
+      status: (totalRules || 0) > 0 ? 'configured' : 'disabled',
       lastUpdated: lastRule?.updated_at || null,
       stats: `${totalRules || 0} active rules`,
     },
@@ -164,7 +176,7 @@ export async function getSettingsSections(): Promise<SettingsSection[]> {
       id: 'gates',
       title: 'Gates & Access Control',
       description: 'Configure gates, operating hours, and security settings',
-      status: 'configured',
+      status: (gatesConfigured || 0) > 0 ? 'configured' : 'disabled',
       lastUpdated: lastGate?.updated_at || null,
       stats: `${gatesConfigured || 0} gates active`,
     },
@@ -196,7 +208,7 @@ export async function getSettingsSections(): Promise<SettingsSection[]> {
       id: 'users',
       title: 'User Management',
       description: 'Manage admin officers, roles, and permissions',
-      status: 'configured',
+      status: (totalAdminUsers || 0) > 0 ? 'configured' : 'disabled',
       lastUpdated: lastAdminUpdate?.updated_at || null,
       stats: `${totalAdminUsers || 0} admin users`,
     },

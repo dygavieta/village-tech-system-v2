@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Save, AlertCircle, Loader2 } from "lucide-react";
+import { Save, AlertCircle, Loader2, ArrowLeft } from "lucide-react";
 import { getStickerAllocation, updateStickerAllocation } from "@/lib/actions/settings";
 
 export default function StickerAllocationPage() {
@@ -59,11 +60,19 @@ export default function StickerAllocationPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Sticker Allocation Settings</h1>
-        <p className="text-muted-foreground">
-          Configure default vehicle sticker allocation limits for households
-        </p>
+      <div className="flex items-center gap-3">
+        <Link href="/settings">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Sticker Allocation Settings</h1>
+          <p className="text-muted-foreground">
+            Configure default vehicle sticker allocation limits for households
+          </p>
+        </div>
       </div>
 
       <Card>
