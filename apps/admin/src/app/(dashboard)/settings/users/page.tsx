@@ -15,95 +15,28 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { getAdminUserStats, getAdminUsers } from '@/lib/actions/users';
+import { formatDistanceToNow } from 'date-fns';
+import { AddAdminUserDialog } from '@/components/users/AddAdminUserDialog';
 
-export default function UserManagementPage() {
-  // TODO: Replace with actual data from Supabase
-  const stats = {
-    totalUsers: 5,
-    adminHead: 1,
-    officers: 4,
-    activeUsers: 5,
+export default async function UserManagementPage() {
+  const [stats, users] = await Promise.all([
+    getAdminUserStats(),
+    getAdminUsers(),
+  ]);
+
+  const getRoleBadge = (role: 'admin_head' | 'admin_officer') => {
+    if (role === 'admin_head') {
+      return <Badge variant="default" className="bg-purple-600">Admin Head</Badge>;
+    }
+    return <Badge variant="default">Officer</Badge>;
   };
 
-  const adminUsers = [
-    {
-      id: 1,
-      name: 'Juan Dela Cruz',
-      email: 'juan.delacruz@villagemgmt.com',
-      phone: '+63 917 123 4567',
-      role: 'Admin Head' as const,
-      department: 'Management',
-      permissions: ['Full Access'],
-      status: 'active' as const,
-      lastLogin: '2 hours ago',
-      joinedDate: 'Jan 15, 2025',
-      avatar: '/avatars/juan.jpg',
-    },
-    {
-      id: 2,
-      name: 'Maria Santos',
-      email: 'maria.santos@villagemgmt.com',
-      phone: '+63 917 234 5678',
-      role: 'Treasurer' as const,
-      department: 'Finance',
-      permissions: ['Fees Management', 'Reports', 'View Households'],
-      status: 'active' as const,
-      lastLogin: '1 day ago',
-      joinedDate: 'Feb 1, 2025',
-      avatar: '/avatars/maria.jpg',
-    },
-    {
-      id: 3,
-      name: 'Pedro Garcia',
-      email: 'pedro.garcia@villagemgmt.com',
-      phone: '+63 917 345 6789',
-      role: 'Secretary' as const,
-      department: 'Administration',
-      permissions: ['Announcements', 'Rules Management', 'View Households'],
-      status: 'active' as const,
-      lastLogin: '3 hours ago',
-      joinedDate: 'Feb 15, 2025',
-      avatar: '/avatars/pedro.jpg',
-    },
-    {
-      id: 4,
-      name: 'Anna Reyes',
-      email: 'anna.reyes@villagemgmt.com',
-      phone: '+63 917 456 7890',
-      role: 'Officer' as const,
-      department: 'Security',
-      permissions: ['Approvals', 'Gate Management', 'Incidents'],
-      status: 'active' as const,
-      lastLogin: '5 hours ago',
-      joinedDate: 'Mar 1, 2025',
-      avatar: '/avatars/anna.jpg',
-    },
-    {
-      id: 5,
-      name: 'Carlos Mendoza',
-      email: 'carlos.mendoza@villagemgmt.com',
-      phone: '+63 917 567 8901',
-      role: 'Officer' as const,
-      department: 'Operations',
-      permissions: ['Household Management', 'View Reports'],
-      status: 'active' as const,
-      lastLogin: '1 week ago',
-      joinedDate: 'Mar 10, 2025',
-      avatar: '/avatars/carlos.jpg',
-    },
-  ];
-
-  const getRoleBadge = (role: string) => {
-    switch (role) {
-      case 'Admin Head':
-        return <Badge variant="default" className="bg-purple-600">{role}</Badge>;
-      case 'Treasurer':
-        return <Badge variant="default" className="bg-green-600">{role}</Badge>;
-      case 'Secretary':
-        return <Badge variant="default" className="bg-blue-600">{role}</Badge>;
-      default:
-        return <Badge variant="default">{role}</Badge>;
+  const getRoleDisplay = (role: 'admin_head' | 'admin_officer', position: string | null) => {
+    if (role === 'admin_head') {
+      return 'Admin Head';
     }
+    return position || 'Officer';
   };
 
   return (
@@ -124,10 +57,7 @@ export default function UserManagementPage() {
             </p>
           </div>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Admin User
-        </Button>
+        <AddAdminUserDialog />
       </div>
 
       {/* Stats grid */}
@@ -167,12 +97,12 @@ export default function UserManagementPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Active</CardTitle>
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeUsers}</div>
-            <p className="text-xs text-green-600">All online</p>
+            <div className="text-2xl font-bold">{stats.totalUsers}</div>
+            <p className="text-xs text-muted-foreground">Active accounts</p>
           </CardContent>
         </Card>
       </div>
@@ -186,72 +116,74 @@ export default function UserManagementPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {adminUsers.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-start justify-between border rounded-lg p-4"
-              >
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
-                    {user.name.split(' ').map(n => n[0]).join('')}
+          {users.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              No admin users found
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {users.map((user) => {
+                const fullName = `${user.first_name}${user.middle_name ? ' ' + user.middle_name : ''} ${user.last_name}`;
+                const initials = `${user.first_name[0]}${user.last_name[0]}`;
+
+                return (
+                  <div
+                    key={user.id}
+                    className="flex items-start justify-between border rounded-lg p-4"
+                  >
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                        {initials}
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <p className="font-semibold text-lg">{fullName}</p>
+                            {getRoleBadge(user.role)}
+                            {user.position && (
+                              <Badge variant="outline">{user.position}</Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <span>{user.email}</span>
+                          </div>
+                          {user.phone_number && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-muted-foreground" />
+                              <span>{user.phone_number}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t">
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            Joined: {formatDistanceToNow(new Date(user.created_at), { addSuffix: true })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" disabled>
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                      {user.role !== 'admin_head' && (
+                        <Button variant="outline" size="sm" disabled>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex-1 space-y-2">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-semibold text-lg">{user.name}</p>
-                        {getRoleBadge(user.role)}
-                        <Badge variant="outline">{user.department}</Badge>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <span>{user.email}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <span>{user.phone}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      <p className="text-xs text-muted-foreground mr-2">Permissions:</p>
-                      {user.permissions.map((permission, idx) => (
-                        <Badge key={idx} variant="outline" className="text-xs">
-                          {permission}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground pt-2 border-t">
-                      <span className="flex items-center gap-1">
-                        <UserCheck className="h-3 w-3" />
-                        Last login: {user.lastLogin}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        Joined: {user.joinedDate}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  {user.role !== 'Admin Head' && (
-                    <Button variant="outline" size="sm">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -260,7 +192,7 @@ export default function UserManagementPage() {
         <CardHeader>
           <CardTitle>Roles & Permissions</CardTitle>
           <CardDescription>
-            Overview of different admin roles and their access levels
+            Overview of admin roles and their access levels
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -271,37 +203,17 @@ export default function UserManagementPage() {
                 <p className="font-semibold">Admin Head</p>
               </div>
               <p className="text-sm text-muted-foreground">
-                Full access to all features and settings. Can manage other admin users, configure system settings, and override any decisions.
-              </p>
-            </div>
-
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Shield className="h-5 w-5 text-green-600" />
-                <p className="font-semibold">Treasurer</p>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Manages association fees, generates invoices, tracks payments, and produces financial reports.
+                Full access to all features and settings. Can manage households, configure community settings, process approvals, and manage system configurations.
               </p>
             </div>
 
             <div className="border rounded-lg p-4">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="h-5 w-5 text-blue-600" />
-                <p className="font-semibold">Secretary</p>
+                <p className="font-semibold">Admin Officer</p>
               </div>
               <p className="text-sm text-muted-foreground">
-                Creates announcements, manages village rules, and handles administrative documentation.
-              </p>
-            </div>
-
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <UserCheck className="h-5 w-5 text-gray-600" />
-                <p className="font-semibold">Officer</p>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Handles specific tasks like household management, approvals, or security operations based on assigned permissions.
+                Handles specific administrative tasks like household management, approvals, announcements, and reporting. Access level similar to Admin Head but can be assigned specific positions (Treasurer, Secretary, etc.).
               </p>
             </div>
           </div>

@@ -231,18 +231,59 @@ Located in `_shared/` directory:
 
 ---
 
+## User Creation Edge Functions
+
+### create-admin-user
+Creates admin users (admin_head or admin_officer) with auto-generated credentials.
+- Validates caller is admin_head
+- Generates secure temporary password
+- Creates auth user with email confirmation
+- Sends welcome email with credentials
+- Required env: `RESEND_API_KEY`
+
+### create-household-user
+Creates household/resident users with auto-generated credentials.
+- Creates household member auth accounts
+- Generates temporary passwords
+- Sends welcome email with mobile app access
+- Required env: `RESEND_API_KEY`
+
+### create-superadmin
+Creates platform superadmin users.
+- Platform-level administration access
+- Auto-generated credentials
+- Email notification with platform URL
+- Required env: `RESEND_API_KEY`
+
+### create-tenant
+Creates new tenant communities with admin.
+- Sets up new community/tenant
+- Creates admin_head user
+- Configures tenant settings
+- Required env: `RESEND_API_KEY`
+
 ## Environment Variables
 
-All Edge Functions require:
+All Edge Functions require (automatically provided by Supabase):
 - `SUPABASE_URL` - Your Supabase project URL
 - `SUPABASE_SERVICE_ROLE_KEY` - Service role key for admin operations
 - `SUPABASE_ANON_KEY` - Anon key for RLS-respecting operations
 
 Additional service-specific variables:
 
-### Email (Resend)
-- `RESEND_API_KEY` - API key for Resend email service
-- `DEFAULT_FROM_EMAIL` - Default sender email (optional)
+### Email (Resend) - **REQUIRED for user creation**
+- `RESEND_API_KEY` - API key for Resend email service (**REQUIRED**)
+- `DEFAULT_FROM_EMAIL` - Default sender email (optional, defaults to onboarding@resend.dev)
+
+**Important Notes:**
+- Without `RESEND_API_KEY`, user creation functions will succeed but users won't receive their login credentials via email.
+- **Development Mode**: Use `onboarding@resend.dev` as FROM email (no domain verification needed)
+  - Can ONLY send to the email address that created the Resend account
+  - Perfect for testing
+- **Production Mode**: Verify your own domain in Resend dashboard, then use your domain email
+  - Can send to any email address
+  - Required for production use
+  - See: https://resend.com/docs/dashboard/domains/introduction
 
 ### Push Notifications (Firebase Cloud Messaging)
 - `FCM_SERVER_KEY` - FCM server key for push notifications
@@ -257,21 +298,37 @@ Additional service-specific variables:
 
 ## Development
 
+### Environment Setup (Local)
+
+1. Copy the environment template:
+```bash
+cp supabase/.env.example supabase/.env
+```
+
+2. Fill in your API keys in `supabase/.env`:
+```bash
+RESEND_API_KEY=re_your_actual_key_here
+DEFAULT_FROM_EMAIL=noreply@yourdomain.com
+# Add other keys as needed
+```
+
+3. **Important:** The `.env` file is gitignored for security. Never commit API keys!
+
 ### Local Testing
 
 1. Start Supabase locally:
 ```bash
-supabase start
+npx supabase start
 ```
 
-2. Serve Edge Functions:
+2. Serve Edge Functions (loads .env automatically):
 ```bash
-supabase functions serve
+npx supabase functions serve
 ```
 
-3. Test specific function:
+3. Test specific function with custom env file:
 ```bash
-supabase functions serve send-announcement --env-file ./supabase/.env.local
+npx supabase functions serve send-announcement --env-file ./supabase/.env
 ```
 
 4. Make test request:
@@ -284,14 +341,48 @@ curl -i --location --request POST 'http://localhost:54321/functions/v1/send-anno
 
 ### Deployment
 
+#### Set Production Environment Variables
+
+Before deploying, set up your production secrets:
+
+```bash
+# Login to Supabase
+npx supabase login
+
+# Link to your project
+npx supabase link --project-ref your-project-ref
+
+# Set secrets from .env file
+npx supabase secrets set --env-file supabase/.env
+
+# Or set individual secrets
+npx supabase secrets set RESEND_API_KEY=your_production_key
+npx supabase secrets set DEFAULT_FROM_EMAIL=noreply@yourdomain.com
+
+# List current secrets (values are hidden)
+npx supabase secrets list
+```
+
+#### Deploy Functions
+
 Deploy all functions:
 ```bash
-supabase functions deploy
+npx supabase functions deploy
 ```
 
 Deploy specific function:
 ```bash
-supabase functions deploy send-announcement
+npx supabase functions deploy create-admin-user
+```
+
+#### View Production Logs
+
+```bash
+# View recent logs
+npx supabase functions logs create-admin-user
+
+# Stream live logs
+npx supabase functions logs create-admin-user --follow
 ```
 
 ## Security
